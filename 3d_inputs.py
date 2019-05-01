@@ -89,7 +89,8 @@ if __name__ == "__main__":
     ic = parameters.InitialConditionsParameters(path="/Users/lls/Documents/mlhalos_files/")
     d = delta_property(ic.initial_conditions)
 
-    halo_mass = np.load("/Users/lls/Documents/mlhalos_files/halo_mass_particles.npy")
+    # halo_mass = np.load("/Users/lls/Documents/mlhalos_files/halo_mass_particles.npy")
+    halo_mass = np.load("/Users/lls/Documents/mlhalos_files/stored_files/halo_mass_particles.npy")
     ids_in_halo = np.where(halo_mass > 0)[0]
 
     n = np.random.choice(ids_in_halo, 1000)
