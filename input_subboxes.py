@@ -183,7 +183,7 @@ class Subboxes:
 
             particle_id = particles[i]
             delta_sub = self.get_qty_in_subbox(particle_id)
-            np.save(path + "subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
+            np.save(path + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
             del delta_sub
             gc.collect()
 
@@ -191,7 +191,7 @@ class Subboxes:
 if __name__ == "__main__":
     # path = "/Users/lls/Documents/mlhalos_files/"
     path = "/home/lls/stored_files"
-    saving_path = "/share/data2/lls/deep_halos"
+    saving_path = "/share/data2/lls/deep_halos/subboxes"
 
     ic = parameters.InitialConditionsParameters(path=path)
     sub_in = Subboxes(ic, subbox_shape=(51, 51, 51))
