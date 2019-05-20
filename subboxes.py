@@ -12,9 +12,7 @@ a 3 unifrom grid. This is better than other method, but a bit slower.
 import numpy as np
 import sys; sys.path.append("/home/lls/mlhalos_code/")
 # import sys; sys.path.append("/Users/lls/Documents/mlhalos_code/")
-from mlhalos import parameters
 import gc
-from multiprocessing import Pool
 
 
 class Subboxes:
@@ -144,6 +142,8 @@ class Subboxes:
         return qty_ids
 
     def single_core_compute_subboxes(self, particles):
+        if len(particles) > 100:
+            print("You're gonna end up with a big array which may exceed memory..")
         shape_subbox = self.subbox_shape[0]
 
         inputs = np.zeros((len(particles), shape_subbox, shape_subbox, shape_subbox))
@@ -172,9 +172,8 @@ class Subboxes:
         return inputs
 
     def compute_and_save_subboxes(self, particles, path):
+        """ Use this function when computing subboxes for many particles """
         for i in range(len(particles)):
-            # print("Particle " + str(i) + ": " + str(particles[i]))
-
             if i == len(particles) / 4:
                 print("Quarter of the way")
 
@@ -182,33 +181,14 @@ class Subboxes:
                 print("Half way")
 
             particle_id = particles[i]
-            delta_sub = self.get_qty_in_subbox(particle_id)
-            np.save(path + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
-            del delta_sub
-            gc.collect()
+            try:
+                delta_sub = self.get_qty_in_subbox(particle_id)
+                np.save(path + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
+                del delta_sub
+                gc.collect()
 
-
-if __name__ == "__main__":
-    # path = "/Users/lls/Documents/mlhalos_files/"
-    path = "/home/lls/stored_files"
-    saving_path = "/share/data2/lls/deep_halos/subboxes"
-
-    ic = parameters.InitialConditionsParameters(path=path)
-    sub_in = Subboxes(ic, subbox_shape=(51, 51, 51))
-
-    # p_ids = np.load("/Users/lls/Documents/deep_halos_files/particles.npy")
-    # halo_mass = np.load("/Users/lls/Documents/mlhalos_files/halo_mass_particles.npy")
-    # # halo_mass = np.load("/Users/lls/Documents/mlhalos_files/stored_files/halo_mass_particles.npy")
-    # ids_in_halo = np.where(halo_mass > 0)[0]
-    # p_ids = np.random.choice(ids_in_halo, 5000, replace=False)
-    # # n = 13158510
-
-    halo_mass = np.load("/home/lls/stored_files/halo_mass_particles.npy")
-    p_ids = np.where(halo_mass > 0)[0]
-    sub_in.compute_and_save_subboxes(p_ids, saving_path)
-    #
-    # n_delta = sub_in.delta_in_subboxes_around_particles(p_ids, n_processors=1)
-    # np.save(saving_path + "delta_ids_51_cubed.npy", n_delta)
+            except ValueError:
+                print("This failed for particle " + str(particle_id))
 
 
 

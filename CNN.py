@@ -11,7 +11,7 @@ import evaluation as eval
 
 
 def preprocess_data(input_data, output_label, normalise_output=True):
-    # Add normalisation step!!
+    """ input is reshaped and output is normalised """
 
     input_processed = input_data.reshape(input_data.shape[0], input_data.shape[1], input_data.shape[2],
                                          input_data.shape[3], 1)
