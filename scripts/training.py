@@ -5,27 +5,7 @@ import sys; sys.path.append("/home/lls/DeepHalos/")
 import data_processing as dp
 import CNN
 from tensorflow import set_random_seed
-import sklearn.preprocessing
 import pickle
-
-
-def normalise_output(halo_mass):
-    log_mass = np.log10(halo_mass[halo_mass > 0])
-    minmax_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(0, 1))
-    minmax_scaler.fit(log_mass.reshape(-1, 1))
-
-    normalised_labels = np.zeros((len(halo_mass),))
-    normalised_labels[halo_mass > 0] = minmax_scaler.transform(log_mass.reshape(-1, 1)).flatten()
-    return minmax_scaler, normalised_labels
-
-# def load_data(particles, shape_subboxes=51, saving_path="/share/data2/lls/deep_halos/subboxes"):
-#     f1 = np.zeros((len(particles), shape_subboxes, shape_subboxes, shape_subboxes))
-#
-#     for i in range(len(particles)):
-#         particle_id = particles[i]
-#         if shape_subboxes == 51:
-#             f1[i] = np.load(saving_path + "/subbox_51_particle_" + str(particle_id) + ".npy")
-#     return f1
 
 
 if __name__ == "__main__":
@@ -33,43 +13,43 @@ if __name__ == "__main__":
     # saving_path = "/share/data2/lls/deep_halos/subboxes"
 
     halo_mass = np.load("/home/lls/stored_files/halo_mass_particles.npy")
-    scaler, normalised_mass = normalise_output(halo_mass)
+    scaler, normalised_mass = CNN.normalise_output(halo_mass)
     p_ids = np.where(halo_mass > 0)[0]
 
     ######### DATA PROCESSING ###########
 
-    # Load the first 5000 as training data and the next 2000 as testing_data
+    # Load the first 50000 as training data and the next 10000 as validation data
     num_training_ids = 50000
     num_valid_ids = 10000
     training_ids = p_ids[:num_training_ids]
     validation_ids = p_ids[num_training_ids: num_training_ids + num_valid_ids]
 
-    partition = {'train': training_ids,
-                 'validation': validation_ids}
+    partition = {'train': training_ids, 'validation': validation_ids}
+    gen_params = {'dim': (51, 51, 51), 'batch_size': 1000, 'n_channels': 1, 'shuffle': True}
 
-    params = {'dim': (51, 51, 51),
-              'batch_size': 1000,
-              'n_channels': 1,
-              'shuffle': True}
-
-    training_generator = dp.DataGenerator(partition['train'], normalised_mass, **params)
-    validation_generator = dp.DataGenerator(partition['validation'], normalised_mass, **params)
+    training_generator = dp.DataGenerator(partition['train'], normalised_mass, **gen_params)
+    validation_generator = dp.DataGenerator(partition['validation'], normalised_mass, **gen_params)
 
     ######### TRAINING MODEL ##############
 
     set_random_seed(7)
+    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (48, 48, 48), 'strides': 1, 'padding':'valid',
+                             'pool': True, 'bn': True},
+                  'conv_2': {'num_kernels': 12, 'dim_kernel': (22, 22, 22), 'strides': 1, 'padding':'valid',
+                             'pool': True, 'bn': True},
+                  'conv_3': {'num_kernels': 32, 'dim_kernel': (9, 9, 9), 'strides': 1, 'padding':'valid',
+                             'pool': False, 'bn': True},
+                  'conv_4': {'num_kernels': 64, 'dim_kernel': (6, 6, 6), 'strides': 1, 'padding':'valid',
+                             'pool': False, 'bn': True},
+                  'conv_5': {'num_kernels': 128, 'dim_kernel': (4, 4, 4), 'strides': 1, 'padding':'valid',
+                             'pool': False, 'bn': True},
+                  'conv_6': {'num_kernels': 128, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
+                             'pool': False, 'bn': True}}
 
-    model_params = {'num_convolutions': 6,
-                    'num_kernels': [2, 12, 32, 64, 128, 128],
-                    'dim_kernel': [(48, 48, 48), (22, 22, 22), (9, 9, 9), (6, 6, 6), (4, 4, 4), (2, 2, 2)],
-                    # 'strides': [2, 2, 2, 2, 2, 2],
-                    'strides': [1, 1, 1, 1, 1, 1],
-                    'padding':'valid',
-                    'dense_neurons': [1024, 256],
-                    'pool': [True, True, False, False, False, False]
-                    }
+    param_fcc = {'dense_1': {'neurons': 1024, 'dropout': 0.5},
+                 'dense_2': {'neurons': 256, 'dropout': 0.5}}
 
-    Model = CNN.model_w_layers(input_shape_box=(51, 51, 51), **model_params)
+    Model = CNN.model_w_layers((51, 51, 51), param_conv, param_fcc, data_format="channels_last")
     history = Model.fit_generator(generator=training_generator,
                                   validation_data=validation_generator,
                                   use_multiprocessing=True, workers=24,

@@ -1,6 +1,6 @@
 import numpy as np
-# import sys; sys.path.append("/home/lls/mlhalos_code/")
-# sys.path.append("/home/lls/")
+import sys; sys.path.append("/home/lls/mlhalos_code/")
+sys.path.append("/home/lls/")
 # import sys; sys.path.append("/Users/lls/Documents/mlhalos_code/")
 # sys.path.append("/Users/lls/Documents/Projects/")
 from mlhalos import parameters

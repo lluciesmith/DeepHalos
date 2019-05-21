@@ -4,28 +4,26 @@ import numpy as np
 import tensorflow.keras as keras
 from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten
 from tensorflow import set_random_seed
+import sklearn.preprocessing
+#
+#
+# class CNN:
+#     def __init__(self, input_shape_box=(17, 17, 17, 1), data_format="channels_last", num_convolutions=1,
+#                    num_kernels=3, dim_kernel=(7, 7, 7), strides=2,  padding='valid',
+#                    alpha_relu=0.3, activation=True, bn=True, pool=True, dense_neurons=8):
 
 
-def preprocess_data(input_data, output_label, normalise_output=True):
-    """ input is reshaped and output is normalised """
-
-    input_processed = input_data.reshape(input_data.shape[0], input_data.shape[1], input_data.shape[2],
-                                         input_data.shape[3], 1)
-    if normalise_output is True:
-        output_new = (output_label - min(output_label)) / (max(output_label) - min(output_label))
+def normalise_output(output, take_log=True):
+    if take_log is True:
+        log_output = np.log10(output[output > 0])
     else:
-        output_new = output_label
+        log_output = output
+    minmax_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(0, 1))
+    minmax_scaler.fit(log_output.reshape(-1, 1))
 
-    output_processed = output_new.reshape(-1, 1)
-    return input_processed, output_processed
-
-
-def normalise_labels(labels):
-    return (labels - min(labels)) / (max(labels) - min(labels))
-
-
-def transform_cnn_output_log_mass(prediction, m):
-    return (prediction * (max(m) - min(m))) + min(m)
+    normalised_labels = np.zeros((len(output),))
+    normalised_labels[output > 0] = minmax_scaler.transform(log_output.reshape(-1, 1)).flatten()
+    return minmax_scaler, normalised_labels
 
 
 def first_convolutional_layer(input_data, input_shape_box=(17, 17, 17, 1),
@@ -47,7 +45,6 @@ def first_convolutional_layer(input_data, input_shape_box=(17, 17, 17, 1),
 def subsequent_convolutional_layer(x, num_kernels=3, dim_kernel=(7, 7, 7), strides=2, padding='valid',
                                    data_format="channels_last", alpha_relu=0.3,
                                    activation=True, bn=True, pool=True):
-
     x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format)(x)
     if activation is True:
         x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
@@ -59,50 +56,40 @@ def subsequent_convolutional_layer(x, num_kernels=3, dim_kernel=(7, 7, 7), strid
     return x
 
 
-def model_w_layers(input_shape_box=(17, 17, 17, 1), data_format="channels_last", num_convolutions=1,
-                   num_kernels=3, dim_kernel=(7, 7, 7), strides=2,  padding='valid',
-                   alpha_relu=0.3, activation=True, bn=True, pool=True, dense_neurons=8):
+def model_w_layers(input_shape_box, conv_params, fcc_params, data_format="channels_last"):
 
     input_data = Input(shape=(*input_shape_box, 1))
+    num_convolutions = len(conv_params)
+    num_fully_connected = len(fcc_params)
 
-    # create `num_conv` 3D convolutional layer(s) followed by activation, batch normalisation and average pooling
+    x = first_convolutional_layer(input_data, input_shape_box=input_shape_box, **conv_params['conv_1'])
 
-    if num_convolutions == 1:
-        num_kernels = [num_kernels]
-        strides = [strides]
-        dim_kernel = [dim_kernel]
-        pool = [pool]
-        dense_neurons = [dense_neurons]
-
-    assert (len(num_kernels), len(dim_kernel), len(strides)) == (num_convolutions, num_convolutions, num_convolutions)
-
-    # create a 3D convolutional layer followed by activation , batch normalisation and pooling
-
-    x = first_convolutional_layer(input_data, input_shape_box=input_shape_box,
-                                  num_kernels=num_kernels[0], dim_kernel=dim_kernel[0], strides=strides[0],
-                                  padding=padding, data_format=data_format, alpha_relu=alpha_relu,
-                                  activation=activation, bn=bn, pool=pool[0])
-    if num_convolutions == 1:
-        pass
-    else:
+    if num_convolutions > 1:
         for i in range(1, num_convolutions):
-            x = subsequent_convolutional_layer(x, num_kernels=num_kernels[i], dim_kernel=dim_kernel[i],
-                                               strides=strides[i], padding=padding, data_format=data_format,
-                                               alpha_relu=alpha_relu, activation=activation, bn=bn, pool=pool[i])
+            params = conv_params['conv_' + str(i + 1)]
+            x = subsequent_convolutional_layer(x, **params)
 
-    # Flatten and fully connected layers
+    # Flatten and fully connected layers, followed by dropout
 
     x = Flatten(data_format=data_format)(x)
 
-    for i in range(len(dense_neurons)):
-        x = Dense(dense_neurons[i], activation='relu')(x)
-        x = keras.layers.Dropout(0.5)(x)
+    if num_fully_connected > 1:
+        for i in range(num_fully_connected):
+            params = fcc_params['dense_' + str(i + 1)]
+            x = Dense(params['neurons'], activation='relu')(x)
+            x = keras.layers.Dropout(params['dropout'])(x)
 
     predictions = Dense(1, activation='linear')(x)
 
     model = keras.Model(inputs=input_data, outputs=predictions)
     model.compile(optimizer='adam', loss='mse', metrics=["mae"])
     return model
+
+def fit_model(model, epochs=5, batch_size=32):
+    history = model.fit(a, b, batch_size=batch_s, verbose=1, epochs=num_epochs,
+                        # validation_split=0.2
+                        )
+
 
 
 if __name__ == "__main__":
@@ -113,18 +100,23 @@ if __name__ == "__main__":
     p_inputs = np.load("/Users/lls/Documents/deep_halos_files/3d_inputs_particles.npy")
     m = np.load("/Users/lls/Documents/deep_halos_files/outputs_particles.npy")
 
-    a, b = preprocess_data(p_inputs, m, normalise_output=False)
+    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (48, 48, 48), 'strides': 1, 'padding':'valid',
+                             'pool': True, 'bn': True},
+                  'conv_2': {'num_kernels': 12, 'dim_kernel': (22, 22, 22), 'strides': 1, 'padding':'valid',
+                             'pool': True, 'bn': True},
+                  'conv_3': {'num_kernels': 32, 'dim_kernel': (9, 9, 9), 'strides': 1, 'padding':'valid',
+                             'pool': False, 'bn': True},
+                  'conv_4': {'num_kernels': 64, 'dim_kernel': (6, 6, 6), 'strides': 1, 'padding':'valid',
+                             'pool': False, 'bn': True},
+                  'conv_5': {'num_kernels': 128, 'dim_kernel': (4, 4, 4), 'strides': 1, 'padding':'valid',
+                             'pool': False, 'bn': True},
+                  'conv_6': {'num_kernels': 128, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
+                             'pool': False, 'bn': True}}
 
-    set_random_seed(7)
+    param_fcc = {'dense_1': {'neurons': 1024, 'dropout': 0.5},
+                 'dense_2': {'neurons': 256, 'dropout': 0.5}}
 
-    num_convolutions = 2
-    num_kernels = [10, 15]
-    dim_kernel = [(7, 7, 7), (3, 3, 3)]
-    strides = [2, 2]
-
-    Model = model_w_layers(input_shape_box=(17, 17, 17),
-                           num_conv=num_convolutions, num_kernels=num_kernels, dim_kernel=dim_kernel, strides=strides,
-                           padding='valid', data_format="channels_last", alpha_relu=0.3, pool=False)
+    Model = model_w_layers((17, 17, 17), param_conv, param_fcc, data_format="channels_last")
 
     # num_training_data = len(m)
     num_epochs = 5
