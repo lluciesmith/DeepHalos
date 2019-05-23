@@ -19,16 +19,20 @@ if __name__ == "__main__":
     ######### DATA PROCESSING ###########
 
     # Load the first 50000 as training data and the next 10000 as validation data
-    num_training_ids = 50000
-    num_valid_ids = 10000
+    num_training_ids = 20000
+    num_valid_ids = 2000
+
+    # for Data generators need ids to be strings and
+
     training_ids = p_ids[:num_training_ids]
     validation_ids = p_ids[num_training_ids: num_training_ids + num_valid_ids]
 
-    partition = {'train': training_ids, 'validation': validation_ids}
-    gen_params = {'dim': (51, 51, 51), 'batch_size': 1000, 'n_channels': 1, 'shuffle': True}
+    partition = {'train': list(training_ids.astype("str")), 'validation': list(validation_ids.astype("str"))}
+    labels_dic = dict(zip(list(np.arange(len(normalised_mass)).astype("str")), normalised_mass))
 
-    training_generator = dp.DataGenerator(partition['train'], normalised_mass, **gen_params)
-    validation_generator = dp.DataGenerator(partition['validation'], normalised_mass, **gen_params)
+    gen_params = {'dim': (51, 51, 51), 'batch_size': 1000, 'n_channels': 1, 'shuffle': True}
+    training_generator = dp.DataGenerator(partition['train'], labels_dic, **gen_params)
+    validation_generator = dp.DataGenerator(partition['validation'], labels_dic, **gen_params)
 
     ######### TRAINING MODEL ##############
 
