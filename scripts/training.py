@@ -15,17 +15,16 @@ if __name__ == "__main__":
     halo_mass = np.load("/home/lls/stored_files/halo_mass_particles.npy")
     scaler, normalised_mass = dp.normalise_output(halo_mass, take_log=True)
     p_ids = np.where(halo_mass > 0)[0]
+    p_ids_saved = np.load("/share/data2/lls/deep_halos/subboxes/ids_saved.npy")
 
     ######### DATA PROCESSING ###########
 
-    # Load the first 50000 as training data and the next 10000 as validation data
-    num_training_ids = 20000
-    num_valid_ids = 2000
+    training_ids = np.random.choice(p_ids_saved, 50000, replace=False)
+    np.save("/share/data2/lls/deep_halos/training_ids.npy", training_ids)
+    validation_ids = np.random.choice(p_ids_saved, 20000, replace=False)
+    np.save("/share/data2/lls/deep_halos/validation_ids.npy", validation_ids)
 
     # for Data generators need ids to be strings and
-
-    training_ids = p_ids[:num_training_ids]
-    validation_ids = p_ids[num_training_ids: num_training_ids + num_valid_ids]
 
     partition = {'train': list(training_ids.astype("str")), 'validation': list(validation_ids.astype("str"))}
     labels_dic = dict(zip(list(np.arange(len(normalised_mass)).astype("str")), normalised_mass))
@@ -64,10 +63,12 @@ if __name__ == "__main__":
     pred_cnn_training = model.predict_generator(training_generator)
     training_log_mass = scaler.inverse_transform(pred_cnn_training).flatten()
     np.save("/share/data2/lls/deep_halos/predicted_log_mass_training.npy", training_log_mass)
+    np.save("/share/data2/lls/deep_halos/true_log_mass_training.npy", np.log10(halo_mass[training_ids]))
 
     pred_cnn_val = model.predict_generator(validation_generator)
     val_log_mass = scaler.inverse_transform(pred_cnn_val).flatten()
     np.save("/share/data2/lls/deep_halos/predicted_log_mass_validation.npy", val_log_mass)
+    np.save("/share/data2/lls/deep_halos/true_log_mass_validation.npy", np.log10(halo_mass[validation_ids]))
 
     f = open("/share/data2/lls/deep_halos/history_model.pkl", "wb")
     pickle.dump(Model.history, f)
