@@ -19,9 +19,9 @@ if __name__ == "__main__":
 
     ######### DATA PROCESSING ###########
 
-    training_ids = np.random.choice(p_ids_saved, 50000, replace=False)
+    training_ids = np.random.choice(p_ids_saved, 10000, replace=False)
     np.save("/share/data2/lls/deep_halos/training_ids.npy", training_ids)
-    validation_ids = np.random.choice(p_ids_saved, 20000, replace=False)
+    validation_ids = np.random.choice(p_ids_saved, 5000, replace=False)
     np.save("/share/data2/lls/deep_halos/validation_ids.npy", validation_ids)
 
     # for Data generators need ids to be strings and
@@ -36,16 +36,16 @@ if __name__ == "__main__":
     ######### TRAINING MODEL ##############
 
     set_random_seed(7)
-    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
+    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
                              'pool': True, 'bn': True},
                   'conv_2': {'num_kernels': 12, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
                              'pool': True, 'bn': True},
-                  'conv_3': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
+                  'conv_3': {'num_kernels': 32, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
                              'pool': False, 'bn': True},
-                  'conv_4': {'num_kernels': 64, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
+                  'conv_4': {'num_kernels': 64, 'dim_kernel': (2, 2, 2), 'strides': 2, 'padding':'valid',
                              'pool': False, 'bn': True},
-                  # 'conv_5': {'num_kernels': 128, 'dim_kernel': (4, 4, 4), 'strides': 1, 'padding':'valid',
-                  #            'pool': False, 'bn': True},
+                  'conv_5': {'num_kernels': 100, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
+                             'pool': False, 'bn': True}
                   # 'conv_6': {'num_kernels': 128, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
                   #            'pool': False, 'bn': True}
                   }
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     param_fcc = {'dense_1': {'neurons': 1024, 'dropout': 0.5},
                  'dense_2': {'neurons': 256, 'dropout': 0.5}}
 
-    Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=100,
+    Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=50,
                     use_multiprocessing=True, workers=24)
     model = Model.model
     history = Model.history
