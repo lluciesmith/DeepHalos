@@ -26,6 +26,7 @@ class CNN:
 
         Model = self.model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                          data_format=self.data_format)
+        print(Model.summary())
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       verbose=self.verbose, epochs=self.num_epochs, shuffle=True)
