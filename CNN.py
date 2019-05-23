@@ -5,11 +5,13 @@ import tensorflow.keras as keras
 from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten
 from tensorflow import set_random_seed
 import sklearn.preprocessing
+import time
+from tensorflow.keras.utils import plot_model
 
 
 class CNN:
     def __init__(self, training_generator, validation_generator, conv_params, fcc_params, num_epochs=5,
-                 data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1):
+                 data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -27,9 +29,15 @@ class CNN:
         Model = self.model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                          data_format=self.data_format)
         print(Model.summary())
+        t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       verbose=self.verbose, epochs=self.num_epochs, shuffle=True)
+        t1 = time.time()
+        print("This model took " + str((t1 - t0)/60) + " minutes to train.")
+
+        if save is True:
+            plot_model(Model, to_file='model.png')
 
         self.model = Model
         self.history = history

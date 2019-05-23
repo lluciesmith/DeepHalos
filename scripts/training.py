@@ -29,31 +29,31 @@ if __name__ == "__main__":
     partition = {'train': list(training_ids.astype("str")), 'validation': list(validation_ids.astype("str"))}
     labels_dic = dict(zip(list(np.arange(len(normalised_mass)).astype("str")), normalised_mass))
 
-    gen_params = {'dim': (51, 51, 51), 'batch_size': 1000, 'n_channels': 1, 'shuffle': True}
+    gen_params = {'dim': (51, 51, 51), 'batch_size': 100, 'n_channels': 1, 'shuffle': True}
     training_generator = dp.DataGenerator(partition['train'], labels_dic, **gen_params)
     validation_generator = dp.DataGenerator(partition['validation'], labels_dic, **gen_params)
 
     ######### TRAINING MODEL ##############
 
     set_random_seed(7)
-    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
+    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'strides': 3, 'padding':'valid',
                              'pool': True, 'bn': True},
-                  'conv_2': {'num_kernels': 12, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
-                             'pool': True, 'bn': True},
-                  'conv_3': {'num_kernels': 32, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
+                  'conv_2': {'num_kernels': 4, 'dim_kernel': (2, 2, 2), 'strides': 2, 'padding':'valid',
                              'pool': False, 'bn': True},
-                  'conv_4': {'num_kernels': 64, 'dim_kernel': (2, 2, 2), 'strides': 2, 'padding':'valid',
-                             'pool': False, 'bn': True},
-                  'conv_5': {'num_kernels': 100, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
-                             'pool': False, 'bn': True}
+                  # 'conv_3': {'num_kernels': 32, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
+                  #            'pool': False, 'bn': True},
+                  # 'conv_4': {'num_kernels': 64, 'dim_kernel': (2, 2, 2), 'strides': 2, 'padding':'valid',
+                  #            'pool': False, 'bn': True},
+                  # 'conv_5': {'num_kernels': 100, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
+                  #            'pool': False, 'bn': True}
                   # 'conv_6': {'num_kernels': 128, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
                   #            'pool': False, 'bn': True}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 1024, 'dropout': 0.5},
-                 'dense_2': {'neurons': 256, 'dropout': 0.5}}
+    param_fcc = {'dense_1': {'neurons': 256, 'dropout': 0.5},
+                 'dense_2': {'neurons': 128, 'dropout': 0.5}}
 
-    Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=50,
+    Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=10,
                     use_multiprocessing=True, workers=24)
     model = Model.model
     history = Model.history
@@ -74,5 +74,6 @@ if __name__ == "__main__":
     pickle.dump(Model.history, f)
     f.close()
 
-
-
+    #
+    # cd /share/data2/lls/deep_halos/
+    # scp true_log_mass_validation.npy predicted_log_mass_validation.npy lls@star.ucl.ac.uk:/home/lls/
