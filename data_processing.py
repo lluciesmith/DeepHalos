@@ -32,9 +32,8 @@ class DataGenerator(Sequence):
         return X, y
 
     def on_epoch_end(self):
-        'Updates indexes after each epoch'
         self.indexes = np.arange(len(self.list_IDs))
-        if self.shuffle == True:
+        if self.shuffle is True:
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, list_IDs_temp):
@@ -44,7 +43,7 @@ class DataGenerator(Sequence):
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            X[i] = np.load(self.path + '/subbox_51_particle_' + ID + '.npy"').reshape((*self.dim, self.n_channels))
+            X[i] = np.load(self.path + '/subbox_51_particle_' + ID + '.npy').reshape((*self.dim, self.n_channels))
             y[i] = self.labels[ID]
 
         return X, y
