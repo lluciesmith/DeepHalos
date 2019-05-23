@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # saving_path = "/share/data2/lls/deep_halos/subboxes"
 
     halo_mass = np.load("/home/lls/stored_files/halo_mass_particles.npy")
-    scaler, normalised_mass = CNN.normalise_output(halo_mass)
+    scaler, normalised_mass = dp.normalise_output(halo_mass, take_log=True)
     p_ids = np.where(halo_mass > 0)[0]
 
     ######### DATA PROCESSING ###########
@@ -49,19 +49,18 @@ if __name__ == "__main__":
     param_fcc = {'dense_1': {'neurons': 1024, 'dropout': 0.5},
                  'dense_2': {'neurons': 256, 'dropout': 0.5}}
 
-    Model = CNN.model_w_layers((51, 51, 51), param_conv, param_fcc, data_format="channels_last")
-    history = Model.fit_generator(generator=training_generator,
-                                  validation_data=validation_generator,
-                                  use_multiprocessing=True, workers=24,
-                                  verbose=1, epochs=100, shuffle=True)
+    Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=100,
+                    use_multiprocessing=True, workers=24)
+    model = Model.model
+    history = Model.history
 
     ########## PREDICT AND SAVE ############
 
-    pred_cnn_training = Model.predict_generator(training_generator)
+    pred_cnn_training = model.predict_generator(training_generator)
     training_log_mass = scaler.inverse_transform(pred_cnn_training).flatten()
     np.save("/share/data2/lls/deep_halos/predicted_log_mass_training.npy", training_log_mass)
 
-    pred_cnn_val = Model.predict_generator(validation_generator)
+    pred_cnn_val = model.predict_generator(validation_generator)
     val_log_mass = scaler.inverse_transform(pred_cnn_val).flatten()
     np.save("/share/data2/lls/deep_halos/predicted_log_mass_validation.npy", val_log_mass)
 
