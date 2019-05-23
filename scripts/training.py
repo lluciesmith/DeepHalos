@@ -33,18 +33,19 @@ if __name__ == "__main__":
     ######### TRAINING MODEL ##############
 
     set_random_seed(7)
-    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (48, 48, 48), 'strides': 1, 'padding':'valid',
+    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
                              'pool': True, 'bn': True},
-                  'conv_2': {'num_kernels': 12, 'dim_kernel': (22, 22, 22), 'strides': 1, 'padding':'valid',
+                  'conv_2': {'num_kernels': 12, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
                              'pool': True, 'bn': True},
-                  'conv_3': {'num_kernels': 32, 'dim_kernel': (9, 9, 9), 'strides': 1, 'padding':'valid',
+                  'conv_3': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
                              'pool': False, 'bn': True},
-                  'conv_4': {'num_kernels': 64, 'dim_kernel': (6, 6, 6), 'strides': 1, 'padding':'valid',
+                  'conv_4': {'num_kernels': 64, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
                              'pool': False, 'bn': True},
-                  'conv_5': {'num_kernels': 128, 'dim_kernel': (4, 4, 4), 'strides': 1, 'padding':'valid',
-                             'pool': False, 'bn': True},
-                  'conv_6': {'num_kernels': 128, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
-                             'pool': False, 'bn': True}}
+                  # 'conv_5': {'num_kernels': 128, 'dim_kernel': (4, 4, 4), 'strides': 1, 'padding':'valid',
+                  #            'pool': False, 'bn': True},
+                  # 'conv_6': {'num_kernels': 128, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
+                  #            'pool': False, 'bn': True}
+                  }
 
     param_fcc = {'dense_1': {'neurons': 1024, 'dropout': 0.5},
                  'dense_2': {'neurons': 256, 'dropout': 0.5}}
