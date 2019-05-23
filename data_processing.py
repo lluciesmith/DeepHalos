@@ -39,15 +39,12 @@ class DataGenerator(Sequence):
 
     def __data_generation(self, list_IDs_temp):
         """ Loads data containing batch_size samples """
-        # inputs = np.load("/Users/lls/Documents/deep_halos_files/3d_inputs_particles.npy")
-        # Initialization
         X = np.empty((self.batch_size, *self.dim, self.n_channels))
         y = np.empty((self.batch_size, ))
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            X[i,] = np.load(self.path + '/subbox_51_particle_' + ID + '.npy"')
-            # X[i,] = inputs[i].reshape(17, 17, 17, 1)
+            X[i] = np.load(self.path + '/subbox_51_particle_' + ID + '.npy"').reshape((*self.dim, self.n_channels))
             y[i] = self.labels[ID]
 
         return X, y
