@@ -3,6 +3,7 @@
 import numpy as np
 import tensorflow.keras as keras
 from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten
+from tensorflow.keras import optimizers
 from tensorflow import set_random_seed
 import sklearn.preprocessing
 import time
@@ -96,7 +97,8 @@ class CNN:
         predictions = Dense(1, activation='linear')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
-        model.compile(optimizer='adam', loss='mse', metrics=["mae"])
+        optimiser = keras.optimizers.Adam(lr=0.0005, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
+        model.compile(optimizer=optimiser, loss='mse', metrics=["mae"])
         return model
 
 

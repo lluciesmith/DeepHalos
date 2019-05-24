@@ -19,9 +19,9 @@ if __name__ == "__main__":
 
     ######### DATA PROCESSING ###########
 
-    training_ids = np.random.choice(p_ids_saved, 10000, replace=False)
+    training_ids = np.random.choice(p_ids_saved, 50000, replace=False)
     np.save("/share/data2/lls/deep_halos/training_ids.npy", training_ids)
-    validation_ids = np.random.choice(p_ids_saved, 5000, replace=False)
+    validation_ids = np.random.choice(p_ids_saved, 10000, replace=False)
     np.save("/share/data2/lls/deep_halos/validation_ids.npy", validation_ids)
 
     # for Data generators need ids to be strings and
@@ -36,9 +36,9 @@ if __name__ == "__main__":
     ######### TRAINING MODEL ##############
 
     set_random_seed(7)
-    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'strides': 3, 'padding':'valid',
+    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'strides': 2, 'padding':'same',
                              'pool': True, 'bn': True},
-                  'conv_2': {'num_kernels': 4, 'dim_kernel': (2, 2, 2), 'strides': 2, 'padding':'valid',
+                  'conv_2': {'num_kernels': 4, 'dim_kernel': (3, 3, 3), 'strides': 2, 'padding':'same',
                              'pool': False, 'bn': True},
                   # 'conv_3': {'num_kernels': 32, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
                   #            'pool': False, 'bn': True},
@@ -70,8 +70,8 @@ if __name__ == "__main__":
     np.save("/share/data2/lls/deep_halos/predicted_log_mass_validation.npy", val_log_mass)
     np.save("/share/data2/lls/deep_halos/true_log_mass_validation.npy", np.log10(halo_mass[validation_ids]))
 
-    f = open("/share/data2/lls/deep_halos/history_model.pkl", "wb")
-    pickle.dump(Model.history, f)
+    f = open("/share/data2/lls/deep_halos/history_model.txt", "wb")
+    f.write(str(Model.history.history))
     f.close()
 
     #
