@@ -39,22 +39,22 @@ if __name__ == "__main__":
     ######### TRAINING MODEL ##############
 
     set_random_seed(7)
-    param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'strides': 2, 'padding':'same',
+    param_conv = {'conv_1': {'num_kernels': 16, 'dim_kernel': (3, 3, 3), 'strides': 2, 'padding': 'same',
                              'pool': True, 'bn': True}, # output is 13x3x13
-                  'conv_2': {'num_kernels': 4, 'dim_kernel': (4, 4, 4), 'strides': 1, 'padding':'same',
-                             'pool': True, 'bn': True}, # output is 5x5x5
-                  'conv_3': {'num_kernels': 10, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
-                             'pool': False, 'bn': True}, # output is 3x3x3
-                  # 'conv_4': {'num_kernels': 64, 'dim_kernel': (2, 2, 2), 'strides': 2, 'padding':'valid',
+                  'conv_2': {'num_kernels': 32, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding': 'valid',
+                             'pool': True, 'bn': True}, # output is 6x6x6
+                  'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding': 'valid',
+                             'pool': True, 'bn': True}, # output is 2x2x2
+                  # 'conv_4': {'num_kernels': 64, 'dim_kernel': (2, 2, 2), 'strides': 2, 'padding': 'valid',
                   #            'pool': False, 'bn': True},
-                  # 'conv_5': {'num_kernels': 100, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding':'valid',
+                  # 'conv_5': {'num_kernels': 100, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding': 'valid',
                   #            'pool': False, 'bn': True}
-                  # 'conv_6': {'num_kernels': 128, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding':'valid',
+                  # 'conv_6': {'num_kernels': 128, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding': 'valid',
                   #            'pool': False, 'bn': True}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 256, 'dropout': 0.5},
-                 'dense_2': {'neurons': 128, 'dropout': 0.5}}
+    param_fcc = {'dense_1': {'neurons': 128, 'dropout': 0.5},
+                 'dense_2': {'neurons': 64, 'dropout': 0.5}}
 
     Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=50,
                     use_multiprocessing=True, workers=24, verbose=2)
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     history = Model.history
 
     ########## PREDICT AND SAVE ############
-    saving_path = "/share/data2/lls/deep_halos/run_6/"
+    saving_path = "/share/data2/lls/deep_halos/run_7/"
 
     pred_cnn_training = model.predict_generator(training_generator)
     training_log_mass = scaler.inverse_transform(pred_cnn_training).flatten()
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     np.save(saving_path + "predicted_log_mass_validation.npy", val_log_mass)
     np.save(saving_path + "true_log_mass_validation.npy", np.log10(halo_mass[validation_ids]))
 
-    f = open(saving_path + "history_model.txt", "wb")
+    f = open(saving_path + "history_model.txt", "w")
     f.write(str(Model.history.history))
     f.close()
 
