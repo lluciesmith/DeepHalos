@@ -44,11 +44,13 @@ class DataGenerator(Sequence):
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             s = np.load(self.path + '/subbox_51_particle_' + ID + '.npy')
-            print(s.shape)
-            if self.dim == (17, 17, 17):
-                s = s[25-8:25+9, 25-8:25+9, 25-8:25+9]
-            elif self.dim == (31, 31, 31):
-                s = s[25-15:25+16, 25-15:25+16, 25-15:25+16]
+            if self.dim != (51, 51, 51):
+                try:
+                    low_idx = 25 - (self.dim[0] - 1)/2
+                    high_idx = 25 + (self.dim[0] - 1)/2 + 1
+                    s = s[low_idx:high_idx, low_idx:high_idx, low_idx:high_idx]
+                except:
+                    raise(IndexError, "Largest matrix you can have is 51x51x51")
 
             X[i] = s.reshape((*self.dim, self.n_channels))
             y[i] = self.labels[ID]
