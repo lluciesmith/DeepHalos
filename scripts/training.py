@@ -4,9 +4,16 @@ import sys; sys.path.append("/home/lls/DeepHalos/")
 # sys.path.append("/Users/lls/Documents/Projects/")
 import data_processing as dp
 import CNN
+import tensorflow
 from tensorflow import set_random_seed
 from tensorflow.keras.utils import plot_model
 import pickle
+
+config = tensorflow.ConfigProto(log_device_placement=True)
+config.intra_op_parallelism_threads = 80
+config.inter_op_parallelism_threads = 80
+sess = tensorflow.Session(config=config)
+tensorflow.keras.backend.set_session(sess)
 
 
 if __name__ == "__main__":
@@ -39,12 +46,12 @@ if __name__ == "__main__":
     ######### TRAINING MODEL ##############
 
     set_random_seed(7)
-    param_conv = {'conv_1': {'num_kernels': 16, 'dim_kernel': (3, 3, 3), 'strides': 2, 'padding': 'same',
-                             'pool': True, 'bn': True}, # output is 13x3x13
-                  'conv_2': {'num_kernels': 32, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding': 'valid',
-                             'pool': True, 'bn': True}, # output is 6x6x6
-                  'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding': 'valid',
-                             'pool': True, 'bn': True}, # output is 2x2x2
+    param_conv = {'conv_1': {'num_kernels': 10, 'dim_kernel': (3, 3, 3), 'strides': 2, 'padding': 'same',
+                              'pool': True, 'bn': True} # output is 13x3x13
+                  # 'conv_2': {'num_kernels': 32, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding': 'valid',
+                  #            'pool': True, 'bn': True}, # output is 6x6x6
+                  # 'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding': 'valid',
+                  #            'pool': True, 'bn': True}, # output is 2x2x2
                   # 'conv_4': {'num_kernels': 64, 'dim_kernel': (2, 2, 2), 'strides': 2, 'padding': 'valid',
                   #            'pool': False, 'bn': True},
                   # 'conv_5': {'num_kernels': 100, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding': 'valid',
@@ -57,7 +64,7 @@ if __name__ == "__main__":
                  'dense_2': {'neurons': 64, 'dropout': 0.5}}
 
     Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=50,
-                    use_multiprocessing=True, workers=24, verbose=2)
+                    use_multiprocessing=True, workers=80, verbose=2)
     model = Model.model
     history = Model.history
 
