@@ -39,15 +39,15 @@ if __name__ == "__main__":
     partition = {'train': list(training_ids.astype("str")), 'validation': list(validation_ids.astype("str"))}
     labels_dic = dict(zip(list(np.arange(len(normalised_mass)).astype("str")), normalised_mass))
 
-    gen_params = {'dim': (51, 51, 51), 'batch_size': 100, 'n_channels': 1, 'shuffle': True}
+    gen_params = {'dim': (31, 31, 31), 'batch_size': 50, 'n_channels': 1, 'shuffle': True}
     training_generator = dp.DataGenerator(partition['train'], labels_dic, **gen_params)
     validation_generator = dp.DataGenerator(partition['validation'], labels_dic, **gen_params)
 
     ######### TRAINING MODEL ##############
 
     set_random_seed(7)
-    param_conv = {'conv_1': {'num_kernels': 10, 'dim_kernel': (3, 3, 3), 'strides': 2, 'padding': 'same',
-                              'pool': True, 'bn': True} # output is 13x3x13
+    param_conv = {'conv_1': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), 'strides': 3, 'padding': 'valid',
+                              'pool': True, 'bn': False} # output is 13x3x13
                   # 'conv_2': {'num_kernels': 32, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding': 'valid',
                   #            'pool': True, 'bn': True}, # output is 6x6x6
                   # 'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'strides': 1, 'padding': 'valid',
@@ -63,10 +63,11 @@ if __name__ == "__main__":
     param_fcc = {'dense_1': {'neurons': 128, 'dropout': 0.5},
                  'dense_2': {'neurons': 64, 'dropout': 0.5}}
 
-    Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=50,
-                    use_multiprocessing=True, workers=80, verbose=2)
+    Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=10,
+                    use_multiprocessing=True, workers=24, verbose=1)
     model = Model.model
     history = Model.history
+    print(history)
 
     ########## PREDICT AND SAVE ############
     saving_path = "/share/data2/lls/deep_halos/run_7/"
