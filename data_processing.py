@@ -44,9 +44,10 @@ class DataGenerator(Sequence):
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             s = np.load(self.path + '/subbox_51_particle_' + ID + '.npy')
-            if self.dim == 17:
+            print(s.shape)
+            if self.dim == (17, 17, 17):
                 s = s[25-8:25+9, 25-8:25+9, 25-8:25+9]
-            elif self.dim == 31:
+            elif self.dim == (31, 31, 31):
                 s = s[25-15:25+16, 25-15:25+16, 25-15:25+16]
 
             X[i] = s.reshape((*self.dim, self.n_channels))

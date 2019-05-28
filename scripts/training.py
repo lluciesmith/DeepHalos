@@ -9,11 +9,11 @@ from tensorflow import set_random_seed
 from tensorflow.keras.utils import plot_model
 import pickle
 
-config = tensorflow.ConfigProto(log_device_placement=True)
-config.intra_op_parallelism_threads = 80
-config.inter_op_parallelism_threads = 80
-sess = tensorflow.Session(config=config)
-tensorflow.keras.backend.set_session(sess)
+# config = tensorflow.ConfigProto(log_device_placement=True)
+# config.intra_op_parallelism_threads = 80
+# config.inter_op_parallelism_threads = 80
+# sess = tensorflow.Session(config=config)
+# tensorflow.keras.backend.set_session(sess)
 
 
 if __name__ == "__main__":
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     partition = {'train': list(training_ids.astype("str")), 'validation': list(validation_ids.astype("str"))}
     labels_dic = dict(zip(list(np.arange(len(normalised_mass)).astype("str")), normalised_mass))
 
-    gen_params = {'dim': (31, 31, 31), 'batch_size': 50, 'n_channels': 1, 'shuffle': True}
+    gen_params = {'dim': (31, 31, 31), 'batch_size': 100, 'n_channels': 1, 'shuffle': True}
     training_generator = dp.DataGenerator(partition['train'], labels_dic, **gen_params)
     validation_generator = dp.DataGenerator(partition['validation'], labels_dic, **gen_params)
 
