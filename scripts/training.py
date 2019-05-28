@@ -46,7 +46,7 @@ if __name__ == "__main__":
     ######### TRAINING MODEL ##############
 
     set_random_seed(7)
-    param_conv = {'conv_1': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), 'strides': 3, 'padding': 'valid',
+    param_conv = {'conv_1': {'num_kernels': 16, 'dim_kernel': (3, 3, 3), 'strides': 3, 'padding': 'valid',
                               'pool': True, 'bn': False} # output is 13x3x13
                   # 'conv_2': {'num_kernels': 32, 'dim_kernel': (2, 2, 2), 'strides': 1, 'padding': 'valid',
                   #            'pool': True, 'bn': True}, # output is 6x6x6
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                  'dense_2': {'neurons': 64, 'dropout': 0.5}}
 
     Model = CNN.CNN(training_generator, validation_generator, param_conv, param_fcc, num_epochs=10,
-                    use_multiprocessing=True, workers=24, verbose=1)
+                    use_multiprocessing=True, workers=80, verbose=1)
     model = Model.model
     history = Model.history
     print(history)
