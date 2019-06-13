@@ -104,14 +104,6 @@ class Subboxes:
         n_neighbours_coords = np.where(cond_xyz)
         return self.ids_3d[n_neighbours_coords]
 
-    def ids_in_subbox(self, particle_id):
-        xx, yy, zz = self.coords_3d
-        ids_subbox = self.get_ids_in_subgrid_around_particle_id(particle_id, xx, yy, zz)
-        return ids_subbox
-
-    # Get qty in subbox in shape (self.subbox_shape, self.subbox_shape, self.subbox_shape)
-    # around particle ID
-
     def sort_ids_correct_order_subbox(self, particle_id, subbox_ids):
         xx, yy, zz = self.coords_flatten
         grid_pos_ids = np.column_stack((xx, yy, zz))
@@ -124,11 +116,18 @@ class Subboxes:
         sorted_ids = subbox_ids[idx]
         return sorted_ids
 
-    def from_ids_to_delta_in_subbox(self, snapshot, particle_id, subbox_ids):
-        qty_all = snapshot[self.qty]
+    def ids_in_subbox(self, particle_id):
+        xx, yy, zz = self.coords_3d
+        ids_subbox = self.get_ids_in_subgrid_around_particle_id(particle_id, xx, yy, zz)
+        ids_sorted_subbox = self.sort_ids_correct_order_subbox(particle_id, ids_subbox)
+        return ids_sorted_subbox
 
-        ids_sorted = self.sort_ids_correct_order_subbox(particle_id, subbox_ids)
-        grid = qty_all[ids_sorted].reshape(self.subbox_shape)
+    # Get qty in subbox in shape (self.subbox_shape, self.subbox_shape, self.subbox_shape)
+    # around particle ID
+
+    def from_ids_to_delta_in_subbox(self, snapshot, particle_id, subbox_sorted_ids):
+        qty_all = snapshot[self.qty]
+        grid = qty_all[subbox_sorted_ids].reshape(self.subbox_shape)
 
         center_subbox = self.half_subbox
         assert grid[center_subbox, center_subbox, center_subbox] == qty_all[particle_id], \

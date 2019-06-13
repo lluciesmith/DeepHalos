@@ -1,21 +1,20 @@
 import numpy as np
 from tensorflow.keras.utils import Sequence
-import CNN
-from tensorflow import set_random_seed
 import sklearn.preprocessing
 
 
 class DataGenerator(Sequence):
 
-    def __init__(self, list_IDs, labels, batch_size=40, dim=(51, 51, 51), n_channels=1, shuffle=True,
-                 saving_path="/share/data2/lls/deep_halos/subboxes"):
+    def __init__(self, list_IDs, labels, batch_size=40, dim=(51, 51, 51), n_channels=1, shuffle=False,
+                 saving_path="/share/data2/lls/deep_halos/subboxes/subbox_51_particle_", model_type="regression"):
         self.dim = dim
         self.batch_size = batch_size
         self.labels = labels
         self.list_IDs = list_IDs
-        self.n_channels = n_channels
         self.shuffle = shuffle
+        self.n_channels = n_channels
         self.path = saving_path
+        self.model_type = model_type
         self.on_epoch_end()
 
     def __len__(self):
@@ -34,25 +33,38 @@ class DataGenerator(Sequence):
     def on_epoch_end(self):
         self.indexes = np.arange(len(self.list_IDs))
         if self.shuffle is True:
+            print("Be very aware of setting shuffle=True! I think there is a bug here")
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, list_IDs_temp):
         """ Loads data containing batch_size samples """
+
         X = np.empty((self.batch_size, *self.dim, self.n_channels))
-        y = np.empty((self.batch_size, ))
+        if self.model_type == "regression":
+            y = np.empty((self.batch_size, ))
+        elif self.model_type == "binary_classification":
+            y = np.empty((self.batch_size, 2))
+        else:
+            raise NameError("Choose either regression or binary classification as model type")
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            s = np.load(self.path + '/subbox_51_particle_' + ID + '.npy')
-            if self.dim != (51, 51, 51):
-                try:
-                    low_idx = 25 - (self.dim[0] - 1)/2
-                    high_idx = 25 + (self.dim[0] - 1)/2 + 1
-                    s = s[low_idx:high_idx, low_idx:high_idx, low_idx:high_idx]
-                except:
-                    raise(IndexError, "Largest matrix you can have is 51x51x51")
+            if self.path == "training":
+                s = np.load('transfer_gdrive/subbox_51_particle_' + ID + '.npy')
+            elif self.path == "reseed2":
+                s = np.load('reseed2_10000_subset/' + ID + '/subbox_51_particle_' + ID + '.npy')
+            else:
+                s = np.load(self.path + ID + '.npy')
 
-            X[i] = s.reshape((*self.dim, self.n_channels))
+            if self.dim != (51, 51, 51):
+                low_idx = int(25 - (self.dim[0] - 1)/2)
+                high_idx = int(25 + (self.dim[0] - 1)/2 + 1)
+                s = s[low_idx:high_idx, low_idx:high_idx, low_idx:high_idx]
+
+            # Take the transpose in order for these to match pynbody's output
+            s_t = np.transpose(s, axes=(1, 0, 2))
+
+            X[i] = s_t.reshape((*self.dim, self.n_channels))
             y[i] = self.labels[ID]
 
         return X, y
@@ -69,4 +81,10 @@ def normalise_output(output, take_log=True):
     normalised_labels = np.zeros((len(output),))
     normalised_labels[output > 0] = minmax_scaler.transform(log_output.reshape(-1, 1)).flatten()
     return minmax_scaler, normalised_labels
+
+
+def transform_halo_mass_to_binary_classification(halo_mass):
+    labels = np.ones((len(halo_mass), ))*-1
+    labels[halo_mass > 1.8 * 10**12] = 1
+    return labels
 
