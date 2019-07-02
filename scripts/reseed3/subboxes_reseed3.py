@@ -21,7 +21,7 @@ if __name__ == "__main__":
     saving_path = "/share/hypatia/lls/deep_halos/reseed_3/subboxes/"
     halo_mass = np.load("/share/data1/lls/standard_reseed3/halo_mass_particles.npy")
 
-    initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "IC_.gadget3",
+    initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "IC.gadget3",
                                                             final_snapshot=path_sim + "snapshot_099",
                                                             load_final=True)
     sub_in = subb.Subboxes(initial_params, subbox_shape=(51, 51, 51))
