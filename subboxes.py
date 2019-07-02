@@ -170,6 +170,11 @@ class Subboxes:
             # pool.close()
         return inputs
 
+    def compute_and_save_subbox_particle(self, particle_id, path):
+        delta_sub = self.get_qty_in_subbox(particle_id)
+        np.save(path + "/" + str(particle_id) + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
+        return delta_sub
+
     def compute_and_save_subboxes(self, particles, path):
         """ Use this function when computing subboxes for many particles """
         for i in range(len(particles)):
@@ -181,8 +186,7 @@ class Subboxes:
 
             particle_id = particles[i]
             try:
-                delta_sub = self.get_qty_in_subbox(particle_id)
-                np.save(path + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
+                delta_sub = self.compute_and_save_subbox_particle(self, particle_id, path)
                 del delta_sub
                 gc.collect()
 

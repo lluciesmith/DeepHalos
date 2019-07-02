@@ -129,19 +129,21 @@ class CNN:
         return model
 
     def binary_classification_model_w_layers(self, input_shape_box, conv_params, fcc_params,
-                                            data_format="channels_last"):
+                                             data_format="channels_last"):
+
+        initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
 
         input_data = Input(shape=(*input_shape_box, 1))
         num_convolutions = len(conv_params)
         num_fully_connected = len(fcc_params)
 
-        x = self.first_convolutional_layer(input_data, input_shape_box=input_shape_box, ** conv_params[
-            'conv_1'])
+        x = self.first_convolutional_layer(input_data, input_shape_box=(*input_shape_box, 1), initialiser=initialiser,
+                                           ** conv_params['conv_1'])
 
         if num_convolutions > 1:
             for i in range(1, num_convolutions):
                 params = conv_params['conv_' + str(i + 1)]
-                x = self.subsequent_convolutional_layer(x, **params)
+                x = self.subsequent_convolutional_layer(x, initialiser=initialiser, **params)
 
         # Flatten and fully connected layers, followed by dropout
 
@@ -150,14 +152,14 @@ class CNN:
         if num_fully_connected > 1:
             for i in range(num_fully_connected):
                 params = fcc_params['dense_' + str(i + 1)]
-                x = Dense(params['neurons'], activation='relu', kernel_initializer='normal')(x)
+                x = Dense(params['neurons'], activation='relu', kernel_initializer=initialiser)(x)
                 # x = keras.layers.Dropout(params['dropout'])(x)
 
-        predictions = Dense(2, activation='softmax')(x)
+        predictions = Dense(1, activation='sigmoid')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
-        optimiser = keras.optimizers.Adam(lr=0.0008, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
-        model.compile(loss='categorical_crossentropy', optimizer=optimiser, metrics=['accuracy'])
+        optimiser = keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
+        model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=['accuracy'])
         return model
 
 

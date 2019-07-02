@@ -43,7 +43,7 @@ class DataGenerator(Sequence):
         if self.model_type == "regression":
             y = np.empty((self.batch_size, ))
         elif self.model_type == "binary_classification":
-            y = np.empty((self.batch_size, 2))
+            y = np.empty((self.batch_size, ))
         else:
             raise NameError("Choose either regression or binary classification as model type")
 
@@ -83,8 +83,8 @@ def normalise_output(output, take_log=True):
     return minmax_scaler, normalised_labels
 
 
-def transform_halo_mass_to_binary_classification(halo_mass):
-    labels = np.ones((len(halo_mass), ))*-1
-    labels[halo_mass > 1.8 * 10**12] = 1
+def transform_halo_mass_to_binary_classification(halo_mass, threshold=1.8*10**12):
+    labels = np.zeros((len(halo_mass), ))
+    labels[halo_mass > threshold] = 1
     return labels
 
