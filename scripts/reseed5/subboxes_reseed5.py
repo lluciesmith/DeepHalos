@@ -7,18 +7,24 @@ from mlhalos import parameters
 from DeepHalos import subboxes as subb
 from multiprocessing import Pool
 import gc
+import os
 
 
 def compute_and_save_subbox_particle(particle_id):
-    delta_sub = sub_in.get_qty_in_subbox(particle_id)
-    np.save(saving_path + str(particle_id) + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
-    del delta_sub
-    gc.collect()
+    try:
+        delta_sub = sub_in.get_qty_in_subbox(particle_id)
+        os.makedirs(saving_path + str(particle_id))
+        np.save(saving_path + str(particle_id) + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
+        del delta_sub
+        gc.collect()
+
+    except ValueError:
+        print("This failed for particle " + str(particle_id))
 
 
 if __name__ == "__main__":
     path_sim = "/share/hypatia/app/luisa/standard_reseed5/"
-    saving_path = "/share/hypatia/lls/deep_halos/reseed_5/subboxes"
+    saving_path = "/share/hypatia/lls/deep_halos/reseed_5/subboxes/"
     halo_mass = np.load("/share/data1/lls/standard_reseed5/halo_mass_particles.npy")
 
     initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "IC.gadget3",

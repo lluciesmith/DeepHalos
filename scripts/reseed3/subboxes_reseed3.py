@@ -7,13 +7,19 @@ from mlhalos import parameters
 from DeepHalos import subboxes as subb
 from multiprocessing import Pool
 import gc
+import os
 
 
 def compute_and_save_subbox_particle(particle_id):
-    delta_sub = sub_in.get_qty_in_subbox(particle_id)
-    np.save(saving_path + str(particle_id) + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
-    del delta_sub
-    gc.collect()
+    try:
+        delta_sub = sub_in.get_qty_in_subbox(particle_id)
+        os.makedirs(saving_path + str(particle_id))
+        np.save(saving_path + str(particle_id) + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
+        del delta_sub
+        gc.collect()
+
+    except ValueError:
+        print("This failed for particle " + str(particle_id))
 
 
 if __name__ == "__main__":
