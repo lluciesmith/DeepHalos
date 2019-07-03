@@ -8,7 +8,8 @@ def transform_halo_mass_to_binary_classification(halo_mass, threshold=1.8*10**12
 
 
 if __name__ == "__main__":
-    paths = ["/share/data1/lls/standard_reseed3/", "/share/data1/lls/standard_reseed4/", "/share/data1/lls/standard_reseed5"]
+    paths = [# "/share/data1/lls/standard_reseed3/", "/share/data1/lls/standard_reseed4/",
+             "/share/data1/lls/standard_reseed5/"]
 
     for path in paths:
         halo_mass = np.load(path + "halo_mass_particles.npy")
