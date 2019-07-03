@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     for path in paths:
         halo_mass = np.load(path + "halo_mass_particles.npy")
-        particle_ids = np.array([line.rstrip("\n") for line in open(path + "subboxes_ids.txt")]).astype("int")
+        particle_ids = np.array([line.replace("\t", " ").rstrip("\n") for line in open(path + "subboxes_ids.txt")]).astype("int")
 
         labels = transform_halo_mass_to_binary_classification(halo_mass, threshold=2*10**12)
 
