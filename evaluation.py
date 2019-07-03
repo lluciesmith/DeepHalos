@@ -14,17 +14,17 @@ def plot_true_vs_predict(true, predicted):
 def plot_loss(history, val_data=True):
     epochs = history.epoch
     loss_training = history.history["loss"]
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8, 6))
     plt.plot(epochs, loss_training, label="training")
 
     if val_data is True:
         loss_val = history.history["val_loss"]
         plt.plot(epochs, loss_val, label="validation")
 
-    plt.xlabel("Epoch")
-    plt.ylabel(history.model.loss)
+    plt.xlabel("Epoch", fontsize=18)
+    plt.ylabel(history.model.loss, fontsize=18)
     plt.subplots_adjust(bottom=0.14)
-    plt.legend(loc="best")
+    plt.legend(loc="best", fontsize=15)
     return fig
 
 

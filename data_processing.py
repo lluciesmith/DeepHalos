@@ -1,12 +1,14 @@
 import numpy as np
 from tensorflow.keras.utils import Sequence
 import sklearn.preprocessing
+import sphere_in_box as sb
 
 
 class DataGenerator(Sequence):
 
     def __init__(self, list_IDs, labels, batch_size=40, dim=(51, 51, 51), n_channels=1, shuffle=False,
-                 saving_path="/share/data2/lls/deep_halos/subboxes/subbox_51_particle_", model_type="regression"):
+                 saving_path="/share/data2/lls/deep_halos/subboxes/subbox_51_particle_", model_type="regression",
+                 halo_masses = ""):
         self.dim = dim
         self.batch_size = batch_size
         self.labels = labels
@@ -15,6 +17,7 @@ class DataGenerator(Sequence):
         self.n_channels = n_channels
         self.path = saving_path
         self.model_type = model_type
+        self.halo_masses = halo_masses
         self.on_epoch_end()
 
     def __len__(self):
@@ -53,6 +56,10 @@ class DataGenerator(Sequence):
                 s = np.load('transfer_gdrive/subbox_51_particle_' + ID + '.npy')
             elif self.path == "reseed2":
                 s = np.load('reseed2_10000_subset/' + ID + '/subbox_51_particle_' + ID + '.npy')
+            elif self.path == "truth":
+                s = np.ones((51, 51, 51)) * self.labels[ID]
+            elif self.path == "sphere":
+                s = sb.get_sphere_in_box(self.halo_masses[ID])
             else:
                 s = np.load(self.path + ID + '.npy')
 

@@ -5,6 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten
 import time
 from tensorflow.keras.utils import plot_model
+from tensorflow.keras.initializers import normal
 
 
 class CNN:
@@ -82,7 +83,7 @@ class CNN:
 
     def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
 
-        initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
+        initialiser = tf.compat.v1.keras.initializers.TruncatedNormal((3,3,3))
 
         input_data = Input(shape=(*input_shape_box, 1))
         num_fully_connected = len(fcc_params)
@@ -131,7 +132,9 @@ class CNN:
     def binary_classification_model_w_layers(self, input_shape_box, conv_params, fcc_params,
                                              data_format="channels_last"):
 
-        initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
+        # initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
+        initialiser = keras.initializers.he_uniform((3,3,3))
+        # initialiser = normal(mean=0, stddev=0.1, seed=13)
 
         input_data = Input(shape=(*input_shape_box, 1))
         num_convolutions = len(conv_params)
@@ -158,8 +161,8 @@ class CNN:
         predictions = Dense(1, activation='sigmoid')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
-        optimiser = keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
-        model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=['accuracy'])
+        # optimiser = keras.optimizers.Adam(lr=0.01, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
+        model.compile(loss='binary_crossentropy', optimizer="adam", metrics=['accuracy'])
         return model
 
 
