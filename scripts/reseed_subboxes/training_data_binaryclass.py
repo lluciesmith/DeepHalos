@@ -1,4 +1,5 @@
 import numpy as np
+import sys; sys.path.append("/home/lls/DeepHalos/")
 import data_processing as dp
 
 
