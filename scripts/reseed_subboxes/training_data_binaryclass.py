@@ -13,5 +13,4 @@ for path in paths:
     t_0 = np.concatenate((particle_ids[np.random.choice(np.where(labels[particle_ids] == 0)[0], 10000, replace=False)],
                           particle_ids[np.random.choice(np.where(labels[particle_ids] == 1)[0], 10000, replace=False)]))
     # np.random.shuffle(t_0)
-
     np.savetxt(path + "training_ids_binary_classification.txt", t_0, fmt="%i", delimiter=",")
