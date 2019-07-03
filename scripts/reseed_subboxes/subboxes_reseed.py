@@ -23,9 +23,9 @@ def compute_and_save_subbox_particle(particle_id):
 
 
 if __name__ == "__main__":
-    path_sim = "/share/hypatia/app/luisa/standard_reseed5/"
-    saving_path = "/share/hypatia/lls/deep_halos/reseed_5/subboxes/"
-    halo_mass = np.load("/share/data1/lls/standard_reseed5/halo_mass_particles.npy")
+    path_sim = "/share/data1/lls/reseed50/simulation/"
+    saving_path = "/share/hypatia/lls/deep_halos/reseed_1/subboxes/"
+    halo_mass = np.load("/share/data1/lls/reseed50/halo_mass_particles.npy")
 
     initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "IC.gadget3",
                                                             final_snapshot=path_sim + "snapshot_099",
@@ -36,6 +36,7 @@ if __name__ == "__main__":
     subset_ids = np.random.choice(p_ids, 100000, replace=False)
     np.save(saving_path + "subset_100000_ids.npy", subset_ids)
 
-    pool = Pool(processes=60)
+    pool = Pool(processes=80)
     pool.map(compute_and_save_subbox_particle, subset_ids)
     pool.close()
+
