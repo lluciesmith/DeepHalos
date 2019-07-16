@@ -6,13 +6,16 @@ from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten
 import time
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras.initializers import normal
+from sklearn.metrics import roc_auc_score
+from tensorflow.keras.callbacks import Callback
+import numpy as np
+import evaluation as eval
 
 
 class CNN:
-    def __init__(self, training_generator, conv_params, fcc_params, validation_generator=None, num_epochs=5,
-                 data_format="channels_last",
-                 use_multiprocessing=False, workers=1,
-                 verbose=1, save=False, model_type="regression"):
+    def __init__(self, training_generator, conv_params, fcc_params, model_type="regression",
+                 validation_generator=None, callbacks=None, metrics=None, num_epochs=5,
+                 data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -26,15 +29,17 @@ class CNN:
         self.use_multiprocessing = use_multiprocessing
         self.workers = workers
         self.verbose = verbose
+        self.metrics = metrics
+        self.callbacks = callbacks
 
         if model_type == "regression":
             print("Initiating regression model")
             Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                   data_format=self.data_format)
+                                                   data_format=self.data_format, metrics=self.metrics)
         elif model_type == "binary_classification":
             print("Initiating binary classification model")
             Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                   data_format=self.data_format)
+                                                              data_format=self.data_format, metrics=self.metrics)
         else:
             raise NameError("Choose either regression or binary classification as model type")
 
@@ -42,7 +47,8 @@ class CNN:
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
-                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=False)
+                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
+                                      callbacks=self.callbacks)
         t1 = time.time()
         print("This model took " + str((t1 - t0)/60) + " minutes to train.")
 
@@ -81,9 +87,10 @@ class CNN:
                                               data_format=data_format)(x)
         return x
 
-    def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
+    def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last",
+                                  metrics=None):
 
-        initialiser = tf.compat.v1.keras.initializers.TruncatedNormal((3,3,3))
+        initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
 
         input_data = Input(shape=(*input_shape_box, 1))
         num_fully_connected = len(fcc_params)
@@ -95,7 +102,8 @@ class CNN:
                 for i in range(num_fully_connected):
                     params = fcc_params['dense_' + str(i + 1)]
                     x = Dense(params['neurons'], activation='relu', kernel_initializer=initialiser)(x)
-                    # x = keras.layers.Dropout(params['dropout'])(x)
+                    if "dropout" in params:
+                        x = keras.layers.Dropout(params['dropout'])(x)
 
             predictions = Dense(1, activation='linear')(x)
 
@@ -120,20 +128,21 @@ class CNN:
                 for i in range(num_fully_connected):
                     params = fcc_params['dense_' + str(i + 1)]
                     x = Dense(params['neurons'], activation='relu', kernel_initializer=initialiser)(x)
-                    # x = keras.layers.Dropout(params['dropout'])(x)
+                    if "dropout" in params:
+                        x = keras.layers.Dropout(params['dropout'])(x)
 
             predictions = Dense(1, activation='linear')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
-        optimiser = keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
-        model.compile(optimizer=optimiser, loss='mse', metrics=["mae"])
+        optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
+        model.compile(optimizer=optimiser, loss='mse', metrics=metrics)
         return model
 
     def binary_classification_model_w_layers(self, input_shape_box, conv_params, fcc_params,
-                                             data_format="channels_last"):
+                                             data_format="channels_last", metrics=None):
 
         # initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
-        initialiser = keras.initializers.he_uniform((3,3,3))
+        initialiser = keras.initializers.he_uniform()
         # initialiser = normal(mean=0, stddev=0.1, seed=13)
 
         input_data = Input(shape=(*input_shape_box, 1))
@@ -156,15 +165,115 @@ class CNN:
             for i in range(num_fully_connected):
                 params = fcc_params['dense_' + str(i + 1)]
                 x = Dense(params['neurons'], activation='relu', kernel_initializer=initialiser)(x)
-                # x = keras.layers.Dropout(params['dropout'])(x)
+                if "dropout" in params:
+                    x = keras.layers.Dropout(params['dropout'])(x)
 
         predictions = Dense(1, activation='sigmoid')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
-        # optimiser = keras.optimizers.Adam(lr=0.01, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
-        model.compile(loss='binary_crossentropy', optimizer="adam", metrics=['accuracy'])
+        optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
+        model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=metrics)
         return model
 
+
+class AucCallback(Callback):
+    def __init__(self, training_data, validation_data, name_training="0", names_val="1"):
+        self.training_generator = training_data[0]
+        self.labels_training = training_data[1]
+
+        self._validation_data = validation_data
+
+        print("We have " + str(len(validation_data)) + " validation sets")
+        if len(validation_data) > 1:
+            self.validation_generator = [i[0] for i in validation_data]
+            self.labels_validation = [i[1] for i in validation_data]
+        else:
+            self.validation_generator = validation_data[0]
+            self.labels_validation = validation_data[1]
+
+        self.names_training = name_training
+        self.names_val = names_val
+
+    def on_train_begin(self, logs={}):
+        return
+
+    def on_train_end(self, logs={}):
+        return
+
+    def on_epoch_begin(self, epoch, logs={}):
+        return
+
+    def on_epoch_end(self, epoch, logs={}):
+        name_train = "auc_train_" + str(self.names_training)
+        logs[name_train] = self.get_auc(self.training_generator, self.labels_training)
+
+        print("We have " + str(len(self._validation_data)) + " validation sets")
+        if len(self._validation_data) > 1:
+            for i in range(len(self._validation_data)):
+                name_i = "auc_val_" + str(self.names_val[i])
+                logs[name_i] = self.get_auc(self.validation_generator[i], self.labels_validation[i])
+
+        else:
+            print("here")
+            name_val = "auc_val_" + str(self.names_val)
+            logs[name_val] = self.get_auc(self.validation_generator, self.labels_validation)
+
+        return
+
+    def on_batch_begin(self, batch, logs={}):
+        return
+
+    def on_batch_end(self, batch, logs={}):
+        return
+
+    def get_auc(self, generator, labels):
+        t0 = time.time()
+
+        y_pred = self.model.predict_generator(generator)
+        y_pred_proba = np.column_stack((1 - y_pred[:, 0], y_pred[:, 0]))
+        auc_score = eval.roc(y_pred_proba, labels, true_class=1, auc_only=True)
+
+        t1 = time.time()
+        print("AUC computation for a single dataset took " + str((t1 - t0) / 60) + " minutes.")
+        print("AUC = %s" % auc_score)
+        return auc_score
+
+
+class LossCallback(Callback):
+    def __init__(self, validation_generators, names_val="1"):
+        self.validation_generator = validation_generators
+        self.names_val = names_val
+
+    def on_train_begin(self, logs={}):
+        return
+
+    def on_train_end(self, logs={}):
+        return
+
+    def on_epoch_begin(self, epoch, logs={}):
+        return
+
+    def on_epoch_end(self, epoch, logs={}):
+
+        print("We have " + str(len(self.validation_generator)) + " validation sets")
+        if len(self.validation_generator) > 1:
+            for i in range(len(self.validation_generator)):
+                name_i = "loss_val_" + str(self.names_val[i])
+                loss_i = self.model.evaluate_generator(self.validation_generator[i])
+                logs[name_i] = loss_i
+                print("loss = %s" % loss_i)
+
+        else:
+            name_val = "loss_val_" + str(self.names_val)
+            logs[name_val] = self.model.evaluate_generator(self.validation_generator)
+
+        return
+
+    def on_batch_begin(self, batch, logs={}):
+        return
+
+    def on_batch_end(self, batch, logs={}):
+        return
 
 
 

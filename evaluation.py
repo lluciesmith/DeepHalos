@@ -1,4 +1,8 @@
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import trapz
+import collections
+
 
 
 def plot_true_vs_predict(true, predicted):
@@ -47,3 +51,151 @@ def plot_metric(history, val_data=True, ylabel="mae"):
     plt.subplots_adjust(bottom=0.14)
     plt.legend(loc="best")
     return fig
+
+def roc_plot(fpr, tpr, auc, labels=[" "],
+             figsize=(8, 6),
+             add_EPS=False, fpr_EPS=None, tpr_EPS=None, label_EPS="EPS",
+             add_ellipsoidal=False, fpr_ellipsoidal=None, tpr_ellipsoidal=None, label_ellipsoidal="ST ellipsoidal",
+             frameon=False, fontsize_labels=20, cols=None):
+    """Plot a ROC curve given the false positive rate(fpr), true positive rate(tpr) and Area Under Curve (auc)."""
+
+    if figsize is not None:
+        figure, ax = plt.subplots(figsize=figsize)
+    else:
+        figure, ax = plt.subplots()
+
+    ax.plot(fpr, tpr, lw=1.5)
+    ax.set_xlabel('False Positive Rate', fontsize=fontsize_labels)
+    ax.set_ylabel('True Positive Rate', fontsize=fontsize_labels)
+
+    # Robust against the possibility of AUC being a single number instead of list
+    if not isinstance(auc, (collections.Sequence, list, np.ndarray)):
+        auc = [auc]
+
+    if len(labels) > 0:
+        labs = []
+        for i in range(len(labels)):
+            labs.append(labels[i] + " (AUC = " + ' %.3f' % (auc[i]) + ")")
+    else:
+        labs = np.array(range(len(ax.lines)), dtype='str')
+        for i in range(len(labs)):
+            labs[i] = (labs[i] + " (AUC = " + ' %.3f' % (auc[i]) + ")")
+
+    if add_EPS is True:
+        plt.scatter(fpr_EPS, tpr_EPS, color="k", s=30)
+        if label_EPS is not None:
+            labs.append(label_EPS)
+
+    if add_ellipsoidal is True:
+        if len([fpr_ellipsoidal]) > 1:
+            plt.scatter(fpr_ellipsoidal[0], tpr_ellipsoidal[0], color="k", marker="^", s=30)
+            plt.scatter(fpr_ellipsoidal[1], tpr_ellipsoidal[1], color="r", marker="^", s=30)
+            labs.append("ST ellipsoidal, a=0.75")
+            labs.append("ST ellipsoidal, a=0.707")
+        else:
+            plt.scatter(fpr_ellipsoidal, tpr_ellipsoidal, color="k", marker="^", s=30)
+            if label_ellipsoidal is not None:
+                labs.append(label_ellipsoidal)
+
+    ax.legend(labs, loc=4,
+              # fontsize=18,
+              bbox_to_anchor=(0.95, 0.05), frameon=frameon)
+    ax.set_xlim(-0.03, 1.03)
+    ax.set_ylim(-0.03, 1.03)
+
+    return figure
+
+
+def roc(y_proba, y_true, true_class=1, auc_only=False):
+    """
+    Produce the false positive rate and true positive rate required to plot a ROC curve. Compute the Area Under the
+    Curve(auc) using the trapezoidal rule.
+    True class is 'in' label.
+
+    Args:
+        y_proba (np.array): An array of probability scores, either a 1d array of size N_samples or an nd array,
+            in which case the column corresponding to the true class will be used.
+            You can produce array of probability scores by doing predict_with_proba and then for each sample you get
+            its probability to be in and its probability to be out. (Should be column_0 = in and column_1 = out). You
+            can give this array checking that true_class is 'in' class probabilities.).
+        y_true (np.array): An array of class labels, of size (N_samples,)
+        true_class (int): Which class is taken to be the "true class". Default is 1.
+
+    Returns:
+        fpr (array): An array containing the false positive rate at each probability threshold
+        tpr (array): An array containing the true positive rate at each probability threshold
+        auc (array): The area under the ROC curve.
+
+    Raises:
+        IOError: "Predicted and true class arrays are not same length."
+
+    Notes
+    -----
+    This implementation is restricted to the binary classification task.
+
+    Since the thresholds are sorted from low to high values, they
+    are reversed upon returning them to ensure they correspond to both ``fpr``
+    and ``tpr``, which are sorted in reversed order during their calculation.
+
+    """
+    if len(y_proba) != len(y_true):
+        raise IOError("Predicted and true class arrays are not same length.")
+
+    if len(y_proba.shape) > 1:
+
+        if true_class == 1:
+            proba_in_class = y_proba[:, 1]  # The order of classes in y_proba is first column - 1 and second +1
+        elif true_class == -1:
+            proba_in_class = y_proba[:, 0]
+
+    else:
+        proba_in_class = y_proba
+
+    # 50 evenly spaced numbers between 0,1.
+    threshold = np.linspace(0., 1., 50)
+
+    # This creates an array where each column is the prediction for each threshold. It checks if predicted probability
+    # of being "in" is greater than probability threshold. If yes it returns True, if no it returns False.
+    preds = np.tile(proba_in_class, (len(threshold), 1)).T >= np.tile(threshold, (len(proba_in_class), 1))
+
+    # Make y_true a boolean vector - array that returns True if particle is "in" and False if particle is "out".
+    # It is true for all values of threshold ( hence it is rearranged as (len(threshold),1).T).
+    y_bool = (y_true == true_class)
+    y_bool = np.tile(y_bool, (len(threshold), 1)).T
+
+    # These arrays compare predictions to Y_bool array at each threshold. Sum(axis=0) counts the number of "True"
+    # samples at each threshold.
+    # If both the predictions and Y_bool return true (or false) it is a true positive (or true negative).
+    # If predictions return true and y_bool is false, then it is a false positive.
+    # If predictions return false and y_book is true, then it is a false negative.
+    TP = (preds & y_bool).sum(axis=0)
+    FP = (preds & ~y_bool).sum(axis=0)
+    TN = (~preds & ~y_bool).sum(axis=0)
+    FN = (~preds & y_bool).sum(axis=0)
+
+    # True positive rate is defined as true positives / (true positives + false negatives), i.e. true positives out
+    # of all positives. False positive rate is defined as false positives / (false positives + true negatives),
+    # i.e. false positives out of all negatives.
+    tpr = np.zeros(len(TP))
+    tpr[TP != 0] = TP[TP != 0] / (TP[TP != 0] + FN[TP != 0])
+    fpr = FP / (FP + TN)  # Make sure you have included from __future__ import division for this if using python 2!
+
+    # Reverse order of fpr and tpr so that thresholds go from high to low.
+    fpr = np.array(fpr)[::-1]
+    tpr = np.array(tpr)[::-1]
+    threshold = threshold[::-1]
+
+    # Compute Area Under Curve according to trapezoidal rule, using :func:`trapz` in :mod:`scipy.integrate`.
+    auc = trapz(tpr, fpr)
+
+    if auc_only is True:
+        return auc
+    else:
+        return fpr, tpr, auc, threshold
+
+
+def get_roc_curve(y_proba, y_true, true_class=1, label=[" "]):
+    """Get ROC plot given predicted probability scores of classes and true classes for samples."""
+    fpr, tpr, auc, threshold = roc(y_proba, y_true, true_class=true_class)
+    roc_plot(fpr, tpr, auc, labels=label)
+
