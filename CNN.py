@@ -1,6 +1,7 @@
 # import os
 # os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import tensorflow.keras as keras
+from tensorflow.keras.utils import multi_gpu_model
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten
 import time
@@ -15,7 +16,8 @@ import evaluation as eval
 class CNN:
     def __init__(self, training_generator, conv_params, fcc_params, model_type="regression",
                  validation_generator=None, callbacks=None, metrics=None, num_epochs=5,
-                 data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False):
+                 data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False,
+                 model_name="my_model.h5", num_gpu=1):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -31,15 +33,36 @@ class CNN:
         self.verbose = verbose
         self.metrics = metrics
         self.callbacks = callbacks
+        self.model_type = model_type
 
-        if model_type == "regression":
+        self.save = save
+        self.model_name = model_name
+
+        if num_gpu == 1:
+            self.model, self.history = self.fit_model_single_gpu()
+        elif num_gpu > 1:
+            self.model, self.history = self.fit_model_multiple_gpu(num_gpu)
+
+    def fit_model_single_gpu(self):
+        if self.model_type == "regression":
             print("Initiating regression model")
+
             Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                                    data_format=self.data_format, metrics=self.metrics)
-        elif model_type == "binary_classification":
+
+            optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+                                              amsgrad=True)
+            Model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
+
+        elif self.model_type == "binary_classification":
             print("Initiating binary classification model")
+
             Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                                               data_format=self.data_format, metrics=self.metrics)
+            optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+                                              amsgrad=True)
+            Model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
+
         else:
             raise NameError("Choose either regression or binary classification as model type")
 
@@ -52,11 +75,48 @@ class CNN:
         t1 = time.time()
         print("This model took " + str((t1 - t0)/60) + " minutes to train.")
 
-        if save is True:
-            plot_model(Model, to_file='model.png')
+        if self.save is True:
+            Model.save(self.model_name)
 
-        self.model = Model
-        self.history = history
+        return Model, history
+
+    def fit_model_multiple_gpu(self, num_gpus):
+
+        if self.model_type == "regression":
+            with tf.device('/cpu:0'):
+                Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                       data_format=self.data_format, metrics=self.metrics)
+                parallel_model = multi_gpu_model(Model, gpus=num_gpus)
+                optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+                                                  amsgrad=True)
+                parallel_model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
+
+        elif self.model_type == "binary_classification":
+            with tf.device('/cpu:0'):
+                print("Initiating binary classification model")
+                Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                              data_format=self.data_format, metrics=self.metrics)
+                parallel_model = multi_gpu_model(Model, gpus=num_gpus)
+                optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+                                                  amsgrad=True)
+                parallel_model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
+
+        else:
+            NameError("Choose either regression or binary classification as model type")
+
+        t0 = time.time()
+        history = parallel_model.fit_generator(generator=self.training_generator,
+                                               validation_data=self.validation_generator,
+                                               use_multiprocessing=self.use_multiprocessing, workers=self.workers,
+                                               verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
+                                               callbacks=self.callbacks)
+        t1 = time.time()
+        print("This model took " + str((t1 - t0)/60) + " minutes to train.")
+
+        if self.save is True:
+            Model.save(self.model_name)
+
+        return parallel_model, history
 
     def first_convolutional_layer(self, input_data, input_shape_box=(17, 17, 17, 1), num_kernels=3,
                                   dim_kernel=(7, 7, 7), strides=2, padding='valid', data_format="channels_last",
@@ -87,8 +147,7 @@ class CNN:
                                               data_format=data_format)(x)
         return x
 
-    def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last",
-                                  metrics=None):
+    def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
 
         initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
 
@@ -134,12 +193,10 @@ class CNN:
             predictions = Dense(1, activation='linear')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
-        optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
-        model.compile(optimizer=optimiser, loss='mse', metrics=metrics)
         return model
 
     def binary_classification_model_w_layers(self, input_shape_box, conv_params, fcc_params,
-                                             data_format="channels_last", metrics=None):
+                                             data_format="channels_last"):
 
         # initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
         initialiser = keras.initializers.he_uniform()
@@ -171,8 +228,6 @@ class CNN:
         predictions = Dense(1, activation='sigmoid')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
-        optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
-        model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=metrics)
         return model
 
 
