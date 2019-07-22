@@ -10,7 +10,7 @@ particles.
 import numpy as np
 import sys; sys.path.append("/Users/lls/Documents/mlhalos_code/")
 from mlhalos import parameters
-from .. import input_subboxes
+from .. import subboxes
 
 
 def from_ids_to_delta_in_subbox_old(ids, particle_id, delta_all, subbox_shape=9):
@@ -51,14 +51,14 @@ def from_ids_to_delta_in_subbox_old(ids, particle_id, delta_all, subbox_shape=9)
 
 def test_delta_in_subbox_around_particle_near_edge_box():
     ic = parameters.InitialConditionsParameters(path="/Users/lls/Documents/mlhalos_files/")
-    d = input_subboxes.delta_property(ic.initial_conditions)
+    d = subboxes.delta_property(ic.initial_conditions)
 
     n = 0
-    ids = input_subboxes.ids_in_subbox(n, 256, 13, ids_grid=None)
+    ids = subboxes.ids_in_subbox(n, 256, 13, ids_grid=None)
     delta_all = ic.initial_conditions["delta"]
 
     n_delta_old = from_ids_to_delta_in_subbox_old(ids, n, delta_all, subbox_shape=13)
-    n_delta_new = input_subboxes.from_ids_to_delta_in_subbox(ic.initial_conditions, ids, n, delta_all, subbox_shape=13,
-                                                             box_shape=256)
+    n_delta_new = subboxes.from_ids_to_delta_in_subbox(ic.initial_conditions, ids, n, delta_all, subbox_shape=13,
+                                                       box_shape=256)
 
     np.testing.assert_allclose(n_delta_old, n_delta_new)

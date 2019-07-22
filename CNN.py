@@ -48,7 +48,7 @@ class CNN:
             print("Initiating regression model")
 
             Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                   data_format=self.data_format, metrics=self.metrics)
+                                                   data_format=self.data_format)
 
             optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
                                               amsgrad=True)
@@ -58,7 +58,7 @@ class CNN:
             print("Initiating binary classification model")
 
             Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                              data_format=self.data_format, metrics=self.metrics)
+                                                              data_format=self.data_format)
             optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
                                               amsgrad=True)
             Model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
@@ -238,11 +238,11 @@ class AucCallback(Callback):
 
         self._validation_data = validation_data
 
-        print("We have " + str(len(validation_data)) + " validation sets")
-        if len(validation_data) > 1:
+        if isinstance(validation_data, list):
             self.validation_generator = [i[0] for i in validation_data]
             self.labels_validation = [i[1] for i in validation_data]
-        else:
+
+        elif isinstance(self._validation_data, tuple):
             self.validation_generator = validation_data[0]
             self.labels_validation = validation_data[1]
 
@@ -262,14 +262,12 @@ class AucCallback(Callback):
         name_train = "auc_train_" + str(self.names_training)
         logs[name_train] = self.get_auc(self.training_generator, self.labels_training)
 
-        print("We have " + str(len(self._validation_data)) + " validation sets")
-        if len(self._validation_data) > 1:
+        if isinstance(self._validation_data, list):
             for i in range(len(self._validation_data)):
                 name_i = "auc_val_" + str(self.names_val[i])
                 logs[name_i] = self.get_auc(self.validation_generator[i], self.labels_validation[i])
 
-        else:
-            print("here")
+        elif isinstance(self._validation_data, tuple):
             name_val = "auc_val_" + str(self.names_val)
             logs[name_val] = self.get_auc(self.validation_generator, self.labels_validation)
 
@@ -309,16 +307,14 @@ class LossCallback(Callback):
         return
 
     def on_epoch_end(self, epoch, logs={}):
-
-        print("We have " + str(len(self.validation_generator)) + " validation sets")
-        if len(self.validation_generator) > 1:
+        if isinstance(self._validation_data, list):
             for i in range(len(self.validation_generator)):
                 name_i = "loss_val_" + str(self.names_val[i])
                 loss_i = self.model.evaluate_generator(self.validation_generator[i])
                 logs[name_i] = loss_i
                 print("loss = %s" % loss_i)
 
-        else:
+        elif isinstance(self._validation_data, tuple):
             name_val = "loss_val_" + str(self.names_val)
             logs[name_val] = self.model.evaluate_generator(self.validation_generator)
 

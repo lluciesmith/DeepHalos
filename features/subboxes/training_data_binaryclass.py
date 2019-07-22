@@ -23,7 +23,7 @@ if __name__ == "__main__":
                                                             replace=False)],
                               particle_ids[np.random.choice(np.where(labels[particle_ids] == 1)[0], 10000,
                                                             replace=False)]))
-        # np.random.shuffle(t_0)
+        np.random.shuffle(t_0)
         np.savetxt(path + "deep_halos/training_ids_binary_classification.txt", t_0, fmt="%i", delimiter=",")
 
 # then move sub-boxesof these particles into a new folder, tar it and upload it on gdrive

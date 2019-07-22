@@ -14,7 +14,7 @@ import sys; sys.path.append("/Users/lls/Documents/mlhalos_code/")
 from mlhalos import parameters
 import scipy.special
 import gc
-from .. import input_subboxes
+from .. import subboxes
 
 
 def delta_property(snapshot):
@@ -138,7 +138,7 @@ def test_generate_subboxes_around_particles():
     n_delta_old = subboxes_around_particles(ic.initial_conditions, n, shape=(17, 17, 17))
     a = np.unique(np.where(n_delta_old != 0)[0])
 
-    n_delta_new = input_subboxes.delta_in_subboxes_around_particles(ic.initial_conditions, n[a],
-                                                                    qty="delta", subbox_shape=(9, 9, 9))
+    n_delta_new = subboxes.delta_in_subboxes_around_particles(ic.initial_conditions, n[a],
+                                                              qty="delta", subbox_shape=(9, 9, 9))
     np.testing.assert_allclose(n_delta_old[a], n_delta_new)
 

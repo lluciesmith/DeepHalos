@@ -4,7 +4,6 @@ from scipy.integrate import trapz
 import collections
 
 
-
 def plot_true_vs_predict(true, predicted):
     f = plt.figure()
     plt.plot(true, true, color="dimgrey")

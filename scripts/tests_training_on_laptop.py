@@ -12,16 +12,17 @@ if __name__ == "__main__":
     p_ids = np.load("/Users/lls/Documents/deep_halos_files/particles.npy")
     p_inputs = np.load("/Users/lls/Documents/deep_halos_files/3d_inputs_particles.npy")
     m = np.load("/Users/lls/Documents/deep_halos_files/outputs_particles.npy")
-    scaler, normalised_mass = CNN.normalise_output(m, take_log=False)
+    scaler, normalised_mass = dp.normalise_output(m, take_log=False)
 
     # Load the first 500 as training data and the remanining 155 as testing_data
     training_idx = np.arange(500)
-    validation_idx = np.arange(500, 655)
+    validation_idx = np.arange(500, 654)
 
     partition = {'train': training_idx, 'validation': validation_idx}
 
     params_training = {'dim': (17, 17, 17), 'batch_size': 100, 'n_channels': 1, 'shuffle': True}
-    params_validation = {'dim': (17, 17, 17), 'batch_size': len(validation_idx), 'n_channels': 1, 'shuffle': True}
+    params_validation = {'dim': (17, 17, 17), 'batch_size': int(len(validation_idx)/2), 'n_channels': 1,
+                         'shuffle': True}
 
     training_generator = dp.DataGenerator(partition['train'], normalised_mass, **params_training)
     validation_generator = dp.DataGenerator(partition['validation'], normalised_mass, **params_validation)
@@ -37,19 +38,17 @@ if __name__ == "__main__":
                              'pool': False, 'bn': True}}
 
     param_fcc = {'dense_1': {'neurons': 80, 'dropout': 0.5}}
-    Model = CNN.model_w_layers((17, 17, 17), param_conv, param_fcc, data_format="channels_last")
-    history = Model.fit_generator(generator=training_generator,
-                                  validation_data=validation_generator,
-                                  use_multiprocessing=False, workers=1,
-                                  verbose=1, epochs=10, shuffle=True)
+    Model = CNN.CNN(training_generator, param_conv, param_fcc, validation_generator, num_epochs=10)
+    model = Model.model
+    history = Model.history
 
     ########## PREDICT AND SAVE ############
 
-    pred_cnn_training = Model.predict_generator(training_generator)
+    pred_cnn_training = model.predict_generator(training_generator)
     training_log_mass = scaler.inverse_transform(pred_cnn_training).flatten()
     # np.save("/share/data2/lls/deep_halos/predicted_log_mass_training.npy", training_log_mass)
 
-    pred_cnn_val = Model.predict_generator(validation_generator)
+    pred_cnn_val = model.predict_generator(validation_generator)
     val_log_mass = scaler.inverse_transform(pred_cnn_val).flatten()
     #np.save("/share/data2/lls/deep_halos/predicted_log_mass_validation.npy", val_log_mass)
 

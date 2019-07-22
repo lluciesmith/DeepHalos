@@ -1,7 +1,6 @@
 import numpy as np
 from tensorflow.keras.utils import Sequence
-import sklearn.preprocessing
-import sphere_in_box as sb
+# import sklearn.preprocessing
 
 
 class DataGenerator(Sequence):
@@ -56,13 +55,13 @@ class DataGenerator(Sequence):
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             if self.path == "training":
-                s = np.load('transfer_gdrive/subbox_51_particle_' + ID + '.npy')
+                s = np.load('training_sim_binary/' + ID + '/subbox_51_particle_' + ID + '.npy')
             elif self.path == "reseed2":
                 s = np.load('reseed2_10000_subset/' + ID + '/subbox_51_particle_' + ID + '.npy')
             elif self.path == "truth":
                 s = np.ones((51, 51, 51)) * self.labels[ID]
-            elif self.path == "sphere":
-                s = sb.get_sphere_in_box(self.halo_masses[ID])
+            # elif self.path == "sphere":
+            #     s = sb.get_sphere_in_box(self.halo_masses[ID])
             else:
                 s = np.load(self.path + ID + '/subbox_51_particle_' + ID + '.npy')
 
@@ -95,7 +94,7 @@ class DataGenerator(Sequence):
                 sim_index = ID[4]
                 particle_ID = ID[9:]
                 if sim_index == "0":
-                    s = np.load('transfer_gdrive/subbox_51_particle_' + particle_ID + '.npy')
+                    s = np.load('training_sim_binary/' + particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
                 else:
                     ph = "share/hypatia/lls/deep_halos/reseed_"+ sim_index + "/reseed"+ sim_index + "_training/"
                     s = np.load(ph + particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
@@ -114,17 +113,17 @@ class DataGenerator(Sequence):
             return X, y
 
 
-def normalise_output(output, take_log=True):
-    if take_log is True:
-        log_output = np.log10(output[output > 0])
-    else:
-        log_output = output
-    minmax_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(0, 1))
-    minmax_scaler.fit(log_output.reshape(-1, 1))
-
-    normalised_labels = np.zeros((len(output),))
-    normalised_labels[output > 0] = minmax_scaler.transform(log_output.reshape(-1, 1)).flatten()
-    return minmax_scaler, normalised_labels
+# def normalise_output(output, take_log=True):
+#     if take_log is True:
+#         log_output = np.log10(output[output > 0])
+#     else:
+#         log_output = output
+#     minmax_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(0, 1))
+#     minmax_scaler.fit(log_output.reshape(-1, 1))
+#
+#     normalised_labels = np.zeros((len(output),))
+#     normalised_labels[output > 0] = minmax_scaler.transform(log_output.reshape(-1, 1)).flatten()
+#     return minmax_scaler, normalised_labels
 
 
 def transform_halo_mass_to_binary_classification(halo_mass, threshold=1.8*10**12):
