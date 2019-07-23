@@ -3,12 +3,12 @@ import data_processing as dp
 
 
 def get_ids_and_binary_class_labels(sim="0", threshold=2*10**12, ids_filename="training_ids_binary_classification.txt",
-                                    path="/content/drive/My Drive/"):
+                                    path="/lfstev/deepskies/luisals/"):
     if sim == "0":
-        path1 = path + "new_training_sim/"
+        path1 = path + "training_simulation/"
         halo_mass = np.load(path + "training_simulation/halo_mass_particles.npy")
     else:
-        path1 = path + "reseed" + sim + "_simulation/reseed"+ sim + "_"
+        path1 = path + "reseed" + sim + "_simulation/reseed" + sim + "_"
         halo_mass = np.load(path + "reseed" + sim + "_simulation/reseed" + sim + "_halo_mass_particles.npy")
 
     labels_all = dp.transform_halo_mass_to_binary_classification(halo_mass, threshold=threshold)
@@ -33,7 +33,8 @@ def create_generator_sim(ids_sim, labels_sim, path="training", batch_size=40):
 
 # create a list of names for particles ID in each simulation
 
-def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=40):
+def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=40,
+                                   path="/lfstev/deepskies/luisals/"):
     partition = {'ids': []}
     labels_dic = {}
     for i in range(len(list_sims)):
@@ -53,7 +54,7 @@ def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batc
 
     training_generator = dp.DataGenerator(partition['ids'], labels_dic,
                                           **gen_params, multiple_sims=True,
-                                          model_type="binary_classification")
+                                          model_type="binary_classification", saving_path=path)
     return training_generator
 
 
