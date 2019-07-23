@@ -33,11 +33,12 @@ for i, sim in enumerate(sims):
             ids_training.append(np.random.choice(ids_i, 500, replace=False))
 
     ids_training = np.concatenate(ids_training)
+    np.random.shuffle(ids_training)
     print(len(ids_training))
     if sim == "0":
-        np.save("/share/hypatia/lls/deep_halos/training_sim/training_sim_balanced_training_set.npy",
-                ids_training)
+        np.savetxt("/share/hypatia/lls/deep_halos/training_sim/training_sim_balanced_training_set.txt", ids_training,
+                   fmt="%i", delimiter=",")
     else:
-        np.save("/share/hypatia/lls/deep_halos/reseed_" + sim + "/reseed_" + sim + "_balanced_training_set.npy",
-                ids_training)
+        np.savetxt("/share/hypatia/lls/deep_halos/reseed_" + sim + "/reseed_" + sim + "_balanced_training_set.txt",
+                   ids_training, fmt="%i", delimiter=",")
 
