@@ -29,9 +29,11 @@ for i, sim in enumerate(sims):
     for i in range(49):
         ids_i = ids_saved[(np.log10(halo_mass[ids_saved]) >= b[i]) & (np.log10(halo_mass[ids_saved]) < b[i+1])]
         if ids_i.size:
+            print("Bin" + str(i))
             ids_training.append(np.random.choice(ids_i, 500, replace=False))
 
     ids_training = np.concatenate(ids_training)
+    print(len(ids_training))
     if sim == "0":
         np.save("/share/hypatia/lls/deep_halos/training_sim/training_sim_balanced_training_set.npy",
                 ids_training)
