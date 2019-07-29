@@ -6,7 +6,7 @@ import sklearn.preprocessing
 class DataGenerator(Sequence):
 
     def __init__(self, list_IDs, labels, batch_size=40, dim=(51, 51, 51), n_channels=1, shuffle=False,
-                 saving_path="/share/data2/lls/deep_halos/subboxes/subbox_51_particle_", model_type="regression",
+                 saving_path="/share/data2/lls/deep_halos/subboxes/subbox_51_particle_",
                  halo_masses="", multiple_sims=False):
         self.dim = dim
         self.batch_size = batch_size
@@ -15,7 +15,6 @@ class DataGenerator(Sequence):
         self.shuffle = shuffle
         self.n_channels = n_channels
         self.path = saving_path
-        self.model_type = model_type
         self.halo_masses = halo_masses
         self.multiple_sims = multiple_sims
         self.on_epoch_end()
@@ -45,12 +44,7 @@ class DataGenerator(Sequence):
         """ Loads data containing batch_size samples """
 
         X = np.empty((self.batch_size, *self.dim, self.n_channels))
-        if self.model_type == "regression":
-            y = np.empty((self.batch_size, ))
-        elif self.model_type == "binary_classification":
-            y = np.empty((self.batch_size, ))
-        else:
-            raise NameError("Choose either regression or binary classification as model type")
+        y = np.empty((self.batch_size,))
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
@@ -78,12 +72,7 @@ class DataGenerator(Sequence):
             """ Loads data containing batch_size samples """
 
             X = np.empty((self.batch_size, *self.dim, self.n_channels))
-            if self.model_type == "regression":
-                y = np.empty((self.batch_size,))
-            elif self.model_type == "binary_classification":
-                y = np.empty((self.batch_size,))
-            else:
-                raise NameError("Choose either regression or binary classification as model type")
+            y = np.empty((self.batch_size,))
 
             # Generate data
             for i, ID in enumerate(list_IDs_temp):
@@ -108,6 +97,22 @@ class DataGenerator(Sequence):
                 y[i] = self.labels[ID]
 
             return X, y
+
+
+def get_halo_mass_scaler(sims, path="/lfstev/deepskies/luisals/"):
+    halo_mass_sims = []
+    for sim in sims:
+        if sim == "0":
+            halo_mass = np.load(path + "training_simulation/halo_mass_particles.npy")
+        else:
+            halo_mass = np.load(path + "reseed" + sim + "_simulation/reseed" + sim + "_halo_mass_particles.npy")
+        halo_mass_sims.append(halo_mass)
+    halo_mass_sims = np.concatenate(halo_mass_sims)
+
+    log_output = np.log10(halo_mass_sims[halo_mass_sims > 0])
+    minmax_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(0, 1))
+    minmax_scaler.fit(log_output.reshape(-1, 1))
+    return minmax_scaler
 
 
 def normalise_output(output, take_log=True):

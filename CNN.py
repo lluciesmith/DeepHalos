@@ -17,7 +17,7 @@ class CNN:
     def __init__(self, training_generator, conv_params, fcc_params, model_type="regression",
                  validation_generator=None, callbacks=None, metrics=None, num_epochs=5,
                  data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False,
-                 model_name="my_model.h5", num_gpu=1):
+                 model_name="my_model.h5", num_gpu=1, lr=0.0001):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -32,6 +32,7 @@ class CNN:
         self.workers = workers
         self.verbose = verbose
         self.metrics = metrics
+        self.lr = lr
         self.callbacks = callbacks
         self.model_type = model_type
 
@@ -50,16 +51,16 @@ class CNN:
             Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                                    data_format=self.data_format)
 
-            optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
                                               amsgrad=True)
-            Model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
+            Model.compile(loss='mse', optimizer=optimiser, metrics=self.metrics)
 
         elif self.model_type == "binary_classification":
             print("Initiating binary classification model")
 
             Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                                               data_format=self.data_format)
-            optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
                                               amsgrad=True)
             Model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
 
@@ -149,7 +150,8 @@ class CNN:
 
     def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
 
-        initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
+        # initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
+        initialiser = keras.initializers.he_uniform()
 
         input_data = Input(shape=(*input_shape_box, 1))
         num_fully_connected = len(fcc_params)
@@ -229,6 +231,17 @@ class CNN:
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
+
+
+# This function keeps the learning rate at 0.001 for the first ten epochs
+# and decreases it exponentially after that.
+
+def lr_scheduler(epoch):
+    n = 10
+    if epoch < n:
+        return 0.0001
+    else:
+        return 0.0001 * np.math.exp(0.08 * (n - epoch))
 
 
 class AucCallback(Callback):

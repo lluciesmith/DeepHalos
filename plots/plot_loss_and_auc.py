@@ -29,23 +29,26 @@ ax1.set_xlabel("Epochs")
 ax1.set_title("LOSS")
 plt.subplots_adjust(left=0.08, top=0.9, wspace=0.3, bottom=0.14)
 
-colors = ["b", "r", "m", "brown"]
-sims = ["0", "3", "4", "5"]
-for i in range(4):
-    for j in range(40):
+colors = ["b", "orange", "r", "m", "brown"]
+sims = ["0", "2", "3", "4", "5"]
+for i in range(5):
+# colors = ["b", "r", "m", "brown"]
+# sims = ["0", "3", "4", "5"]
+# for i in range(4):
+    for j in range(15):
         if j == 0:
-            ax0.scatter(epochs[(3 * i) + 12 * j:(3 * i + 3) + 12 * j],
-                        h_all['auc_train_i'][(3 * i) + 12 * j:(3 * i + 3) + 12 * j],
+            ax0.scatter(epochs[(3 * i) + 15 * j:(3 * i + 3) + 15 * j],
+                        h_all['auc_train_i'][(3 * i) + 15 * j:(3 * i + 3) + 15 * j],
                         color=colors[i], s=20)
-            ax1.scatter(epochs[(3 * i) + 12 * j:(3 * i + 3) + 12 * j],
-                        h_all['loss'][(3 * i) + 12 * j:(3 * i + 3) + 12 * j],
+            ax1.scatter(epochs[(3 * i) + 15 * j:(3 * i + 3) + 15 * j],
+                        h_all['loss'][(3 * i) + 15 * j:(3 * i + 3) + 15 * j],
                         color=colors[i], s=20, label='train - sim' + str(sims[i]))
         else:
-            ax0.scatter(epochs[(3 * i) + 12 * j:(3 * i + 3) + 12 * j],
-                        h_all['auc_train_i'][(3 * i) + 12 * j:(3 * i + 3) + 12 * j],
+            ax0.scatter(epochs[(3 * i) + 15 * j:(3 * i + 3) + 15 * j],
+                        h_all['auc_train_i'][(3 * i) + 15 * j:(3 * i + 3) + 15 * j],
                         color=colors[i], s=20)
-            ax1.scatter(epochs[(3 * i) + 12 * j:(3 * i + 3) + 12 * j],
-                        h_all['loss'][(3 * i) + 12 * j:(3 * i + 3) + 12 * j],
+            ax1.scatter(epochs[(3 * i) + 15 * j:(3 * i + 3) + 15 * j],
+                        h_all['loss'][(3 * i) + 15 * j:(3 * i + 3) + 15 * j],
                         color=colors[i], s=20)
 
 ax1.legend(loc="best")
