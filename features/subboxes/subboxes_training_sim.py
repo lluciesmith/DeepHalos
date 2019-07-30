@@ -35,7 +35,7 @@ if __name__ == "__main__":
     p_ids = np.where(halo_mass > 0)[0]
 
     subset_ids = np.random.choice(p_ids, 30000, replace=False)
-    np.save(saving_path + "subset_30000_ids.npy", subset_ids)
+    np.save(saving_path + "../subset_30000_ids.npy", subset_ids)
     saved_ids = []
 
     pool = Pool(processes=80)
