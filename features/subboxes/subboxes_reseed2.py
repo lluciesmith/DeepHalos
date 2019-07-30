@@ -54,7 +54,6 @@ if __name__ == "__main__":
     # val_ids = np.array(val_ids)
     # print(len(val_ids))
     # np.save("/share/hypatia/lls/deep_halos/reseed_2/reseed2_subboxes_ids.npy", val_ids)
-
     #
     #
     # if __name__ == "__main__":

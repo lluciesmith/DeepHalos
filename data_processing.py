@@ -79,10 +79,10 @@ class DataGenerator(Sequence):
                 sim_index = ID[4]
                 particle_ID = ID[9:]
                 if sim_index == "0":
-                    s = np.load(self.path + 'training_simulation/training_sim_binary/' + particle_ID +
+                    s = np.load(self.path + 'training_simulation/training_set/' + particle_ID +
                                 '/subbox_51_particle_' + particle_ID + '.npy')
                 else:
-                    s = np.load(self.path + "reseed" + sim_index + "_simulation/reseed" + sim_index + "_training/" +
+                    s = np.load(self.path + "reseed" + sim_index + "_simulation/training_set/" +
                                 particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
 
                 if self.dim != (51, 51, 51):
