@@ -23,4 +23,4 @@ for i in range(len(dirs)):
 
     val_ids = np.array(val_ids)
     print(len(val_ids))
-    np.save(dir + "../saved_ids_training_set.txt", val_ids)
+    np.savetxt(dir + "../saved_ids_training_set.txt", val_ids, fmt="%i", delimiter=",")
