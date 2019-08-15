@@ -7,16 +7,25 @@ class DataGenerator(Sequence):
 
     def __init__(self, list_IDs, labels, batch_size=40, dim=(51, 51, 51), n_channels=1, shuffle=False,
                  saving_path="/share/data2/lls/deep_halos/subboxes/subbox_51_particle_",
-                 halo_masses="", multiple_sims=False):
+                 halo_masses="", multiple_sims=False, rescale_mean=0, rescale_std=1):
         self.dim = dim
         self.batch_size = batch_size
         self.labels = labels
         self.list_IDs = list_IDs
         self.shuffle = shuffle
+
         self.n_channels = n_channels
         self.path = saving_path
         self.halo_masses = halo_masses
+
         self.multiple_sims = multiple_sims
+        self.rescale_mean = rescale_mean
+        self.rescale_std = rescale_std
+
+        # if self.rescale_input is True:
+        #     mass_variance = np.load("/lfstev/deepskies/luisals/mass_variance_smoothing_scales.npy")
+        #     self.v = mass_variance[self.index_scale]
+
         self.on_epoch_end()
 
     def __len__(self):
@@ -40,6 +49,21 @@ class DataGenerator(Sequence):
             print("Be very aware of setting shuffle=True! I think there is a bug here")
             np.random.shuffle(self.indexes)
 
+    def _process_input(self, matrix):
+
+        if self.dim != (51, 51, 51):
+            low_idx = int(25 - (self.dim[0] - 1) / 2)
+            high_idx = int(25 + (self.dim[0] - 1) / 2 + 1)
+            s = matrix[low_idx:high_idx, low_idx:high_idx, low_idx:high_idx]
+
+        # Take the transpose in order for these to match pynbody's output
+        s_t = np.transpose(matrix, axes=(1, 0, 2))
+
+        # Rescale inputs
+        s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
+
+        return s_t_rescaled.reshape((*self.dim, self.n_channels))
+
     def __data_generation(self, list_IDs_temp):
         """ Loads data containing batch_size samples """
 
@@ -48,22 +72,9 @@ class DataGenerator(Sequence):
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            if self.path == "truth":
-                s = np.ones((51, 51, 51)) * self.labels[ID]
-            # elif self.path == "sphere":
-            #     s = sb.get_sphere_in_box(self.halo_masses[ID])
-            else:
-                s = np.load(self.path + ID + '/subbox_51_particle_' + ID + '.npy')
+            s = np.load(self.path + ID + '/subbox_51_particle_' + ID + '.npy')
 
-            if self.dim != (51, 51, 51):
-                low_idx = int(25 - (self.dim[0] - 1)/2)
-                high_idx = int(25 + (self.dim[0] - 1)/2 + 1)
-                s = s[low_idx:high_idx, low_idx:high_idx, low_idx:high_idx]
-
-            # Take the transpose in order for these to match pynbody's output
-            s_t = np.transpose(s, axes=(1, 0, 2))
-
-            X[i] = s_t.reshape((*self.dim, self.n_channels))
+            X[i] = self._process_input(s)
             y[i] = self.labels[ID]
 
         return X, y
@@ -78,6 +89,7 @@ class DataGenerator(Sequence):
             for i, ID in enumerate(list_IDs_temp):
                 sim_index = ID[4]
                 particle_ID = ID[9:]
+
                 if sim_index == "0":
                     s = np.load(self.path + 'training_simulation/training_set/' + particle_ID +
                                 '/subbox_51_particle_' + particle_ID + '.npy')
@@ -85,15 +97,7 @@ class DataGenerator(Sequence):
                     s = np.load(self.path + "reseed" + sim_index + "_simulation/training_set/" +
                                 particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
 
-                if self.dim != (51, 51, 51):
-                    low_idx = int(25 - (self.dim[0] - 1) / 2)
-                    high_idx = int(25 + (self.dim[0] - 1) / 2 + 1)
-                    s = s[low_idx:high_idx, low_idx:high_idx, low_idx:high_idx]
-
-                # Take the transpose in order for these to match pynbody's output
-                s_t = np.transpose(s, axes=(1, 0, 2))
-
-                X[i] = s_t.reshape((*self.dim, self.n_channels))
+                X[i] = self._process_input(s)
                 y[i] = self.labels[ID]
 
             return X, y
@@ -132,4 +136,12 @@ def transform_halo_mass_to_binary_classification(halo_mass, threshold=1.8*10**12
     labels = np.zeros((len(halo_mass), ))
     labels[halo_mass > threshold] = 1
     return labels
+
+
+def normalise_distribution_to_given_variance(samples, variance,
+                                             mean_samples=1.0040703121496461, std_samples=0.05050898332331686):
+    samples_transformed = ((samples - mean_samples)/std_samples * np.sqrt(variance)) + mean_samples
+    return samples_transformed
+
+
 

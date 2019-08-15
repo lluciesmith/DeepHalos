@@ -5,9 +5,6 @@ from tensorflow.keras.utils import multi_gpu_model
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten
 import time
-from tensorflow.keras.utils import plot_model
-from tensorflow.keras.initializers import normal
-from sklearn.metrics import roc_auc_score
 from tensorflow.keras.callbacks import Callback
 import numpy as np
 import evaluation as eval
@@ -148,85 +145,65 @@ class CNN:
                                               data_format=data_format)(x)
         return x
 
-    def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
+    def _conv_layers(self, input_data, input_shape_box, conv_params, initialiser):
 
-        # initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
-        initialiser = keras.initializers.he_uniform()
+        num_convolutions = len(conv_params)
 
-        input_data = Input(shape=(*input_shape_box, 1))
+        x = self.first_convolutional_layer(input_data, input_shape_box=(*input_shape_box, 1),
+                                           initialiser=initialiser, **conv_params['conv_1'])
+        if num_convolutions > 1:
+            for i in range(1, num_convolutions):
+                params = conv_params['conv_' + str(i + 1)]
+                x = self.subsequent_convolutional_layer(x, initialiser=initialiser, **params)
+
+        return x
+
+    def _fcc_layers(self, x, fcc_params, initialiser):
         num_fully_connected = len(fcc_params)
+
+        if num_fully_connected > 1:
+            for i in range(num_fully_connected):
+                params = fcc_params['dense_' + str(i + 1)]
+                x = Dense(params['neurons'], kernel_initializer=initialiser)(x)
+
+                if "alpha_relu" in params:
+                    x = keras.layers.LeakyReLU(alpha=params['alpha_relu'])(x)
+                else:
+                    x = keras.layers.LeakyReLU(alpha=0.3)(x)
+
+                if params["bn"] is True:
+                    x = keras.layers.BatchNormalization(axis=-1)(x)
+
+                if "dropout" in params:
+                    x = keras.layers.Dropout(params['dropout'])(x)
+
+        return x
+
+    def _model(self, input_data, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
+        initialiser = keras.initializers.he_uniform()
 
         if conv_params == {}:
             x = Flatten(data_format=data_format, input_shape=(*input_shape_box, 1))(input_data)
-
-            if num_fully_connected > 1:
-                for i in range(num_fully_connected):
-                    params = fcc_params['dense_' + str(i + 1)]
-                    x = Dense(params['neurons'], activation='relu', kernel_initializer=initialiser)(x)
-                    if "dropout" in params:
-                        x = keras.layers.Dropout(params['dropout'])(x)
-
-            predictions = Dense(1, activation='linear')(x)
+            x = self._fcc_layers(x, fcc_params, initialiser)
 
         else:
-            num_convolutions = len(conv_params)
-            num_fully_connected = len(fcc_params)
-
-            x = self.first_convolutional_layer(input_data, input_shape_box=(*input_shape_box, 1),
-                                               initialiser=initialiser,
-                                               **conv_params['conv_1'])
-
-            if num_convolutions > 1:
-                for i in range(1, num_convolutions):
-                    params = conv_params['conv_' + str(i + 1)]
-                    x = self.subsequent_convolutional_layer(x, initialiser=initialiser, **params)
-
-            # Flatten and fully connected layers, followed by dropout
-
+            x = self._conv_layers(input_data, input_shape_box, conv_params, initialiser)
             x = Flatten(data_format=data_format)(x)
+            x = self._fcc_layers(x, fcc_params, initialiser)
+        return x
 
-            if num_fully_connected > 1:
-                for i in range(num_fully_connected):
-                    params = fcc_params['dense_' + str(i + 1)]
-                    x = Dense(params['neurons'], activation='relu', kernel_initializer=initialiser)(x)
-                    if "dropout" in params:
-                        x = keras.layers.Dropout(params['dropout'])(x)
-
-            predictions = Dense(1, activation='linear')(x)
+    def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
+        input_data = Input(shape=(*input_shape_box, 1))
+        x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+        predictions = Dense(1, activation='linear')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
 
     def binary_classification_model_w_layers(self, input_shape_box, conv_params, fcc_params,
                                              data_format="channels_last"):
-
-        # initialiser = tf.compat.v1.keras.initializers.TruncatedNormal()
-        initialiser = keras.initializers.he_uniform()
-        # initialiser = normal(mean=0, stddev=0.1, seed=13)
-
         input_data = Input(shape=(*input_shape_box, 1))
-        num_convolutions = len(conv_params)
-        num_fully_connected = len(fcc_params)
-
-        x = self.first_convolutional_layer(input_data, input_shape_box=(*input_shape_box, 1), initialiser=initialiser,
-                                           ** conv_params['conv_1'])
-
-        if num_convolutions > 1:
-            for i in range(1, num_convolutions):
-                params = conv_params['conv_' + str(i + 1)]
-                x = self.subsequent_convolutional_layer(x, initialiser=initialiser, **params)
-
-        # Flatten and fully connected layers, followed by dropout
-
-        x = Flatten(data_format=data_format)(x)
-
-        if num_fully_connected > 1:
-            for i in range(num_fully_connected):
-                params = fcc_params['dense_' + str(i + 1)]
-                x = Dense(params['neurons'], activation='relu', kernel_initializer=initialiser)(x)
-                if "dropout" in params:
-                    x = keras.layers.Dropout(params['dropout'])(x)
-
+        x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
         predictions = Dense(1, activation='sigmoid')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)

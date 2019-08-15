@@ -17,7 +17,7 @@ if __name__ == "__main__":
     ########### CREATE GENERATORS FOR SIMULATIONS #########
 
     # ph = "share/hypatia/lls/deep_halos/"
-    path_model = "/lfstev/deepskies/luisals/regression/train_mixed_sims/"
+    path_model = "/lfstev/deepskies/luisals/regression/train_mixed_sims/4conv_layers/stride1/"
     ph = "/lfstev/deepskies/luisals/"
 
     t0 = time.time()
@@ -35,19 +35,19 @@ if __name__ == "__main__":
         ids_s = [ids_0, ids_3, ids_4, ids_5]
         mass_ids = [mass_0, mass_3, mass_4, mass_5]
         generator_training = gbc.create_generator_multiple_sims(sims, ids_s, mass_ids, batch_size=80)
-
-        ran = np.random.choice(np.arange(len(ids_0)), 5000, replace=False)
-        np.save(path_model + "/validation_set_indices.npy", ran)
-        ids_val = [ids_0[ran], ids_3[ran], ids_4[ran], ids_5[ran]]
-        mass_val = [mass_0[ran], mass_3[ran], mass_4[ran], mass_5[ran]]
-        generator_val = gbc.create_generator_multiple_sims(sims, ids_val, mass_val, batch_size=80)
+        #
+        # ran = np.random.choice(np.arange(len(ids_0)), 5000, replace=False)
+        # np.save(path_model + "/validation_set_indices.npy", ran)
+        # ids_val = [ids_0[ran], ids_3[ran], ids_4[ran], ids_5[ran]]
+        # mass_val = [mass_0[ran], mass_3[ran], mass_4[ran], mass_5[ran]]
+        # generator_val = gbc.create_generator_multiple_sims(sims, ids_val, mass_val, batch_size=80)
 
         ids_1, mass_1 = gbc.get_ids_and_regression_labels(sim="1", ids_filename=f, fitted_scaler=h_mass_scaler)
         generator_1 = gbc.create_generator_sim(ids_1, mass_1, batch_size=80,
                                                path=ph + "reseed1_simulation/training_set/")
 
     t1 = time.time()
-    print("Loading generators took " + str((t1 - t0) / 60) + " minutes to train.")
+    print("Loading generators took " + str((t1 - t0) / 60) + " minutes.")
 
     ######### TRAINING MODEL ##############
 
@@ -60,30 +60,72 @@ if __name__ == "__main__":
         # save histories
         csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=False)
 
-        callbacks_list = [checkpoint_call, csv_logger]
+        # decay the learning rate
+        lr_decay = LearningRateScheduler(CNN.lr_scheduler)
+
+        # callbacks_list = [checkpoint_call, csv_logger]
+        callbacks_list = [checkpoint_call, csv_logger, lr_decay]
 
         set_random_seed(7)
-        param_conv = {'conv_1': {'num_kernels': 5, 'dim_kernel': (3, 3, 3),
-                                 'strides': 2, 'padding': 'valid',
-                                 'pool': True, 'bn': False},
-                      'conv_2': {'num_kernels': 10, 'dim_kernel': (3, 3, 3),
+        param_conv = {'conv_1': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
                                  'strides': 1, 'padding': 'valid',
-                                 'pool': True, 'bn': False},
-                      'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
+                                 'pool': True, 'bn': False},  # 24x24x24
+                      'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
                                  'strides': 1, 'padding': 'valid',
-                                 'pool': False, 'bn': False},
+                                 'pool': True, 'bn': False}, # 11x11x11
+                      'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3),
+                                 'strides': 1, 'padding': 'valid',
+                                 'pool': True, 'bn': False}, # 9x9x9
+                      'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3),
+                                 'strides': 1, 'padding': 'valid',
+                                 'pool': False, 'bn': False}, # 7x7x7
                       }
-
         param_fcc = {'dense_1': {'neurons': 256, 'dropout': 0.2},
                      'dense_2': {'neurons': 128, 'dropout': 0.2}}
+        # param_conv = {'conv_1': {'num_kernels': 5, 'dim_kernel': (3, 3, 3),
+        #                          'strides': 2, 'padding': 'valid',
+        #                          'pool': True, 'bn': False},
+        #               'conv_2': {'num_kernels': 10, 'dim_kernel': (3, 3, 3),
+        #                          'strides': 1, 'padding': 'valid',
+        #                          'pool': True, 'bn': False},
+        #               'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
+        #                          'strides': 1, 'padding': 'valid',
+        #                          'pool': False, 'bn': False},
+        #               }
+        # param_fcc = {'dense_1': {'neurons': 256, 'dropout': 0.2},
+        #              'dense_2': {'neurons': 128, 'dropout': 0.2}}
+        # param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3),
+        #                          'strides': 2, 'padding': 'valid',
+        #                          'pool': True, 'bn': False},
+        #               'conv_2': {'num_kernels': 12, 'dim_kernel': (3, 3, 3),
+        #                          'strides': 1, 'padding': 'valid',
+        #                          'pool': False, 'bn': False},
+        #               'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
+        #                          'strides': 1, 'padding': 'valid',
+        #                          'pool': False, 'bn': False},
+        #               'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
+        #                          'strides': 1, 'padding': 'valid',
+        #                          'pool': True, 'bn': False},
+                      # 'conv_4': {'num_kernels': 32, 'dim_kernel': (4, 4, 4),
+                      #            'strides': 1, 'padding': 'valid',
+                      #            'pool': False, 'bn': False}
+                      # 'conv_5': {'num_kernels': 48, 'dim_kernel': (3, 3, 3),
+                      #            'strides': 1, 'padding': 'valid',
+                      #            'pool': False, 'bn': False},
+        #               }
+        #
+        # param_fcc = {# 'dense_1': {'neurons': 768, 'dropout': 0.2},
+        #              'dense_1': {'neurons': 256, 'dropout': 0.2},
+        #              'dense_2': {'neurons': 128, 'dropout': 0.2}}
 
         Model = CNN.CNN(generator_training, param_conv, param_fcc, validation_generator=generator_1,
-                        callbacks=callbacks_list, use_multiprocessing=True, num_epochs=100, workers=14, verbose=1,
-                        model_type="regression", lr=0.0001)
+                        # metrics=["mae"],
+                        callbacks=callbacks_list, use_multiprocessing=True, num_epochs=80,
+                        workers=14, verbose=1, model_type="regression", lr=0.0001)
 
         model = Model.model
         history = Model.history
 
-        np.save(path_model + "/history_100_epochs_mixed_sims.npy", history.history)
-        model.save(path_model + "/model_100_epochs_mixed_sims.h5")
+        np.save(path_model + "/history_80_epochs_mixed_sims.npy", history.history)
+        model.save(path_model + "/model_80_epochs_mixed_sims.h5")
 
