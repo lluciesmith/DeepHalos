@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
         sims = ["0", "3", "4", "5"]
         ids_s = [ids_0[ran], ids_3[ran], ids_4[ran], ids_5[ran]]
-        output_ids, output_scaler = gbc.get_SO_scaler_and_transform([so_0[ran], so_3[ran], so_4[ran], so_5[ran]])
+        output_ids, output_scaler = gbc.get_standard_scaler_and_transform([so_0[ran], so_3[ran], so_4[ran], so_5[ran]])
 
         generator_training = gbc.create_generator_multiple_sims(sims, ids_s, output_ids, batch_size=80,
                                                                 rescale_mean=rescale_mean, rescale_std=rescale_std)

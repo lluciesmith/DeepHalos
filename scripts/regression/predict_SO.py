@@ -27,7 +27,7 @@ if __name__ == "__main__":
     ids_5, so_5 = gbc.get_ids_and_SO_labels(sim="5", ids_filename=f, fitted_scaler=None, path=ph, index=index_scale)
 
     ran = np.load(path_model + "ran.npy")
-    output_ids, output_scaler = gbc.get_SO_scaler_and_transform([so_0[ran], so_3[ran], so_4[ran], so_5[ran]])
+    output_ids, output_scaler = gbc.get_standard_scaler_and_transform([so_0[ran], so_3[ran], so_4[ran], so_5[ran]])
     ids_1, so_1 = gbc.get_ids_and_SO_labels(sim="1", ids_filename=f, fitted_scaler=output_scaler, index=index_scale)
     generator_1 = gbc.create_generator_sim(ids_1, so_1, batch_size=batch_size,
                                            rescale_mean=rescale_mean, rescale_std=rescale_std,

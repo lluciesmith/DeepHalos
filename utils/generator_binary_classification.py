@@ -3,7 +3,7 @@ import data_processing as dp
 import sklearn.preprocessing
 
 
-def get_SO_scaler_and_transform(list_outputs):
+def get_standard_scaler_and_transform(list_outputs):
     outputs_conc = np.concatenate(list_outputs)
     norm_scaler = sklearn.preprocessing.StandardScaler()
     norm_scaler.fit(outputs_conc.reshape(-1, 1))
