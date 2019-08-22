@@ -14,7 +14,7 @@ class CNN:
     def __init__(self, training_generator, conv_params, fcc_params, model_type="regression",
                  validation_generator=None, callbacks=None, metrics=None, num_epochs=5,
                  data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False,
-                 model_name="my_model.h5", num_gpu=1, lr=0.0001):
+                 model_name="my_model.h5", num_gpu=1, lr=0.0001, validation_freq=1):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -23,6 +23,7 @@ class CNN:
         self.conv_params = conv_params
         self.fcc_params = fcc_params
         self.data_format = data_format
+        self.val_freq = validation_freq
 
         self.num_epochs = num_epochs
         self.use_multiprocessing = use_multiprocessing
@@ -69,7 +70,7 @@ class CNN:
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
-                                      callbacks=self.callbacks)
+                                      callbacks=self.callbacks, validation_freq=self.val_freq)
         t1 = time.time()
         print("This model took " + str((t1 - t0)/60) + " minutes to train.")
 

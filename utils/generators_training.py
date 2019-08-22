@@ -32,9 +32,9 @@ def get_ids_and_regression_labels(sim="0", ids_filename="balanced_training_set.t
     np.random.shuffle(ids_bc)
 
     if fitted_scaler is not None:
-        output_ids = transform_array_given_scaler(fitted_scaler, halo_mass[ids_bc])
+        output_ids = transform_array_given_scaler(fitted_scaler, np.log10(halo_mass[ids_bc]))
     else:
-        output_ids = halo_mass[ids_bc]
+        output_ids = np.log10(halo_mass[ids_bc])
 
     return ids_bc, output_ids
 
@@ -54,7 +54,6 @@ def create_generator_sim(ids_sim, labels_sim, path="training", batch_size=40, re
 
 def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=40,
                                    path="/lfstev/deepskies/luisals/", rescale_mean=0, rescale_std=1):
-    partition = {'ids': []}
     labels_dic = {}
     for i in range(len(list_sims)):
         sim_i = list_sims[i]
@@ -62,16 +61,18 @@ def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batc
         labels_sim_i = labels_sim[i]
 
         name = ['sim-' + str(sim_i) + '-id-' + str(id_i) for id_i in ids_sim_i]
-        for val in name:
-            partition['ids'].append(val)
-
         dict_i = dict(zip(name, labels_sim_i))
         labels_dic.update(dict_i)
+
+    np.random.seed(5)
+    ids_reordering = np.random.permutation(list(labels_dic.keys()))
+    labels_reordered = dict([(key, labels_dic[key]) for key in ids_reordering])
+    partition = {'ids': list(labels_reordered.keys())}
 
     gen_params = {'dim': (51, 51, 51), 'batch_size': batch_size, 'n_channels': 1,
                   'shuffle': False}
 
-    training_generator = dp.DataGenerator(partition['ids'], labels_dic,
+    training_generator = dp.DataGenerator(partition['ids'], labels_reordered,
                                           **gen_params, rescale_mean=rescale_mean, rescale_std=rescale_std,
                                           multiple_sims=True, saving_path=path)
     return training_generator

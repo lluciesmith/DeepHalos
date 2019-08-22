@@ -1,6 +1,7 @@
 import numpy as np
 from tensorflow.keras.utils import Sequence
 import sklearn.preprocessing
+import tensorflow as tf
 
 
 class DataGenerator(Sequence):
@@ -55,9 +56,11 @@ class DataGenerator(Sequence):
             low_idx = int(25 - (self.dim[0] - 1) / 2)
             high_idx = int(25 + (self.dim[0] - 1) / 2 + 1)
             s = matrix[low_idx:high_idx, low_idx:high_idx, low_idx:high_idx]
+        else:
+            s = matrix
 
         # Take the transpose in order for these to match pynbody's output
-        s_t = np.transpose(matrix, axes=(1, 0, 2))
+        s_t = np.transpose(s, axes=(1, 0, 2))
 
         # Rescale inputs
         s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
@@ -143,5 +146,29 @@ def normalise_distribution_to_given_variance(samples, variance,
     samples_transformed = ((samples - mean_samples)/std_samples * np.sqrt(variance)) + mean_samples
     return samples_transformed
 
-
+# class TfData():
+#     def __init(self):
+#         self.FLAGS = {}
+#
+#
+#
+#     def parse_fn(self, example):
+#         "Parse TFExample records and perform simple data augmentation."
+#         example_fmt = {
+#             "image": tf.FixedLengthFeature((), tf.string, ""),
+#             "label": tf.FixedLengthFeature((), tf.int64, -1)
+#         }
+#         parsed = tf.parse_single_example(example, example_fmt)
+#         image = tf.image.decode_image(parsed["image"])
+#         image = _augment_helper(image)  # augments image using slice, reshape, resize_bilinear
+#         return image, parsed["label"]
+#
+#     def input_fn(self, FLAGS):
+#         files = tf.data.Dataset.list_files("/path/to/dataset/train-*.tfrecord")
+#         dataset = files.interleave(tf.data.TFRecordDataset)
+#         dataset = dataset.shuffle(buffer_size=FLAGS.shuffle_buffer_size)
+#         dataset = dataset.apply(tf.contrib.data.map_and_batch(
+#             map_func=parse_fn, batch_size=FLAGS.batch_size))
+#         dataset = dataset.prefetch(buffer_size=FLAGS.prefetch_buffer_size)
+#         return dataset
 
