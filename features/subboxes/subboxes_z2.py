@@ -22,26 +22,6 @@ def compute_and_save_subbox_particle(particle_id):
     except ValueError:
         print("This failed for particle " + str(particle_id))
 
-####### TRAINING SIM #########
-
-path_sim = "/home/lls/stored_files/Nina-Simulations/double/"
-path_ids = "/share/hypatia/lls/deep_halos/training_sim/"
-
-saving_path = path_ids + "z2_subboxes/"
-initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "snapshot_054", load_final=False)
-sub_in = subb.Subboxes(initial_params, subbox_shape=(51, 51, 51))
-
-ids = np.loadtxt(path_ids + "training_sim_random_training_set.txt", dtype='int', delimiter=",")
-saved_ids = []
-
-pool = Pool(processes=80)
-pool.map(compute_and_save_subbox_particle, ids)
-pool.close()
-
-np.save(path_ids + "test_training_sim_random_training_set.txt", saved_ids)
-
-del saved_ids, initial_params, sub_in, path_sim, saving_path, path_ids
-
 ############## SIMS 3,4,5 ##############
 
 
@@ -71,4 +51,25 @@ for i in range(3):
     np.save(pi + "test_" + f, saved_ids)
 
     del saved_ids, initial_params, sub_in, ps, saving_path, pi, f
+
+
+####### TRAINING SIM #########
+
+path_sim = "/home/lls/stored_files/Nina-Simulations/double/"
+path_ids = "/share/hypatia/lls/deep_halos/training_sim/"
+
+saving_path = path_ids + "z2_subboxes/"
+initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "snapshot_054", load_final=False)
+sub_in = subb.Subboxes(initial_params, subbox_shape=(51, 51, 51))
+
+ids = np.loadtxt(path_ids + "training_sim_random_training_set.txt", dtype='int', delimiter=",")
+saved_ids = []
+
+pool = Pool(processes=80)
+pool.map(compute_and_save_subbox_particle, ids)
+pool.close()
+
+np.save(path_ids + "test_training_sim_random_training_set.txt", saved_ids)
+
+del saved_ids, initial_params, sub_in, path_sim, saving_path, path_ids
 
