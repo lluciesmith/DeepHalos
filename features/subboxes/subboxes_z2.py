@@ -38,7 +38,7 @@ pool = Pool(processes=80)
 pool.map(compute_and_save_subbox_particle, ids)
 pool.close()
 
-np.save(path_ids + "test_training_sim_random_training_set.txt")
+np.save(path_ids + "test_training_sim_random_training_set.txt", saved_ids)
 
 del saved_ids, initial_params, sub_in, path_sim, saving_path, path_ids
 
@@ -56,27 +56,19 @@ for i in range(3):
     pi = paths_ids[i]
     f = filenames[i]
 
-    saving_path = path_ids + "z2_subboxes/"
-    initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "snapshot_049",
+    saving_path = pi + "z2_subboxes/"
+    initial_params = parameters.InitialConditionsParameters(initial_snapshot=ps + "snapshot_049",
                                                             load_final=False)
     sub_in = subb.Subboxes(initial_params, subbox_shape=(51, 51, 51))
 
-    ids = np.loadtxt(path_ids + f, dtype='int', delimiter=",")
+    ids = np.loadtxt(pi + f, dtype='int', delimiter=",")
     saved_ids = []
 
     pool = Pool(processes=80)
     pool.map(compute_and_save_subbox_particle, ids)
     pool.close()
 
-    np.save(path_ids + "test_" + f)
+    np.save(pi + "test_" + f, saved_ids)
 
-    del saved_ids, initial_params, sub_in, path_sim, saving_path, path_ids
+    del saved_ids, initial_params, sub_in, ps, saving_path, pi, f
 
-# path_sim = "/share/hypatia/app/luisa/standard_reseed3/"
-# path_ids = "/share/hypatia/lls/deep_halos/reseed_3/"
-
-# path_sim = "/share/hypatia/app/luisa/standard_reseed4/"
-# path_ids = "/share/hypatia/lls/deep_halos/reseed_4/"
-
-# path_sim = "/share/hypatia/app/luisa/standard_reseed5/"
-# path_ids = "/share/hypatia/lls/deep_halos/reseed_5/"
