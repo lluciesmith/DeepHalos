@@ -36,8 +36,8 @@ for i in range(3):
     pi = paths_ids[i]
     f = filenames[i]
 
-    saving_path = pi + "z2_subboxes/"
-    initial_params = parameters.InitialConditionsParameters(initial_snapshot=ps + "snapshot_049",
+    saving_path = pi + "z0_subboxes/"
+    initial_params = parameters.InitialConditionsParameters(initial_snapshot=ps + "snapshot_099",
                                                             load_final=False)
     sub_in = subb.Subboxes(initial_params, subbox_shape=(51, 51, 51))
 
@@ -58,8 +58,8 @@ for i in range(3):
 path_sim = "/home/lls/stored_files/Nina-Simulations/double/"
 path_ids = "/share/hypatia/lls/deep_halos/training_sim/"
 
-saving_path = path_ids + "z2_subboxes/"
-initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "snapshot_054", load_final=False)
+saving_path = path_ids + "z0_subboxes/"
+initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "snapshot_104", load_final=False)
 sub_in = subb.Subboxes(initial_params, subbox_shape=(51, 51, 51))
 
 ids = np.loadtxt(path_ids + "training_sim_random_training_set.txt", dtype='int', delimiter=",")
@@ -72,4 +72,3 @@ pool.close()
 np.save(path_ids + "test_training_sim_random_training_set.txt", saved_ids)
 
 del saved_ids, initial_params, sub_in, path_sim, saving_path, path_ids
-

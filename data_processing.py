@@ -8,7 +8,7 @@ class DataGenerator(Sequence):
 
     def __init__(self, list_IDs, labels, batch_size=40, dim=(51, 51, 51), n_channels=1, shuffle=False,
                  saving_path="/share/data2/lls/deep_halos/subboxes/subbox_51_particle_",
-                 halo_masses="", multiple_sims=False, rescale_mean=0, rescale_std=1):
+                 halo_masses="", multiple_sims=False, rescale_mean=0, rescale_std=1, z=99):
         self.dim = dim
         self.batch_size = batch_size
         self.labels = labels
@@ -22,6 +22,8 @@ class DataGenerator(Sequence):
         self.multiple_sims = multiple_sims
         self.rescale_mean = rescale_mean
         self.rescale_std = rescale_std
+
+        self.z = z
 
         # if self.rescale_input is True:
         #     mass_variance = np.load("/lfstev/deepskies/luisals/mass_variance_smoothing_scales.npy")
@@ -93,12 +95,24 @@ class DataGenerator(Sequence):
                 sim_index = ID[4]
                 particle_ID = ID[9:]
 
-                if sim_index == "0":
-                    s = np.load(self.path + 'training_simulation/training_set/' + particle_ID +
-                                '/subbox_51_particle_' + particle_ID + '.npy')
+                if self.z == 99:
+
+                    if sim_index == "0":
+                        s = np.load(self.path + 'training_simulation/training_set/' + particle_ID +
+                                    '/subbox_51_particle_' + particle_ID + '.npy')
+                    else:
+                        s = np.load(self.path + "reseed" + sim_index + "_simulation/training_set/" +
+                                    particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
+                if self.z == 2.1:
+
+                    if sim_index == "0":
+                        s = np.load(self.path + 'training_simulation/z2_subboxes/' + particle_ID +
+                                    '/subbox_51_particle_' + particle_ID + '.npy')
+                    else:
+                        s = np.load(self.path + "reseed" + sim_index + "_simulation/z2_subboxes/" +
+                                    particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
                 else:
-                    s = np.load(self.path + "reseed" + sim_index + "_simulation/training_set/" +
-                                particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
+                    raise(ValueError, "Select either z=99 or z=2.")
 
                 X[i] = self._process_input(s)
                 y[i] = self.labels[ID]

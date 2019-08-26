@@ -217,9 +217,9 @@ class CNN:
 def lr_scheduler(epoch):
     n = 10
     if epoch < n:
-        return 0.0001
+        return 0.001
     else:
-        return 0.0001 * np.math.exp(0.08 * (n - epoch))
+        return 0.001 * np.math.exp(0.08 * (n - epoch))
 
 
 class AucCallback(Callback):
