@@ -25,11 +25,14 @@ def compute_and_save_subbox_particle(particle_id):
 ############## SIMS 3,4,5 ##############
 
 
-path_sims = ["/share/hypatia/app/luisa/standard_reseed3/", "/share/hypatia/app/luisa/standard_reseed4/",
-             "/share/hypatia/app/luisa/standard_reseed5/"]
-paths_ids = ["/share/hypatia/lls/deep_halos/reseed_3/", "/share/hypatia/lls/deep_halos/reseed_4/",
-             "/share/hypatia/lls/deep_halos/reseed_5/"]
-filenames = ["reseed_3_random_training_set.txt", "reseed_4_random_training_set.txt", "reseed_5_random_training_set.txt"]
+path_sims = ["/share/data1/lls/reseed50/simulation/", "/share/hypatia/app/luisa/reseed2/",
+             "/share/hypatia/app/luisa/standard_reseed3/",
+             "/share/hypatia/app/luisa/standard_reseed4/", "/share/hypatia/app/luisa/standard_reseed5/"]
+paths_ids = ["/share/hypatia/lls/deep_halos/reseed_1/", "/share/hypatia/lls/deep_halos/reseed_2/",
+             "/share/hypatia/lls/deep_halos/reseed_3/",
+             "/share/hypatia/lls/deep_halos/reseed_4/", "/share/hypatia/lls/deep_halos/reseed_5/"]
+filenames = ["reseed_1_random_training_set.txt", "reseed_2_random_training_set.txt", "reseed_3_random_training_set.txt",
+             "reseed_4_random_training_set.txt", "reseed_5_random_training_set.txt"]
 
 for i in range(3):
     ps = path_sims[i]
