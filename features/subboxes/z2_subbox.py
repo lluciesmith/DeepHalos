@@ -45,7 +45,7 @@ path_sims = ["reseed/", "reseed2/", "standard_reseed3/", "standard_reseed4/", "s
 paths_ids = ["reseed_1/", "reseed_2/", "reseed_3/", "reseed_4/", "reseed_5/"]
 filenames = ["reseed_1","reseed_2", "reseed_3", "reseed_4", "reseed_5"]
 
-for i in range(3):
+for i in range(len(path_sims)):
     ps = "/share/hypatia/app/luisa/" + path_sims[i]
     pi = "/share/hypatia/lls/deep_halos/" + paths_ids[i]
     f = filenames[i] + "_random_training_set.txt"
