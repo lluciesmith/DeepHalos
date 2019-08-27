@@ -40,18 +40,15 @@ def delta_property(snapshot):
 
 ############## SIMS 3,4,5 ##############
 
-path_sims = ["/share/hypatia/app/luisa/standard_reseed3/",
-             "/share/hypatia/app/luisa/standard_reseed4/",
-             "/share/hypatia/app/luisa/standard_reseed5/"]
-paths_ids = ["/share/hypatia/lls/deep_halos/reseed_3/",
-             "/share/hypatia/lls/deep_halos/reseed_4/",
-             "/share/hypatia/lls/deep_halos/reseed_5/"]
-filenames = ["reseed_3_random_training_set.txt", "reseed_4_random_training_set.txt", "reseed_5_random_training_set.txt"]
+
+path_sims = ["reseed/", "reseed2/", "standard_reseed3/", "standard_reseed4/", "standard_reseed5/"]
+paths_ids = ["reseed_1/", "reseed_2/", "reseed_3/", "reseed_4/", "reseed_5/"]
+filenames = ["reseed_1","reseed_2", "reseed_3", "reseed_4", "reseed_5"]
 
 for i in range(3):
-    ps = path_sims[i]
-    pi = paths_ids[i]
-    f = filenames[i]
+    ps = "/share/hypatia/app/luisa/" + path_sims[i]
+    pi = "/share/hypatia/lls/deep_halos/" + paths_ids[i]
+    f = filenames[i] + "_random_training_set.txt"
 
     saving_path = pi + "z2_subboxes/"
 
