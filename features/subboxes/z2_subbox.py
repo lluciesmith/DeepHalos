@@ -5,8 +5,8 @@ import gc
 import os
 
 
-def get_sph_particle(sim, particle_id, width=200, resolution=51):
-    pynbody.analysis.halo.center(sim[particle_id], vel=False, wrap=True)
+def get_sph_particle(sim, particle_id, width=200, resolution=51, wrap=True):
+    pynbody.analysis.halo.center(sim[particle_id], vel=False, wrap=wrap)
     subbox_sph = get_sph_on_3dgrid(sim, width=width, resolution=resolution)
     return subbox_sph
 
@@ -41,31 +41,31 @@ def delta_property(snapshot):
 ############## SIMS 3,4,5 ##############
 
 
-path_sims = ["reseed/", "reseed2/", "standard_reseed3/", "standard_reseed4/", "standard_reseed5/"]
-paths_ids = ["reseed_1/", "reseed_2/", "reseed_3/", "reseed_4/", "reseed_5/"]
-filenames = ["reseed_1","reseed_2", "reseed_3", "reseed_4", "reseed_5"]
-
-for i in range(len(path_sims)):
-    ps = "/share/hypatia/app/luisa/" + path_sims[i]
-    pi = "/share/hypatia/lls/deep_halos/" + paths_ids[i]
-    f = filenames[i] + "_random_training_set.txt"
-
-    saving_path = pi + "z2_subboxes/"
-
-    sim = pynbody.load(ps + "snapshot_049")
-    sim.physical_units()
-    d = delta_property(sim)
-
-    ids = np.loadtxt(pi + f, dtype='int', delimiter=",")
-    saved_ids = []
-
-    pool = Pool(processes=80)
-    pool.map(compute_and_save_subbox_particle, ids)
-    pool.close()
-
-    np.save(pi + "test_" + f, saved_ids)
-
-    del ps, pi, f, saving_path, sim, d, ids, saved_ids
+# path_sims = ["reseed/", "reseed2/", "standard_reseed3/", "standard_reseed4/", "standard_reseed5/"]
+# paths_ids = ["reseed_1/", "reseed_2/", "reseed_3/", "reseed_4/", "reseed_5/"]
+# filenames = ["reseed_1","reseed_2", "reseed_3", "reseed_4", "reseed_5"]
+#
+# for i in range(len(path_sims)):
+#     ps = "/share/hypatia/app/luisa/" + path_sims[i]
+#     pi = "/share/hypatia/lls/deep_halos/" + paths_ids[i]
+#     f = filenames[i] + "_random_training_set.txt"
+#
+#     saving_path = pi + "z2_subboxes/"
+#
+#     sim = pynbody.load(ps + "snapshot_049")
+#     sim.physical_units()
+#     d = delta_property(sim)
+#
+#     ids = np.loadtxt(pi + f, dtype='int', delimiter=",")
+#     saved_ids = []
+#
+#     pool = Pool(processes=5)
+#     pool.map(compute_and_save_subbox_particle, ids)
+#     pool.close()
+#
+#     np.save(pi + "test_" + f, saved_ids)
+#
+#     del ps, pi, f, saving_path, sim, d, ids, saved_ids
 
 
 ####### TRAINING SIM #########
@@ -82,9 +82,12 @@ d = delta_property(sim)
 ids = np.loadtxt(path_ids + "training_sim_random_training_set.txt", dtype='int', delimiter=",")
 saved_ids = []
 
-pool = Pool(processes=80)
-pool.map(compute_and_save_subbox_particle, ids)
-pool.close()
+for pid in ids:
+    compute_and_save_subbox_particle(pid)
+
+# pool = Pool(processes=1)
+# pool.map(compute_and_save_subbox_particle, ids)
+# pool.close()
 
 np.save(path_ids + "test_training_sim_random_training_set.txt", saved_ids)
 
