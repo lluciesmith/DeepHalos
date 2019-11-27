@@ -39,21 +39,21 @@ def get_ids_and_regression_labels(sim="0", ids_filename="balanced_training_set.t
     return ids_bc, output_ids
 
 
-def create_generator_sim(ids_sim, labels_sim, path="training", batch_size=40, rescale_mean=0, rescale_std=1):
+def create_generator_sim(ids_sim, labels_sim, path="training", batch_size=40, rescale_mean=0, rescale_std=1, z=99):
     partition = {'ids': list(ids_sim.astype("str"))}
     labels_dic = dict(zip(list(ids_sim.astype("str")), labels_sim))
 
     gen_params = {'dim': (51, 51, 51), 'batch_size': batch_size, 'n_channels': 1, 'shuffle': False}
 
     training_generator = dp.DataGenerator(partition['ids'], labels_dic, **gen_params,
-                                          saving_path=path, rescale_mean=rescale_mean, rescale_std=rescale_std)
+                                          saving_path=path, rescale_mean=rescale_mean, rescale_std=rescale_std, z=z)
     return training_generator
 
 
 # create a list of names for particles ID in each simulation
 
 def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=40,
-                                   path="/lfstev/deepskies/luisals/", rescale_mean=0, rescale_std=1):
+                                   path="/lfstev/deepskies/luisals/", rescale_mean=0, rescale_std=1, z=99):
     labels_dic = {}
     for i in range(len(list_sims)):
         sim_i = list_sims[i]
@@ -72,9 +72,9 @@ def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batc
     gen_params = {'dim': (51, 51, 51), 'batch_size': batch_size, 'n_channels': 1,
                   'shuffle': False}
 
-    training_generator = dp.DataGenerator(partition['ids'], labels_reordered,
-                                          **gen_params, rescale_mean=rescale_mean, rescale_std=rescale_std,
-                                          multiple_sims=True, saving_path=path)
+    training_generator = dp.DataGenerator(partition['ids'], labels_reordered, **gen_params,
+                                          rescale_mean=rescale_mean, rescale_std=rescale_std,
+                                          multiple_sims=True, saving_path=path, z=z)
     return training_generator
 
 

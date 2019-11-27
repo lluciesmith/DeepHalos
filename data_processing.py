@@ -24,6 +24,10 @@ class DataGenerator(Sequence):
         self.rescale_std = rescale_std
 
         self.z = z
+        if z == 99:
+            self._transpose_input = True
+        else:
+            self._transpose_input = False
 
         # if self.rescale_input is True:
         #     mass_variance = np.load("/lfstev/deepskies/luisals/mass_variance_smoothing_scales.npy")
@@ -62,7 +66,10 @@ class DataGenerator(Sequence):
             s = matrix
 
         # Take the transpose in order for these to match pynbody's output
-        s_t = np.transpose(s, axes=(1, 0, 2))
+        if self._transpose_input is True:
+            s_t = np.transpose(s, axes=(1, 0, 2))
+        else:
+            s_t = np.log10(1 + s)
 
         # Rescale inputs
         s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
@@ -96,23 +103,22 @@ class DataGenerator(Sequence):
                 particle_ID = ID[9:]
 
                 if self.z == 99:
-
-                    if sim_index == "0":
-                        s = np.load(self.path + 'training_simulation/training_set/' + particle_ID +
-                                    '/subbox_51_particle_' + particle_ID + '.npy')
-                    else:
-                        s = np.load(self.path + "reseed" + sim_index + "_simulation/training_set/" +
-                                    particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
-                if self.z == 2.1:
-
-                    if sim_index == "0":
-                        s = np.load(self.path + 'training_simulation/z2_subboxes/' + particle_ID +
-                                    '/subbox_51_particle_' + particle_ID + '.npy')
-                    else:
-                        s = np.load(self.path + "reseed" + sim_index + "_simulation/z2_subboxes/" +
-                                    particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
+                    path_midddle = "training_set/"
+                elif self.z == 2.1:
+                    path_midddle = "z2_subboxes_500/"
+                elif self.z == 0.5:
+                    path_midddle = "z05_subboxes/"
+                elif self.z == 0:
+                    path_midddle = "z0_subboxes/"
                 else:
-                    raise(ValueError, "Select either z=99 or z=2.")
+                    raise(ValueError, "Get subboxes from z=99, z=2 or z=0.")
+
+                if sim_index == "0":
+                    s = np.load(self.path + 'training_simulation/' + path_midddle + particle_ID +
+                                '/subbox_51_particle_' + particle_ID + '.npy')
+                else:
+                    s = np.load(self.path + "reseed" + sim_index + "_simulation/" + path_midddle +
+                                particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
 
                 X[i] = self._process_input(s)
                 y[i] = self.labels[ID]
