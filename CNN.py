@@ -14,7 +14,7 @@ class CNN:
     def __init__(self, training_generator, conv_params, fcc_params, model_type="regression",
                  validation_generator=None, callbacks=None, metrics=None, num_epochs=5,
                  data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False,
-                 model_name="my_model.h5", num_gpu=1, lr=0.0001, validation_freq=1):
+                 model_name="my_model.h5", num_gpu=1, lr=0.0001, validation_freq=1, train=True):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -37,10 +37,11 @@ class CNN:
         self.save = save
         self.model_name = model_name
 
-        if num_gpu == 1:
-            self.model, self.history = self.fit_model_single_gpu()
-        elif num_gpu > 1:
-            self.model, self.history = self.fit_model_multiple_gpu(num_gpu)
+        if train is True:
+            if num_gpu == 1:
+                self.model, self.history = self.fit_model_single_gpu()
+            elif num_gpu > 1:
+                self.model, self.history = self.fit_model_multiple_gpu(num_gpu)
 
     def fit_model_single_gpu(self):
         if self.model_type == "regression":

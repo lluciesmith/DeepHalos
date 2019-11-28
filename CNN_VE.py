@@ -14,13 +14,13 @@ class VCE(CNN.CNN):
     def __init__(self, training_generator, conv_params, fcc_params, model_type="regression",
                  validation_generator=None, data_format="channels_last", use_multiprocessing=False, workers=1,
                  verbose=1, latent_dim=7, num_epochs=10, beta=1, model_name="my_model.h5", validation_freq=1,
-                 plot_models=False, callbacks=None, metrics=None, save=False, lr=0.0001, num_gpu=1):
+                 plot_models=False, callbacks=None, metrics=None, save=False, lr=0.0001, num_gpu=1, train=True):
 
         super().__init__(training_generator, conv_params, fcc_params, model_type=model_type,
                          validation_generator=validation_generator, data_format=data_format,
                          callbacks=callbacks, metrics=metrics, num_epochs=num_epochs,
                          use_multiprocessing=use_multiprocessing, workers=workers, verbose=verbose, save=save,
-                         model_name=model_name, num_gpu=num_gpu, lr=lr, validation_freq=validation_freq)
+                         model_name=model_name, num_gpu=num_gpu, lr=lr, validation_freq=validation_freq, train=False)
 
         self.beta = beta
         self.plot_models = plot_models
@@ -41,17 +41,17 @@ class VCE(CNN.CNN):
         if plot_models is True:
             plot_model(vce, to_file='my_vae.png', show_shapes=True)
 
-        print(Model.summary())
-        t0 = time.time()
-        history = vce.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
-                                    use_multiprocessing=self.use_multiprocessing, workers=self.workers,
-                                    verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
-                                    callbacks=self.callbacks, validation_freq=self.val_freq)
-        t1 = time.time()
-        print("This model took " + str((t1 - t0)/60) + " minutes to train.")
+        if train is True:
+            t0 = time.time()
+            history = vce.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
+                                        use_multiprocessing=self.use_multiprocessing, workers=self.workers,
+                                        verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
+                                        callbacks=self.callbacks, validation_freq=self.val_freq)
+            t1 = time.time()
+            print("This model took " + str((t1 - t0)/60) + " minutes to train.")
+            self.history = history
 
         self.vce = vce
-        self.history = history
 
     def vce_loss(self, inputs, outputs, z_mu, log_z_variance):
         reconstruction_loss = len(outputs) * mse(inputs, outputs)
