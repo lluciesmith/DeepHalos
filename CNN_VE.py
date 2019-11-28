@@ -25,21 +25,35 @@ class VCE(CNN.CNN):
         self.beta = beta
         self.plot_models = plot_models
         self.latent_dim = latent_dim
-
         input_shape = self.input_shape
-        input_data = Input(shape=(*input_shape, 1))
 
-        self.encoder = self.encoder_model(input_shape, conv_params, latent_dim, input_encoder=input_data)
-        self.decoder = self.decoder_model(fcc_params)
+        # encoder
 
-        output_vce = self.decoder(self.encoder(input_data)[2])
-        vce = Model(input_data, output_vce, name='vce')
-        vce.add_loss(self.vce_loss)
-        vce = self.compile_vce_model(vce)
+        input_encoder = Input(shape=(*input_shape, 1), name='encoder_input')
+        z_mean, z_log_var, z = self.encoder_net(input_encoder, input_shape, conv_params, latent_dim)
+        encoder = Model(input_encoder, [z_mean, z_log_var, z], name='encoder')
 
-        print(vce.summary())
-        if plot_models is True:
-            plot_model(vce, to_file='my_vae.png', show_shapes=True)
+        # decoder
+
+        input_decoder = Input(shape=(self.latent_dim,), name='decoder_input')
+        output_decoder = self.decoder_net(input_decoder, fcc_params)
+        decoder = Model(input_decoder, output_decoder, name='decoder')
+
+        # VCE
+
+        output_vce = decoder(encoder(input_encoder)[2])
+        vce = Model(input_encoder, output_vce, name='vce')
+
+        # Compile VCE
+
+        def vce_loss(inputs, outputs):
+            reconstruction_loss = mse(inputs, outputs)
+            kl_loss = -0.5 * K.mean(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
+            return reconstruction_loss + beta * kl_loss
+
+        vce = self.compile_vce_model(vce, loss=vce_loss)
+
+        # Train VCE
 
         if train is True:
             t0 = time.time()
@@ -52,39 +66,46 @@ class VCE(CNN.CNN):
             self.history = history
 
         self.vce = vce
+        self.encoder = encoder
+        self.decoder = decoder
 
-    def vce_loss(self, inputs, outputs, z_mu, log_z_variance):
-        reconstruction_loss = len(outputs) * mse(inputs, outputs)
-        kl_loss = -0.5 * K.sum(1 + log_z_variance - K.square(z_mu) - K.exp(log_z_variance), axis=-1)
-        return K.mean(reconstruction_loss + self.beta * kl_loss)
+    def vae_loss(self, inputs, outputs, z_mu, log_z_variance):
+        reconstruction_loss = mse(inputs, outputs)
+        kl_loss = -0.5 * K.mean(1 + log_z_variance - K.square(z_mu) - K.exp(log_z_variance), axis=-1)
+        return reconstruction_loss + self.beta * kl_loss
 
-    def compile_vce_model(self, vce_model):
+    def compile_vce_model(self, vce_model, loss):
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=True)
-        vce_model.compile(optimizer=optimiser, metrics=self.metrics)
+        vce_model.compile(optimizer=optimiser, loss=loss, metrics=self.metrics)
+        print(vce_model.summary())
+
+        if self.plot_models is True:
+            plot_model(vce_model, to_file='my_vae.png', show_shapes=True)
+
         return vce_model
 
-    def encoder_model(self, input_shape_box, conv_params, latent_dim, input_encoder=None):
-        if input_encoder is None:
-            input_encoder = Input(shape=(self.input_shape,), name='encoder_input')
-
-        z_mean, z_log_var, z = self.encoder_net(input_encoder, input_shape_box, conv_params, latent_dim)
-        encoder = Model(input_encoder, [z_mean, z_log_var, z], name='encoder')
-
-        print(encoder.summary())
-
-        if self.plot_models is True:
-            plot_model(encoder, to_file='my_encoder.png', show_shapes=True)
-        return encoder
-
-    def decoder_model(self, fcc_params):
-        input_decoder = Input(shape=(self.latent_dim,), name='decoder_input')
-        output_decoder = self.decoder_net(input_decoder, fcc_params)
-
-        decoder = Model(input_decoder, output_decoder, name='decoder')
-        print(decoder.summary())
-        if self.plot_models is True:
-            plot_model(decoder, to_file='my_decoder.png', show_shapes=True)
-        return decoder
+    # def encoder_model(self, input_shape_box, conv_params, latent_dim, input_encoder=None):
+    #     if input_encoder is None:
+    #         input_encoder = Input(shape=(self.input_shape,), name='encoder_input')
+    #
+    #     z_mean, z_log_var, z = self.encoder_net(input_encoder, input_shape_box, conv_params, latent_dim)
+    #     encoder = Model(input_encoder, [z_mean, z_log_var, z], name='encoder')
+    #
+    #     print(encoder.summary())
+    #
+    #     if self.plot_models is True:
+    #         plot_model(encoder, to_file='my_encoder.png', show_shapes=True)
+    #     return encoder
+    #
+    # def decoder_model(self, fcc_params):
+    #     input_decoder = Input(shape=(self.latent_dim,), name='decoder_input')
+    #     output_decoder = self.decoder_net(input_decoder, fcc_params)
+    #
+    #     decoder = Model(input_decoder, output_decoder, name='decoder')
+    #     print(decoder.summary())
+    #     if self.plot_models is True:
+    #         plot_model(decoder, to_file='my_decoder.png', show_shapes=True)
+    #     return decoder
 
     def sampling(self, args):
         """
