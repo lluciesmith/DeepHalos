@@ -3,7 +3,7 @@
 import tensorflow.keras as keras
 from tensorflow.keras.utils import multi_gpu_model
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten
+from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten, Add, Activation
 import time
 from tensorflow.keras.callbacks import Callback
 import numpy as np
@@ -14,7 +14,7 @@ class CNN:
     def __init__(self, training_generator, conv_params, fcc_params, model_type="regression",
                  validation_generator=None, callbacks=None, metrics=None, num_epochs=5,
                  data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False,
-                 model_name="my_model.h5", num_gpu=1, lr=0.0001, validation_freq=1, train=True):
+                 model_name="my_model.h5", num_gpu=1, lr=0.0001, validation_freq=1, train=True, skip_connector=False):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -33,6 +33,7 @@ class CNN:
         self.lr = lr
         self.callbacks = callbacks
         self.model_type = model_type
+        self.skip_connector = skip_connector
 
         self.save = save
         self.model_name = model_name
@@ -142,8 +143,7 @@ class CNN:
 
     def subsequent_convolutional_layer(self, x, num_kernels=3, dim_kernel=(3, 3, 3), strides=2, padding='valid',
                                        data_format="channels_last", alpha_relu=0.03, activation=True, bn=True,
-                                       pool=True,
-                                       initialiser="normal"):
+                                       pool=True, initialiser="normal"):
         x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format,
                                 kernel_initializer=initialiser)(x)
         if bn is True:
@@ -203,9 +203,58 @@ class CNN:
             x = self._fcc_layers(x, fcc_params, initialiser)
         return x
 
+    def _model_skip_connection(self, input_data, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
+        print("model with skip connectior")
+        initialiser = keras.initializers.he_uniform()
+        x_shortcut = input_data
+
+        num_convolutions = len(conv_params)
+        x = self.first_convolutional_layer(input_data, input_shape_box=(*input_shape_box, 1),
+                                           initialiser=initialiser, **conv_params['conv_1'])
+        if conv_params['conv_1']['pool'] is True:
+            x_shortcut = keras.layers.Conv3D(conv_params['conv_1']['num_kernels'], (1, 1, 1), strides=2, padding="same",
+                                             data_format=data_format, kernel_initializer=initialiser)(x_shortcut)
+        if conv_params['conv_1']['bn'] is True:
+            x_shortcut = keras.layers.BatchNormalization(axis=-1)(x_shortcut)
+
+        if num_convolutions > 1:
+            for i in range(1, num_convolutions):
+                if i == range(1, num_convolutions)[-1]:
+
+                    # last layer apply ReLU after merging the convolutional output and the input layers
+                    params = conv_params['conv_' + str(i + 1)]
+                    x = self.subsequent_convolutional_layer(x, initialiser=initialiser, **params, activation=False)
+
+                    if params['pool'] is True:
+                        x_shortcut = keras.layers.Conv3D(params['num_kernels'], (1, 1, 1), strides=2, padding="same",
+                                            data_format=data_format, kernel_initializer=initialiser)(x_shortcut)
+                    if params['bn'] is True:
+                        x_shortcut = keras.layers.BatchNormalization(axis=-1)(x_shortcut)
+
+                    x = Add()([x, x_shortcut])
+                    x = keras.layers.LeakyReLU(alpha=0.03)(x)
+
+                else:
+                    params = conv_params['conv_' + str(i + 1)]
+                    x = self.subsequent_convolutional_layer(x, initialiser=initialiser, **params)
+                    if params['pool'] is True:
+                        x_shortcut = keras.layers.Conv3D(params['num_kernels'], (1, 1, 1), strides=2, padding="same",
+                                                data_format=data_format, kernel_initializer=initialiser)(x_shortcut)
+                    if params['bn'] is True:
+                        x_shortcut = keras.layers.BatchNormalization(axis=-1)(x_shortcut)
+
+        x = Flatten(data_format=data_format)(x)
+        x = self._fcc_layers(x, fcc_params, initialiser)
+        return x
+
     def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
         input_data = Input(shape=(*input_shape_box, 1))
-        x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+
+        if self.skip_connector is True:
+            x = self._model_skip_connection(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+        else:
+            x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+
         predictions = Dense(1, activation='linear')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
