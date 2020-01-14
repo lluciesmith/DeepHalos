@@ -7,7 +7,7 @@ import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow import set_random_seed
-from utils import generator_binary_classification as gbc
+from utils import generators_training as gbc
 from tensorflow.keras.models import load_model
 
 

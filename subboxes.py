@@ -186,17 +186,12 @@ class Subboxes:
 
             particle_id = particles[i]
             try:
-                delta_sub = self.compute_and_save_subbox_particle(self, particle_id, path)
+                delta_sub = self.compute_and_save_subbox_particle(particle_id, path)
                 del delta_sub
                 gc.collect()
 
             except ValueError:
                 print("This failed for particle " + str(particle_id))
-
-
-
-
-
 
 
     # def boundary_condition_on_z(x_condition, y_condition, case3, case03, z_coords, z_pos, one_sided_neighbours, box_shape):

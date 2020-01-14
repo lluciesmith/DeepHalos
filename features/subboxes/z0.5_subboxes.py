@@ -41,36 +41,36 @@ def delta_property(snapshot):
 
 ############## SIMS 1, 2, 3, 4, 5 ##############
 
-path_sims = ["reseed/", "reseed2/", "standard_reseed3/", "standard_reseed4/", "standard_reseed5/"]
-paths_ids = ["reseed_1/", "reseed_2/", "reseed_3/", "reseed_4/", "reseed_5/"]
-filenames = ["reseed_1","reseed_2", "reseed_3", "reseed_4", "reseed_5"]
-
-i = 0
-
-# for i in range(len(path_sims)):
-ps = "/share/hypatia/app/luisa/" + path_sims[i]
-pi = "/share/hypatia/lls/deep_halos/" + paths_ids[i]
-f = filenames[i] + "_random_training_set.txt"
-
-saving_path = pi + "z0_subboxes/"
-
-sim = pynbody.load(ps + "snapshot_099")
-sim.physical_units()
-d = delta_property(sim)
-
-ids = np.loadtxt(pi + f, dtype='int', delimiter=",")
-saved_ids = []
-
-for pid in ids:
-    compute_and_save_subbox_particle(pid, width=1500, resolution=51)
-
-# pool = Pool(processes=5)
-# pool.map(compute_and_save_subbox_particle, ids)
-# pool.close()
-
-np.save(pi + "test_" + f, saved_ids)
-
-del ps, pi, f, saving_path, sim, d, ids, saved_ids
+# path_sims = ["reseed/", "reseed2/", "standard_reseed3/", "standard_reseed4/", "standard_reseed5/"]
+# paths_ids = ["reseed_1/", "reseed_2/", "reseed_3/", "reseed_4/", "reseed_5/"]
+# filenames = ["reseed_1","reseed_2", "reseed_3", "reseed_4", "reseed_5"]
+#
+# i = 2
+#
+# # for i in range(len(path_sims)):
+# ps = "/share/hypatia/app/luisa/" + path_sims[i]
+# pi = "/share/hypatia/lls/deep_halos/" + paths_ids[i]
+# f = filenames[i] + "_random_training_set.txt"
+#
+# saving_path = pi + "z05_subboxes/"
+#
+# sim = pynbody.load(ps + "snapshot_079")
+# sim.physical_units()
+# d = delta_property(sim)
+#
+# ids = np.loadtxtpi + f, dtype='int', delimiter=",")
+# saved_ids = []
+#
+# for pid in ids:
+#     compute_and_save_subbox_particle(pid, width=1500, resolution=51)
+#
+# # pool = Pool(processes=5)
+# # pool.map(compute_and_save_subbox_particle, ids)
+# # pool.close()
+#
+# np.save(pi + "test_" + f, saved_ids)
+#
+# del ps, pi, f, saving_path, sim, d, ids, saved_ids
 
 
 ####### TRAINING SIM #########
@@ -78,9 +78,9 @@ del ps, pi, f, saving_path, sim, d, ids, saved_ids
 path_sim = "/home/lls/stored_files/Nina-Simulations/double/"
 path_ids = "/share/hypatia/lls/deep_halos/training_sim/"
 
-saving_path = path_ids + "z0_subboxes/"
+saving_path = path_ids + "z05_subboxes/"
 
-sim = pynbody.load(path_sim + "snapshot_104")
+sim = pynbody.load(path_sim + "snapshot_084")
 sim.physical_units()
 d = delta_property(sim)
 

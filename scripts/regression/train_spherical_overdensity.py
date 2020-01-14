@@ -7,7 +7,7 @@ import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras.callbacks import LearningRateScheduler
 import tensorflow.compat.v1
-from utils import generator_binary_classification as gbc
+from utils import generators_training as gbc
 import time
 import sklearn.preprocessing
 

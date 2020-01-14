@@ -17,7 +17,7 @@ def transform_array_given_scaler(scaler, array):
 
 
 def get_ids_and_regression_labels(sim="0", ids_filename="balanced_training_set.txt",
-                                  path="/lfstev/deepskies/luisals/", fitted_scaler=None):
+                                  path="/lfstev/deepskies/luisals/", fitted_scaler=None, shuffle=True):
     if sim == "0":
         path1 = path + "training_simulation/training_sim_"
         halo_mass = np.load(path + "training_simulation/halo_mass_particles.npy")
@@ -28,8 +28,9 @@ def get_ids_and_regression_labels(sim="0", ids_filename="balanced_training_set.t
     with open(path1 + ids_filename, "r") as f:
       ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
 
-    np.random.seed(4)
-    np.random.shuffle(ids_bc)
+    if shuffle is True:
+        np.random.seed(4)
+        np.random.shuffle(ids_bc)
 
     if fitted_scaler is not None:
         output_ids = transform_array_given_scaler(fitted_scaler, np.log10(halo_mass[ids_bc]))
@@ -39,11 +40,12 @@ def get_ids_and_regression_labels(sim="0", ids_filename="balanced_training_set.t
     return ids_bc, output_ids
 
 
-def create_generator_sim(ids_sim, labels_sim, path="training", batch_size=40, rescale_mean=0, rescale_std=1, z=99):
+def create_generator_sim(ids_sim, labels_sim, path="training", batch_size=40, rescale_mean=0, rescale_std=1, z=99,
+                         dim=(51, 51, 51)):
     partition = {'ids': list(ids_sim.astype("str"))}
     labels_dic = dict(zip(list(ids_sim.astype("str")), labels_sim))
 
-    gen_params = {'dim': (51, 51, 51), 'batch_size': batch_size, 'n_channels': 1, 'shuffle': False}
+    gen_params = {'dim': dim, 'batch_size': batch_size, 'n_channels': 1, 'shuffle': False}
 
     training_generator = dp.DataGenerator(partition['ids'], labels_dic, **gen_params,
                                           saving_path=path, rescale_mean=rescale_mean, rescale_std=rescale_std, z=z)
@@ -52,7 +54,7 @@ def create_generator_sim(ids_sim, labels_sim, path="training", batch_size=40, re
 
 # create a list of names for particles ID in each simulation
 
-def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=40,
+def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=40, dim=(51, 51, 51),
                                    path="/lfstev/deepskies/luisals/", rescale_mean=0, rescale_std=1, z=99):
     labels_dic = {}
     for i in range(len(list_sims)):
@@ -69,13 +71,33 @@ def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batc
     labels_reordered = dict([(key, labels_dic[key]) for key in ids_reordering])
     partition = {'ids': list(labels_reordered.keys())}
 
-    gen_params = {'dim': (51, 51, 51), 'batch_size': batch_size, 'n_channels': 1,
+    gen_params = {'dim': dim, 'batch_size': batch_size, 'n_channels': 1,
                   'shuffle': False}
 
     training_generator = dp.DataGenerator(partition['ids'], labels_reordered, **gen_params,
                                           rescale_mean=rescale_mean, rescale_std=rescale_std,
                                           multiple_sims=True, saving_path=path, z=z)
     return training_generator
+
+
+def compute_mean_std_inputs(list_sims, list_ids_per_sim, labels_sim, batch_size=40,
+                                   path="/lfstev/deepskies/luisals/", z=99):
+    gen = create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=batch_size,
+                                   path=path, rescale_mean=0, rescale_std=1, z=z)
+    num_batches = len(gen.indexes)/batch_size
+
+    means = []
+    for i in range(num_batches):
+        # takes forever....
+
+        bi = gen[i]
+        means.append(np.mean(bi[0]))
+        del bi
+
+    mean_inputs = np.mean(means)
+    std = np.std()
+
+    return np.mean(means)
 
 
 # Spherical overdensities functions

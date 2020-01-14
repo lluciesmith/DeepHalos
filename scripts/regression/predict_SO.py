@@ -3,16 +3,16 @@ sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
 import data_processing as dp
 import tensorflow as tf
-from utils import generator_binary_classification as gbc
+from utils import generators_training as gbc
 from tensorflow.keras.models import load_model
 import sklearn.preprocessing
 
 
 if __name__ == "__main__":
-    path_model = "/lfstev/deepskies/luisals/regression/test_spherical_overden/standardize/scale_25/"
+    path_model = "/lfstev/deepskies/luisals/regression/test_spherical_overden/standardize/scale_34/"
     ph = "/lfstev/deepskies/luisals/"
-    model_file = path_model + "/model_80_epochs_mixed_sims.h5"
-    index_scale = 25
+    model_file = path_model + "/model/weights.25.hdf5"
+    index_scale = 34
     batch_size = 80
 
     rescale_mean = 1.004
@@ -39,12 +39,12 @@ if __name__ == "__main__":
 
     pred_1 = model.predict_generator(generator_1, verbose=1)
     so_pred1 = output_scaler.inverse_transform(pred_1).flatten()
-    np.save(path_model + "/predictions/pred1_28.npy", so_pred1)
+    np.save(path_model + "/predictions/pred1_25.npy", so_pred1)
     np.save(path_model + "/predictions/truth1.npy", output_scaler.inverse_transform(so_1).flatten())
 
     pred_3 = model.predict_generator(generator_3, verbose=1)
     so_pred3 = output_scaler.inverse_transform(pred_3).flatten()
-    np.save(path_model + "/predictions/pred3_28.npy", so_pred3)
+    np.save(path_model + "/predictions/pred3_25.npy", so_pred3)
     np.save(path_model + "/predictions/truth3.npy", output_scaler.inverse_transform(so_3).flatten())
 
     # pred_1 = model.predict_generator(generator_1, verbose=1)

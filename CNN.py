@@ -42,31 +42,12 @@ class CNN:
                 self.model, self.history = self.fit_model_single_gpu()
             elif num_gpu > 1:
                 self.model, self.history = self.fit_model_multiple_gpu(num_gpu)
+        else:
+            self.model = self.compile_model()
 
     def fit_model_single_gpu(self):
-        if self.model_type == "regression":
-            print("Initiating regression model")
+        Model = self.compile_model()
 
-            Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                   data_format=self.data_format)
-
-            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
-                                              amsgrad=True)
-            Model.compile(loss='mse', optimizer=optimiser, metrics=self.metrics)
-
-        elif self.model_type == "binary_classification":
-            print("Initiating binary classification model")
-
-            Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                              data_format=self.data_format)
-            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
-                                              amsgrad=True)
-            Model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
-
-        else:
-            raise NameError("Choose either regression or binary classification as model type")
-
-        print(Model.summary())
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
@@ -117,6 +98,32 @@ class CNN:
             Model.save(self.model_name)
 
         return parallel_model, history
+
+    def compile_model(self):
+        if self.model_type == "regression":
+            print("Initiating regression model")
+
+            Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                   data_format=self.data_format)
+
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+                                              amsgrad=True)
+            Model.compile(loss='mse', optimizer=optimiser, metrics=self.metrics)
+
+        elif self.model_type == "binary_classification":
+            print("Initiating binary classification model")
+
+            Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                              data_format=self.data_format)
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+                                              amsgrad=True)
+            Model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
+
+        else:
+            raise NameError("Choose either regression or binary classification as model type")
+
+        print(Model.summary())
+        return Model
 
     def first_convolutional_layer(self, input_data, input_shape_box=(17, 17, 17, 1), num_kernels=3,
                                   dim_kernel=(7, 7, 7), strides=2, padding='valid', data_format="channels_last",
@@ -220,9 +227,9 @@ class CNN:
 def lr_scheduler(epoch):
     n = 10
     if epoch < n:
-        return 0.001
+        return 0.0001
     else:
-        return 0.001 * np.math.exp(0.08 * (n - epoch))
+        return 0.0001 * np.math.exp(0.08 * (n - epoch))
 
 
 class AucCallback(Callback):

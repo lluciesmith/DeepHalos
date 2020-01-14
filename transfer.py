@@ -24,3 +24,8 @@ for i in range(len(dirs)):
     val_ids = np.array(val_ids)
     print(len(val_ids))
     np.savetxt(dir + "../saved_ids_training_set.txt", val_ids, fmt="%i", delimiter=",")
+
+
+
+# rsync -avz -e 'ssh -o GSSAPIAuthentication=yes'/share/hypatia/lls/tra/features/traj_index_25.npy
+    # luisals@tev.fnal.gov:/lfstev/deepskies/luisals/reseed1_simulation/

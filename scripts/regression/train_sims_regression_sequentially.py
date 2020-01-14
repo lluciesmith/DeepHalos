@@ -4,7 +4,7 @@ import numpy as np
 import CNN
 import data_processing as dp
 from tensorflow import set_random_seed
-from utils import generator_binary_classification as gbc
+from utils import generators_training as gbc
 from tensorflow.keras.models import load_model
 
 

@@ -8,6 +8,7 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 from utils import generators_training as gbc
 import time
 import tensorflow
+from keras.model import load_model
 
 
 if __name__ == "__main__":
@@ -53,44 +54,28 @@ if __name__ == "__main__":
 
 ######### TRAINING MODEL ##############
 
+    model = load_model(path_model + "/model/weights.25.hdf5")
+
     # checkpoint
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
     checkpoint_call = callbacks.ModelCheckpoint(filepath, freq='epoch')
 
     # save histories
-    csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=False)
+    csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=True)
 
     # decay the learning rate
-    # lr_decay = LearningRateScheduler(CNN.lr_scheduler)
+    lr_decay = LearningRateScheduler(CNN.lr_scheduler)
 
-    callbacks_list = [checkpoint_call, csv_logger]
-    # callbacks_list = [checkpoint_call, csv_logger, lr_decay]
+    # callbacks_list = [checkpoint_call, csv_logger]
+    callbacks_list = [checkpoint_call, csv_logger, lr_decay]
 
     tensorflow.compat.v1.set_random_seed(7)
 
-    param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3),
-                             'strides': 2, 'padding': 'valid', 'pool': True, 'bn': False},
-                  'conv_2': {'num_kernels': 8, 'dim_kernel': (3, 3, 3),
-                             'strides': 1, 'padding': 'valid', 'pool': True, 'bn': False},
-                  'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
-                             'strides': 1, 'padding': 'valid',  'pool': True, 'bn': False},
-                  # 'conv_4': {'num_kernels': 64, 'dim_kernel': (2, 2, 2),
-                  #            'strides': 1, 'padding': 'valid', 'pool': False, 'bn': True}
-                  }
+    history = model.fit_generator(generator=generator_training, validation_data=generator_1,
+                                  use_multiprocessing=True, workers=12,
+                                  verbose=1, epochs=50, shuffle=True,
+                                  callbacks=callbacks_list, validation_freq=1, initial_epoch=25)
 
-    param_fcc = {#'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.2},
-                 'dense_1': {'neurons': 256, 'bn': False, 'dropout': 0.2},
-                 'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.2}}
-
-    Model = CNN.CNN(generator_training, param_conv, param_fcc,
-                    validation_generator=generator_1, validation_freq=1,
-                    # metrics=["mae"],
-                    callbacks=callbacks_list, use_multiprocessing=True, num_epochs=80,
-                    workers=12, verbose=1, model_type="regression", lr=0.0001)
-
-    model = Model.model
-    history = Model.history
-
-    np.save(path_model + "/history_80_epochs_mixed_sims.npy", history.history)
+    np.save(path_model + "/history_80_epochs_mixed_sims.npy", history)
     model.save(path_model + "/model_80_epochs_mixed_sims.h5")
 

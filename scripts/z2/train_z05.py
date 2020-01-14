@@ -14,7 +14,7 @@ if __name__ == "__main__":
     ########### CREATE GENERATORS FOR SIMULATIONS #########
 
     # ph = "share/hypatia/lls/deep_halos/"
-    path_model = "/lfstev/deepskies/luisals/regression/z0/"
+    path_model = "/lfstev/deepskies/luisals/regression/z_05/"
     ph = "/lfstev/deepskies/luisals/"
 
     rescale_mean = 0
@@ -34,15 +34,15 @@ if __name__ == "__main__":
     ids_s = [ids_2, ids_3, ids_4, ids_5]
     output_ids, output_scaler = gbc.get_standard_scaler_and_transform([mass_2, mass_3, mass_4, mass_5])
     generator_training = gbc.create_generator_multiple_sims(sims, ids_s, output_ids, batch_size=80,
-                                                            rescale_mean=rescale_mean, rescale_std=rescale_std, z=0)
+                                                            rescale_mean=rescale_mean, rescale_std=rescale_std, z=0.5)
 
     # validation set
     ran_val = np.random.choice(np.arange(20000), 4000)
     # np.save(path_model + "ran_val1.npy", ran_val)
     ids_1, mass_1 = gbc.get_ids_and_regression_labels(sim="1", ids_filename=f, fitted_scaler=output_scaler)
     generator_1 = gbc.create_generator_sim(ids_1[ran_val], mass_1[ran_val], batch_size=80,
-                                           rescale_mean=rescale_mean, rescale_std=rescale_std, z=0,
-                                           path=ph + "reseed1_simulation/z0_subboxes/")
+                                           rescale_mean=rescale_mean, rescale_std=rescale_std, z=0.5,
+                                           path=ph + "reseed1_simulation/z05_subboxes/")
 
     t1 = time.time()
     print("Loading generators took " + str((t1 - t0) / 60) + " minutes.")

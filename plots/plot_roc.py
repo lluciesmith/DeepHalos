@@ -3,7 +3,7 @@ sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
 import CNN
 from tensorflow import set_random_seed
-from utils import generator_binary_classification as gbc
+from utils import generators_training as gbc
 from tensorflow.keras.models import load_model
 
 

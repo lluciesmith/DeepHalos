@@ -58,7 +58,7 @@ class DataGenerator(Sequence):
 
     def _process_input(self, matrix):
 
-        if self.dim != (51, 51, 51):
+        if self.dim < (51, 51, 51):
             low_idx = int(25 - (self.dim[0] - 1) / 2)
             high_idx = int(25 + (self.dim[0] - 1) / 2 + 1)
             s = matrix[low_idx:high_idx, low_idx:high_idx, low_idx:high_idx]
@@ -109,7 +109,7 @@ class DataGenerator(Sequence):
                 elif self.z == 0.5:
                     path_midddle = "z05_subboxes/"
                 elif self.z == 0:
-                    path_midddle = "z0_subboxes/"
+                    path_midddle = "z0_subboxes_res75/"
                 else:
                     raise(ValueError, "Get subboxes from z=99, z=2 or z=0.")
 
