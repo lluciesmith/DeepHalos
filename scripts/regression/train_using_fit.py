@@ -99,8 +99,8 @@ param_conv = {'conv_1': {'num_kernels': 8, 'dim_kernel': (3, 3, 3),
               'conv_4': {'num_kernels': 64, 'dim_kernel': (3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': True, 'bn': True},
               }
-param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.2},
-             'dense_2': {'neurons': 256, 'bn': True, 'dropout': 0.2},
+param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.4},
+             'dense_2': {'neurons': 256, 'bn': True, 'dropout': 0.4},
              #'dense_3': {'neurons': 128, 'bn': True, 'dropout': 0.2}
              }
 Model = CNN.CNN(generator_training, param_conv, param_fcc,
