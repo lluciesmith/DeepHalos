@@ -15,7 +15,7 @@ import tensorflow
 ########### CREATE GENERATORS FOR SIMULATIONS #########
 
 # ph = "share/hypatia/lls/deep_halos/"
-path_model = "/lfstev/deepskies/luisals/regression/train_mixed_sims/fit/"
+path_model = "/lfstev/deepskies/luisals/regression/train_mixed_sims/fit/skip/"
 ph = "/lfstev/deepskies/luisals/"
 
 rescale_mean = 1.004
@@ -42,7 +42,7 @@ X, y = generator_training[0]
 ran_val = np.random.choice(np.arange(20000), 4000)
 np.save(path_model + "ran_val1.npy", ran_val)
 ids_1, mass_1 = gbc.get_ids_and_regression_labels(sim="1", ids_filename=f, fitted_scaler=output_scaler)
-generator_1 = gbc.create_generator_sim(ids_1[ran_val], mass_1[ran_val], batch_size=4000, rescale_mean=rescale_mean,
+generator_1 = gbc.create_generator_sim(ids_1, mass_1, batch_size=4000, rescale_mean=rescale_mean,
                                        rescale_std=rescale_std, path=ph + "reseed1_simulation/training_set/")
 X_val1, y_val1 = generator_1[0]
 
@@ -111,7 +111,7 @@ Model = CNN.CNN(generator_training, param_conv, param_fcc,
                 workers=12, verbose=1, model_type="regression", lr=0.0001, train=False, skip_connector=True)
 
 history = Model.model.fit(X, y, batch_size=80, verbose=1, epochs=100, validation_data=(X_val1, y_val1),
-                          shuffle=True, callbacks=callbacks_list)
+                          shuffle=True, callbacks=callbacks_list, initial_epoch=32)
 np.save(path_model + "/history_100_epochs_mixed_sims.npy", history.history)
 Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")
 
@@ -119,9 +119,9 @@ Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")
 path_model = '/lfstev/deepskies/luisals/regression/train_mixed_sims/fit/skip/'
 
 m = load_model(path_model + "/model/weights.60.hdf5")
-pred1 = m.predict(X_val)
+pred1 = m.predict(X_val1)
 h_m_pred = output_scaler.inverse_transform(pred1).flatten()
-true1 = output_scaler.inverse_transform(y_val).flatten()
+true1 = output_scaler.inverse_transform(y_val1).flatten()
 np.save(path_model + "predicted1_60.npy", h_m_pred)
 np.save(path_model + "true1_60.npy", true1)
 
