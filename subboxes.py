@@ -48,7 +48,8 @@ class Subboxes:
         return snapshot["delta"]
 
     def get_ids_in_3d_grid(self):
-        return np.arange(self.shape**3).reshape(self.shape, self.shape, self.shape)
+        ids = self.snapshot["iord"]
+        return np.arange(ids).reshape(self.shape, self.shape, self.shape)
 
     def get_3d_coordinates(self, flatten=False):
         x = np.arange(self.shape)
@@ -141,58 +142,17 @@ class Subboxes:
         qty_ids = self.from_ids_to_delta_in_subbox(snapshot, particle_id, ids_subbox)
         return qty_ids
 
-    def single_core_compute_subboxes(self, particles):
-        if len(particles) > 100:
-            print("You're gonna end up with a big array which may exceed memory..")
-        shape_subbox = self.subbox_shape[0]
-
-        inputs = np.zeros((len(particles), shape_subbox, shape_subbox, shape_subbox))
-        for i in range(len(particles)):
-            # print("Particle " + str(i) + ": " + str(particles[i]))
-
-            if i == len(particles)/2:
-                print("Half way")
-
-            delta_sub = self.get_qty_in_subbox(particles[i])
-            inputs[i] = delta_sub
-            del delta_sub
-            gc.collect()
-
-        return inputs
-
-    def delta_in_subboxes_around_particles(self, particles, n_processors=1):
-        if n_processors == 1:
-            inputs = self.single_core_compute_subboxes(particles)
-        else:
-            raise NameError("Not implemented yet in parallel")
-            # pool = Pool(processes=n_processors)
-            # function = self.get_qty_in_subbox
-            # inputs = pool.map(function, particles)
-            # pool.close()
-        return inputs
+    # Compute and save subbox
 
     def compute_and_save_subbox_particle(self, particle_id, path):
         delta_sub = self.get_qty_in_subbox(particle_id)
         np.save(path + "/" + str(particle_id) + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
         return delta_sub
 
-    def compute_and_save_subboxes(self, particles, path):
-        """ Use this function when computing subboxes for many particles """
-        for i in range(len(particles)):
-            if i == len(particles) / 4:
-                print("Quarter of the way")
-
-            if i == len(particles)/2:
-                print("Half way")
-
-            particle_id = particles[i]
-            try:
-                delta_sub = self.compute_and_save_subbox_particle(particle_id, path)
-                del delta_sub
-                gc.collect()
-
-            except ValueError:
-                print("This failed for particle " + str(particle_id))
+    # If you don't want to this in the cheap way -- which assumes that the density estimate of a grid point is
+    # equivalent to that of the particle at that grid location (this is valid because in the ICs there is basically
+    # one particle per grid point) -- then you can actually estimate the density in a 3D box surrounding the particle
+    #  using SPH.
 
     def get_sph_particle(self, particle_id):
         sim = self.snapshot
