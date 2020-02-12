@@ -44,8 +44,8 @@ if __name__ == "__main__":
 
     saving_path = "/share/hypatia/lls/deep_halos/training_sim/training_set_res75/"
     sub_in = subb.Subboxes(initial_params, subbox_shape=(75, 75, 75))
-    subset_ids = np.loadtxt("/share/hypatia/lls/deep_halos/reseed_1/reseed_1_random_training_set.txt", dtype="int",
-                            delimiter=",")
+    subset_ids = np.loadtxt("/share/hypatia/lls/deep_halos/training_sim/training_sim_random_training_set.txt",
+                            dtype="int", delimiter=",")
 
     pool = Pool(processes=80)
     pool.map(compute_and_save_subbox_particle, subset_ids)
