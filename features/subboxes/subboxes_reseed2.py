@@ -11,17 +11,19 @@ import gc
 import re
 
 
-def compute_and_save_subbox_particle(particle_id):
+def compute_and_save_subbox_particle(id_path_tuple):
+    particle_id, saving_path = id_path_tuple
+
     try:
         delta_sub = sub_in.get_qty_in_subbox(particle_id)
-        # saved_ids.append(particle_id)
-        os.makedirs(saving_path + str(particle_id))
-        np.save(saving_path + str(particle_id) + "/subbox_75_particle_" + str(particle_id) + ".npy", delta_sub)
-        del delta_sub
-        gc.collect()
+    except:
+        print("This failed for particle " + str(particle_id) + "so doing proper SPH")
+        delta_sub = sub_in.get_sph_particle(particle_id)
 
-    except ValueError:
-        print("This failed for particle " + str(particle_id))
+    os.makedirs(saving_path + str(particle_id))
+    np.save(saving_path + str(particle_id) + "/subbox_75_particle_" + str(particle_id) + ".npy", delta_sub)
+    del delta_sub
+    gc.collect()
 
 
 if __name__ == "__main__":
@@ -50,7 +52,7 @@ if __name__ == "__main__":
                             delimiter=",")
 
     pool = Pool(processes=80)
-    pool.map(compute_and_save_subbox_particle, subset_ids)
+    pool.map(compute_and_save_subbox_particle, (subset_ids, saving_path))
     pool.close()
 
     # np.savetxt("/share/hypatia/lls/deep_halos/reseed_2/saved_ids_training_set.txt",

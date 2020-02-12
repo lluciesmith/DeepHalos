@@ -13,6 +13,7 @@ import numpy as np
 import sys; sys.path.append("/home/lls/mlhalos_code/")
 # import sys; sys.path.append("/Users/lls/Documents/mlhalos_code/")
 import gc
+import pynbody
 
 
 class Subboxes:
@@ -193,7 +194,21 @@ class Subboxes:
             except ValueError:
                 print("This failed for particle " + str(particle_id))
 
+    def get_sph_particle(self, particle_id):
+        sim = self.snapshot
+        qty = self.qty
+        resolution = self.subbox_shape[0]
+        width = float(sim.properties['boxsize']/self.shape * resolution)
 
+        pynbody.analysis.halo.center(sim[particle_id], vel=False, wrap=True)
+        subbox_sph = self.get_sph_on_3dgrid(sim, width=width, resolution=resolution, qty=qty)
+        return subbox_sph
+
+    def get_sph_on_3dgrid(self, sim, width=200., resolution=51, qty="delta"):
+        x2 = width / 2
+        xy_units = sim["pos"].units
+        grid_data = pynbody.sph.to_3d_grid(sim, qty=qty, nx=resolution, x2=x2, xy_units=xy_units)
+        return grid_data
     # def boundary_condition_on_z(x_condition, y_condition, case3, case03, z_coords, z_pos, one_sided_neighbours, box_shape):
     #     if case3:
     #         lz = box_shape - z_pos
