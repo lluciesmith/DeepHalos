@@ -49,7 +49,7 @@ class Subboxes:
 
     def get_ids_in_3d_grid(self):
         ids = self.snapshot["iord"]
-        return np.arange(ids).reshape(self.shape, self.shape, self.shape)
+        return ids.reshape(self.shape, self.shape, self.shape)
 
     def get_3d_coordinates(self, flatten=False):
         x = np.arange(self.shape)

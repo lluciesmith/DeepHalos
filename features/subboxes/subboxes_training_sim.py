@@ -15,7 +15,7 @@ def compute_and_save_subbox_particle(particle_id):
     try:
         delta_sub = sub_in.get_qty_in_subbox(particle_id)
     except:
-        print("This failed for particle " + str(particle_id) + "so doing proper SPH")
+        print("This failed for particle " + str(particle_id) + " so doing proper SPH")
         delta_sub = sub_in.get_sph_particle(particle_id)
 
     os.makedirs(saving_path + str(particle_id))
