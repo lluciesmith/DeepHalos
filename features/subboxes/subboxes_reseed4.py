@@ -10,8 +10,7 @@ import gc
 import os
 
 
-def compute_and_save_subbox_particle(id_path_tuple):
-    particle_id, saving_path = id_path_tuple
+def compute_and_save_subbox_particle(particle_id):
 
     try:
         delta_sub = sub_in.get_qty_in_subbox(particle_id)
@@ -56,5 +55,5 @@ if __name__ == "__main__":
                             delimiter=",")
 
     pool = Pool(processes=80)
-    pool.map(compute_and_save_subbox_particle, (subset_ids, saving_path))
+    pool.map(compute_and_save_subbox_particle, subset_ids)
     pool.close()
