@@ -1,5 +1,7 @@
 import numpy as np
-import sys; sys.path.append("/home/lls/mlhalos_code/")
+import sys;
+
+sys.path.append("/home/lls/mlhalos_code/")
 sys.path.append("/home/lls/")
 # import sys; sys.path.append("/Users/lls/Documents/mlhalos_code/")
 # sys.path.append("/Users/lls/Documents/Projects/")
@@ -24,11 +26,10 @@ def compute_and_save_subbox_particle(particle_id):
 
 
 if __name__ == "__main__":
-    path_sim = "/share/hypatia/app/luisa/standard_reseed5/"
-    halo_mass = np.load("/share/data1/lls/standard_reseed5/halo_mass_particles.npy")
+    path_sim = "/share/hypatia/lls/simulations/standard_reseed6/"
 
-    initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "IC.gadget3",
-                                                            final_snapshot=path_sim + "snapshot_099",
+    initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "IC.gadget2",
+                                                            final_snapshot=path_sim + "output/snapshot_007",
                                                             load_final=True)
 
     # saving_path = "/share/hypatia/lls/deep_halos/reseed_5/training_set/"
@@ -48,9 +49,9 @@ if __name__ == "__main__":
 
     # Sub-boxes of shape (75, 75, 75)
 
-    saving_path = "/share/hypatia/lls/deep_halos/reseed_5/training_set_res75/"
+    saving_path = "/share/hypatia/lls/deep_halos/reseed_6/training_set_res75/"
     sub_in = subb.Subboxes(initial_params, subbox_shape=(75, 75, 75))
-    subset_ids = np.loadtxt("/share/hypatia/lls/deep_halos/reseed_5/reseed_5_random_training_set.txt", dtype="int",
+    subset_ids = np.loadtxt("/share/hypatia/lls/deep_halos/reseed_6/reseed_6_random_training_set.txt", dtype="int",
                             delimiter=",")
 
     pool = Pool(processes=80)
