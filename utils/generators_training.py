@@ -1,6 +1,7 @@
 import numpy as np
 import data_processing as dp
 import sklearn.preprocessing
+import time
 
 
 def get_standard_scaler_and_transform(list_outputs):
@@ -40,6 +41,9 @@ def get_ids_and_regression_labels(sim="0", ids_filename="balanced_training_set.t
     return ids_bc, output_ids
 
 
+################# GENERATORS ##################
+
+
 def create_generator_sim(ids_sim, labels_sim, path="training", batch_size=40, rescale_mean=0, rescale_std=1, z=99,
                          dim=(51, 51, 51)):
     partition = {'ids': list(ids_sim.astype("str"))}
@@ -56,6 +60,8 @@ def create_generator_sim(ids_sim, labels_sim, path="training", batch_size=40, re
 
 def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=40, dim=(51, 51, 51),
                                    path="/lfstev/deepskies/luisals/", rescale_mean=0, rescale_std=1, z=99):
+    t0 = time.time()
+
     labels_dic = {}
     for i in range(len(list_sims)):
         sim_i = list_sims[i]
@@ -74,30 +80,33 @@ def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batc
     gen_params = {'dim': dim, 'batch_size': batch_size, 'n_channels': 1,
                   'shuffle': False}
 
+    t1 = time.time()
+    print("Setting up parameters for data generator took " + str((t1 - t0) / 60) + " minutes.")
+
     training_generator = dp.DataGenerator(partition['ids'], labels_reordered, **gen_params,
                                           rescale_mean=rescale_mean, rescale_std=rescale_std,
                                           multiple_sims=True, saving_path=path, z=z)
     return training_generator
 
 
-def compute_mean_std_inputs(list_sims, list_ids_per_sim, labels_sim, batch_size=40,
-                                   path="/lfstev/deepskies/luisals/", z=99):
-    gen = create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=batch_size,
-                                   path=path, rescale_mean=0, rescale_std=1, z=z)
-    num_batches = len(gen.indexes)/batch_size
-
-    means = []
-    for i in range(num_batches):
-        # takes forever....
-
-        bi = gen[i]
-        means.append(np.mean(bi[0]))
-        del bi
-
-    mean_inputs = np.mean(means)
-    std = np.std()
-
-    return np.mean(means)
+# def compute_mean_std_inputs(list_sims, list_ids_per_sim, labels_sim, batch_size=40,
+#                                    path="/lfstev/deepskies/luisals/", z=99):
+#     gen = create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=batch_size,
+#                                    path=path, rescale_mean=0, rescale_std=1, z=z)
+#     num_batches = len(gen.indexes)/batch_size
+#
+#     means = []
+#     for i in range(num_batches):
+#         # takes forever....
+#
+#         bi = gen[i]
+#         means.append(np.mean(bi[0]))
+#         del bi
+#
+#     mean_inputs = np.mean(means)
+#     std = np.std()
+#
+#     return np.mean(means)
 
 
 # Spherical overdensities functions

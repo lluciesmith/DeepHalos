@@ -101,7 +101,7 @@ def plot_diff_predicted_true_radial_ranges(den_inner, truth_inner, den_mid, trut
                  histtype="step", density=density, lw=lw, color=col_mid)
     _ = ax1.hist(den_outer[low_mass_outer] - truth_outer[low_mass_outer], bins=bins_radial_distributions,
                  histtype="step", density=density, lw=lw, color=col_out)
-    ax1.set_title(r"$\log(M_{\mathrm{true}}) \leq %.2f$" % mass_bins[1])
+    ax1.set_title(r"$ %.2f \leq \log(M_{\mathrm{true}}) \leq %.2f$" % (mass_bins[0], mass_bins[1]))
 
     mid_mass_inner = (truth_inner >= mass_bins[1]) & (truth_inner < mass_bins[2])
     mid_mass_mid = (truth_mid >= mass_bins[1]) & (truth_mid < mass_bins[2])
@@ -138,7 +138,7 @@ def plot_diff_predicted_true_radial_ranges(den_inner, truth_inner, den_mid, trut
     ax1.set_xlabel(r"$\log(M_{\mathrm{predicted}}/M_{\mathrm{true}})$")
     ax2.set_xlabel(r"$\log(M_{\mathrm{predicted}}/M_{\mathrm{true}})$")
     ax3.set_xlabel(r"$\log(M_{\mathrm{predicted}}/M_{\mathrm{true}})$")
-    ax3.set_xticks([-3, -2, -1, 0, 1, 2, 3])
+    ax3.set_xticks([-4, -3, -2, -1, 0, 1, 2, 3, 4])
 
     # ax1.text(0.2, 0.8, "Low-mass \n haloes", horizontalalignment='center', verticalalignment='center',
     #          fontweight='bold', transform=ax1.transAxes)
@@ -146,6 +146,7 @@ def plot_diff_predicted_true_radial_ranges(den_inner, truth_inner, den_mid, trut
     #          fontweight='bold', transform=ax2.transAxes)
     # ax3.text(0.8, 0.8, "High-mass \n haloes", horizontalalignment='center', verticalalignment='center',
     #          fontweight='bold', transform=ax3.transAxes)
+
 
 def plot_diff_predicted_true_subhalos(den_inner, truth_inner, den_mid, truth_mid, den_outer, truth_outer,
                                           bins_radial_distributions, mass_bins,
@@ -208,3 +209,38 @@ def plot_diff_predicted_true_subhalos(den_inner, truth_inner, den_mid, truth_mid
              fontweight='bold', transform=ax2.transAxes)
     ax3.text(0.8, 0.8, "High-mass \n haloes", horizontalalignment='center', verticalalignment='center',
              fontweight='bold', transform=ax3.transAxes)
+
+
+def plot_radial_range_only_high_mass(den_inner, truth_inner, den_mid, truth_mid, den_outer, truth_outer,
+                                          bins_radial_distributions, mass_bins,
+                                          col_in, col_mid, col_out, i1, m0, m1, o0, figsize=(10, 5.1),
+                                           col_truth="dimgrey", lw=1.8,
+                                          density=True, fontsize=15):
+    f, ax3 = plt.subplots(nrows=1, ncols=1)
+    ax3.axvline(x=0, color=col_truth, ls="--")
+
+    high_mass_inner = (truth_inner >= mass_bins[2]) & (truth_inner <= mass_bins[3])
+    high_mass_mid = (truth_mid >= mass_bins[2]) & (truth_mid <= mass_bins[3])
+    high_mass_outer = (truth_outer >= mass_bins[2]) & (truth_outer <= mass_bins[3])
+    aa = ax3.hist(den_inner[high_mass_inner] - truth_inner[high_mass_inner], bins=bins_radial_distributions,
+                  histtype="step", density=density, lw=lw, color=col_in)
+    bb = ax3.hist(den_mid[high_mass_mid] - truth_mid[high_mass_mid], bins=bins_radial_distributions,
+                  histtype="step", density=density, lw=lw, color=col_mid)
+    dd = ax3.hist(den_outer[high_mass_outer] - truth_outer[high_mass_outer], bins=bins_radial_distributions,
+                  histtype="step", density=density, lw=lw, color=col_out)
+    ax3.set_title(r"$\log(M_{\mathrm{true}}) \geq %.2f$" % mass_bins[2])
+
+    plt.subplots_adjust(wspace=0, bottom=0.14, left=0.08)
+    plt.figlegend((aa[2][0], bb[2][0], dd[2][0]),
+                  (r"$r/\mathrm{r_{vir}} \leq %.1f $" % i1,
+                   r"$%.1f\leq r/\mathrm{r_{vir}}\leq %.1f $" % (m0, m1),
+                   # r"$%.1f\leq r/\mathrm{r_{vir}}\leq %.1f $" % (o0, o1),
+                   r"$r/\mathrm{r_{vir}} > %.1f $" % o0,
+                   ),
+                   loc='best',
+                  bbox_to_anchor=(0.12, 0.45, 0.4, 0.4),
+                  framealpha=1, fontsize=16)
+
+    ax3.set_ylabel(r"$n_{\mathrm{particles}}$")
+    ax3.set_xlabel(r"$\log(M_{\mathrm{predicted}}/M_{\mathrm{true}})$")
+    ax3.set_xticks([-3, -2, -1, 0, 1, 2, 3])

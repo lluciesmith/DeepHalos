@@ -77,7 +77,7 @@ if __name__ == "__main__":
     pred_outer_high_mass = pred_outer[ind_high_mass]
     subh_mass_outer_high_mass = subh_mass_outer[ind_high_mass]
 
-    ind_wrong = np.where(abs(truth_outer_high_mass - pred_outer_high_mass) >= 1)[0]
+    ind_wrong = np.where(abs(truth_outer_high_mass - pred_outer_high_mass) <= 1)[0]
 
     plt.scatter(subh_mass_outer_high_mass[ind_wrong], pred_outer_high_mass[ind_wrong], s=4, alpha=0.8,
                 label=r"$|\log(M_\mathrm{true}/M_\mathrm{predicted})|\geq 1$")

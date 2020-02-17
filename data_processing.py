@@ -10,6 +10,7 @@ class DataGenerator(Sequence):
                  saving_path="/share/data2/lls/deep_halos/subboxes/subbox_51_particle_",
                  halo_masses="", multiple_sims=False, rescale_mean=0, rescale_std=1, z=99):
         self.dim = dim
+        self.res = str(dim[0])
         self.batch_size = batch_size
         self.labels = labels
         self.list_IDs = list_IDs
@@ -42,11 +43,14 @@ class DataGenerator(Sequence):
     def __getitem__(self, index):
         """ Generate a batch of data """
         indexes = self.indexes[index*self.batch_size: (index+1)*self.batch_size]
-
         list_IDs_temp = [self.list_IDs[k] for k in indexes]
+
         if self.multiple_sims is True:
+            print("Starting to load data from multiple sims..")
             X, y = self.__data_generation_multiple_sims(list_IDs_temp)
+
         else:
+            print("Starting to load data from one sim..")
             X, y = self.__data_generation(list_IDs_temp)
         return X, y
 
@@ -84,7 +88,7 @@ class DataGenerator(Sequence):
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            s = np.load(self.path + ID + '/subbox_51_particle_' + ID + '.npy')
+            s = np.load(self.path + ID + '/subbox_' + self.res + '_particle_' + ID + '.npy')
 
             X[i] = self._process_input(s)
             y[i] = self.labels[ID]
@@ -103,7 +107,12 @@ class DataGenerator(Sequence):
                 particle_ID = ID[9:]
 
                 if self.z == 99:
-                    path_midddle = "training_set/"
+                    if self.res == "51":
+                        path_midddle = "training_set/"
+                    elif self.res == "75":
+                        path_midddle = "training_set_res75/"
+                    else:
+                        raise(ValueError, "I have subboxes only for 51 or 75 cubed resolution.")
                 elif self.z == 2.1:
                     path_midddle = "z2_subboxes_500/"
                 elif self.z == 0.5:
@@ -115,10 +124,10 @@ class DataGenerator(Sequence):
 
                 if sim_index == "0":
                     s = np.load(self.path + 'training_simulation/' + path_midddle + particle_ID +
-                                '/subbox_51_particle_' + particle_ID + '.npy')
+                                '/subbox_' + self.res + '_particle_' + particle_ID + '.npy')
                 else:
                     s = np.load(self.path + "reseed" + sim_index + "_simulation/" + path_midddle +
-                                particle_ID + '/subbox_51_particle_' + particle_ID + '.npy')
+                                particle_ID + '/subbox_' + self.res + '_particle_' + particle_ID + '.npy')
 
                 X[i] = self._process_input(s)
                 y[i] = self.labels[ID]

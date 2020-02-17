@@ -10,37 +10,73 @@ import gc
 import os
 
 
+def halo_mass_particles(initial_parameters):
+    f = initial_parameters.final_snapshot
+    halo_ids = f["grp"]
+    h_mass = np.zeros(len(halo_ids),)
+
+    for i in range(len(initial_parameters.halo)):
+        ind = np.where(halo_ids == i)[0]
+        h_mass[ind] = initial_parameters.halo[i]['mass'].sum()
+
+    return h_mass
+
+
 def compute_and_save_subbox_particle(particle_id):
     try:
         delta_sub = sub_in.get_qty_in_subbox(particle_id)
-        saved_ids.append(particle_id)
-        os.makedirs(saving_path + str(particle_id))
-        np.save(saving_path + str(particle_id) + "/subbox_51_particle_" + str(particle_id) + ".npy", delta_sub)
-        del delta_sub
-        gc.collect()
+    except:
+        print("This failed for particle " + str(particle_id) + "so doing proper SPH")
+        delta_sub = sub_in.get_sph_particle(particle_id)
 
-    except ValueError:
-        print("This failed for particle " + str(particle_id))
+    os.makedirs(saving_path + str(particle_id))
+    np.save(saving_path + "subboxes/" + str(particle_id) +
+            "/subbox_" + str(res) +"_particle_" + str(particle_id) + ".npy", delta_sub)
+    del delta_sub
+    gc.collect()
 
 
 if __name__ == "__main__":
-    path_sim = "/share/hypatia/app/luisa/standard_reseed5/"
-    saving_path = "/share/hypatia/lls/deep_halos/reseed_5/training_set/"
-    halo_mass = np.load("/share/data1/lls/standard_reseed5/halo_mass_particles.npy")
+    sims = ["6", "7", "8", "9", "10"]
+    for i in range(5):
+        sim = sims[i]
 
-    initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "IC.gadget3",
-                                                            final_snapshot=path_sim + "snapshot_099",
-                                                            load_final=True)
-    sub_in = subb.Subboxes(initial_params, subbox_shape=(51, 51, 51))
-    p_ids = np.where(halo_mass > 0)[0]
+        path_sim = "/share/hypatia/lls/simulations/standard_reseed" + sim + "/"
+        saving_path = "/share/hypatia/lls/deep_halos/reseed_" + sim + "/"
 
-    subset_ids = np.random.choice(p_ids, 30000, replace=False)
-    np.save(saving_path + "../subset_30000_ids.npy", subset_ids)
-    saved_ids = []
+        initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "IC.gadget2",
+                                                                final_snapshot=path_sim + "output/snapshot_007",
+                                                                load_final=True)
 
-    pool = Pool(processes=60)
-    pool.map(compute_and_save_subbox_particle, subset_ids)
-    pool.close()
+        # Save halo mass of particles and select training samples
+        particle_ids = initial_params.final_snapshot["iord"]
 
-    np.savetxt("/share/hypatia/lls/deep_halos/reseed_5/saved_ids_training_set.txt",
-               np.array(saved_ids), fmt="%i", delimiter=",")
+        try:
+            print("Load halo mass particles")
+            halo_mass_ids = np.load(saving_path + "halo_mass_particles.npy")
+        except:
+            print("Computing halo mass particles")
+            halo_mass_ids = halo_mass_particles(initial_params)
+            np.save(saving_path + "halo_mass_particles.npy", halo_mass_ids)
+
+        particle_ids_in_halos = particle_ids[halo_mass_ids > 0]
+        halo_mass_p_ids_in_halos = halo_mass_ids[halo_mass_ids > 0]
+
+        try:
+            print("Loading training set")
+            training_set = np.loadtxt(saving_path + "reseed_" + sim + "_random_training_set.txt", dtype="int",
+                                      delimiter=",")
+        except:
+            print("Computing training set")
+            training_set = np.random.choice(particle_ids_in_halos, 20000, replace=False)
+            np.savetxt(saving_path + "reseed_" + sim + "_random_training_set.txt", training_set, fmt="%i", delimiter=",")
+
+        # Compute subboxes for particles
+
+        res = 51
+        sub_in = subb.Subboxes(initial_params, subbox_shape=(res, res, res))
+
+        pool = Pool(processes=80)
+        pool.map(compute_and_save_subbox_particle, training_set)
+        pool.close()
+
