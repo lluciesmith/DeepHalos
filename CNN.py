@@ -8,12 +8,12 @@ import time
 from tensorflow.keras.callbacks import Callback
 import numpy as np
 import evaluation as eval
-
+from tensorflow.keras import backend as K
 
 class CNN:
     def __init__(self, conv_params, fcc_params, model_type="regression",
                  training_generator=None, validation_generator=None, callbacks=None, metrics=None,
-                 num_epochs=5, dim=(51, 51, 51),
+                 num_epochs=5, dim=(51, 51, 51), initialiser=None,
                  data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False,
                  model_name="my_model.h5", num_gpu=1, lr=0.0001, validation_freq=1, train=True, skip_connector=False):
 
@@ -25,6 +25,7 @@ class CNN:
         self.fcc_params = fcc_params
         self.data_format = data_format
         self.val_freq = validation_freq
+        self.initialiser = initialiser
 
         self.num_epochs = num_epochs
         self.use_multiprocessing = use_multiprocessing
@@ -203,7 +204,22 @@ class CNN:
         return x
 
     def _model(self, input_data, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
-        initialiser = keras.initializers.he_uniform()
+        if self.initialiser == "custom":
+
+            def my_init(shape, dtype=None, partition_info=None):
+                ind = int((shape[0] - 1)/2)
+                print(shape)
+                if shape == (3, 3, 3, 1, 4):
+                    weight_matrix = np.ones(shape) * 0.001
+                    weight_matrix[ind, ind, ind] = 1
+                    return K.random_normal(shape, dtype=dtype) * weight_matrix
+                else:
+                    return K.random_normal(shape, dtype=dtype)
+
+            initialiser = my_init
+
+        else:
+            initialiser = keras.initializers.glorot_normal()
 
         if conv_params == {}:
             x = Flatten(data_format=data_format, input_shape=(*input_shape_box, 1))(input_data)
@@ -280,6 +296,12 @@ class CNN:
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
+
+    # def my_init(self, shape, dtype=None):
+    #     weight_matrix = np.zeros((3, 3, 3))
+    #     weight_matrix[1, 1, 1] = 1
+    #     l = K.random_normal(shape, dtype=dtype) * weight_matrix
+    #     return K.variable(val=l, dtype=dtype)
 
 
 # This function keeps the learning rate at 0.001 for the first ten epochs
