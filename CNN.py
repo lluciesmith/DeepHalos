@@ -11,15 +11,16 @@ import evaluation as eval
 
 
 class CNN:
-    def __init__(self, training_generator, conv_params, fcc_params, model_type="regression",
-                 validation_generator=None, callbacks=None, metrics=None, num_epochs=5,
+    def __init__(self, conv_params, fcc_params, model_type="regression",
+                 training_generator=None, validation_generator=None, callbacks=None, metrics=None,
+                 num_epochs=5, dim=(51, 51, 51),
                  data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False,
                  model_name="my_model.h5", num_gpu=1, lr=0.0001, validation_freq=1, train=True, skip_connector=False):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
 
-        self.input_shape = training_generator.dim
+        self.input_shape = dim
         self.conv_params = conv_params
         self.fcc_params = fcc_params
         self.data_format = data_format
@@ -136,9 +137,14 @@ class CNN:
             x = keras.layers.BatchNormalization(axis=-1)(x)
         if activation is True:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
-        if pool is True:
-            x = keras.layers.AveragePooling3D(pool_size=(2, 2, 2), strides=None, padding=padding,
+        if pool == "average":
+            x = keras.layers.AveragePooling3D(pool_size=(2, 2, 2), strides=None, padding="valid",
                                               data_format=data_format)(x)
+        elif pool == "max":
+            x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2), strides=None, padding="valid",
+                                          data_format=data_format)(x)
+        else:
+            pass
         return x
 
     def subsequent_convolutional_layer(self, x, num_kernels=3, dim_kernel=(3, 3, 3), strides=2, padding='valid',
@@ -150,9 +156,15 @@ class CNN:
             x = keras.layers.BatchNormalization(axis=-1)(x)
         if activation is True:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
-        if pool is True:
-            x = keras.layers.AveragePooling3D(pool_size=(2, 2, 2), strides=None, padding=padding,
+
+        if pool == "average":
+            x = keras.layers.AveragePooling3D(pool_size=(2, 2, 2), strides=None, padding="valid",
                                               data_format=data_format)(x)
+        elif pool == "max":
+            x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2), strides=None, padding="valid",
+                                          data_format=data_format)(x)
+        else:
+            pass
         return x
 
     def _conv_layers(self, input_data, input_shape_box, conv_params, initialiser):
