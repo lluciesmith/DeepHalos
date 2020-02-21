@@ -33,7 +33,7 @@ if __name__ == "__main__":
         ids_s.append(ids_i)
         m_ids.append(mass_i)
 
-    output_ids, output_scaler = gbc.fit_standard_scaler_and_transform(m_ids)
+    output_ids, output_scaler = gbc.get_standard_scaler_and_transform(m_ids)
 
     # training set
 
@@ -77,23 +77,23 @@ if __name__ == "__main__":
     # callbacks_list = [checkpoint_call, csv_logger]
     callbacks_list = [checkpoint_call, csv_logger, lr_decay]
 
-    tensorflow.compat.v1.set_random_seed(7)
+    #tensorflow.compat.v1.set_random_seed(7)
 
     param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3),
-                             'strides': 1, 'padding': 'same', 'pool': True, 'bn': False},
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
                   'conv_2': {'num_kernels': 8, 'dim_kernel': (3, 3, 3),
-                             'strides': 1, 'padding': 'same', 'pool': True, 'bn': False},
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
                   'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
-                             'strides': 1, 'padding': 'same',  'pool': True, 'bn': False},
-                  'conv_4': {'num_kernels': 8, 'dim_kernel': (1, 1, 1),
-                              'strides': 1, 'padding': 'same', 'pool': False, 'bn': True}
+                             'strides': 1, 'padding': 'same',  'pool': "max", 'bn': False},
+                  'conv_4': {'num_kernels': 4, 'dim_kernel': (1, 1, 1),
+                              'strides': 1, 'padding': 'same', 'pool': None, 'bn': True}
                   }
 
     param_fcc = {#'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.2},
-                 'dense_1': {'neurons': 256, 'bn': False, 'dropout': 0.2},
-                 'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.2}}
+                 'dense_1': {'neurons': 256, 'bn': False, 'dropout': 0.4},
+                 'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.4}}
 
-    Model = CNN.CNN(generator_training, param_conv, param_fcc,
+    Model = CNN.CNN(param_conv, param_fcc, training_generator=generator_training,
                     validation_generator=generator_1, validation_freq=1,
                     callbacks=callbacks_list, use_multiprocessing=True, num_epochs=80,
                     workers=12, verbose=1, model_type="regression", lr=0.0001, train=False)

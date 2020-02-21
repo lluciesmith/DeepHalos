@@ -10,7 +10,7 @@ class DataGenerator(Sequence):
                  saving_path="/share/data2/lls/deep_halos/subboxes/subbox_51_particle_",
                  halo_masses="", multiple_sims=False, rescale_mean=0, rescale_std=1, z=99):
         self.dim = dim
-        self.res = str(dim[0])
+        self.res = dim[0]
         self.batch_size = batch_size
         self.labels = labels
         self.list_IDs = list_IDs
@@ -107,9 +107,9 @@ class DataGenerator(Sequence):
                 particle_ID = ID[9:]
 
                 if self.z == 99:
-                    if self.res == "51":
+                    if self.res == 51:
                         path_midddle = "training_set/"
-                    elif self.res == "75":
+                    elif self.res == 75:
                         path_midddle = "training_set_res75/"
                     else:
                         raise(ValueError, "I have subboxes only for 51 or 75 cubed resolution.")
@@ -124,10 +124,10 @@ class DataGenerator(Sequence):
 
                 if sim_index == "0":
                     s = np.load(self.path + 'training_simulation/' + path_midddle + particle_ID +
-                                '/subbox_' + self.res + '_particle_' + particle_ID + '.npy')
+                                '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
                 else:
                     s = np.load(self.path + "reseed" + sim_index + "_simulation/" + path_midddle +
-                                particle_ID + '/subbox_' + self.res + '_particle_' + particle_ID + '.npy')
+                                particle_ID + '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
 
                 X[i] = self._process_input(s)
                 y[i] = self.labels[ID]
