@@ -1,7 +1,9 @@
-import numpy as np
-import data_processing as dp
-import sklearn.preprocessing
 import time
+
+import numpy as np
+import sklearn.preprocessing
+
+from utils.old import data_generator_individual_files as dp
 
 
 def get_standard_scaler_and_transform(list_outputs):
@@ -87,26 +89,6 @@ def create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batc
                                           rescale_mean=rescale_mean, rescale_std=rescale_std,
                                           multiple_sims=True, saving_path=path, z=z)
     return training_generator
-
-
-# def compute_mean_std_inputs(list_sims, list_ids_per_sim, labels_sim, batch_size=40,
-#                                    path="/lfstev/deepskies/luisals/", z=99):
-#     gen = create_generator_multiple_sims(list_sims, list_ids_per_sim, labels_sim, batch_size=batch_size,
-#                                    path=path, rescale_mean=0, rescale_std=1, z=z)
-#     num_batches = len(gen.indexes)/batch_size
-#
-#     means = []
-#     for i in range(num_batches):
-#         # takes forever....
-#
-#         bi = gen[i]
-#         means.append(np.mean(bi[0]))
-#         del bi
-#
-#     mean_inputs = np.mean(means)
-#     std = np.std()
-#
-#     return np.mean(means)
 
 
 # Spherical overdensities functions

@@ -10,6 +10,7 @@ import numpy as np
 import evaluation as eval
 from tensorflow.keras import backend as K
 
+
 class CNN:
     def __init__(self, conv_params, fcc_params, model_type="regression",
                  training_generator=None, validation_generator=None, callbacks=None, metrics=None,

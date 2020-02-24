@@ -1,7 +1,6 @@
 import numpy as np
 from tensorflow.keras.utils import Sequence
 import sklearn.preprocessing
-import tensorflow as tf
 
 
 class DataGenerator(Sequence):
