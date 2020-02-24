@@ -8,13 +8,15 @@ and not exactly on a grid. But it is useful as a cross check!
 
 """
 
+import sys;
 
 import numpy as np
-import sys; sys.path.append("/Users/lls/Documents/mlhalos_code/")
+
+sys.path.append("/Users/lls/Documents/mlhalos_code/")
 from mlhalos import parameters
 import scipy.special
 import gc
-from .. import subboxes
+from dlhalos_code import subboxes
 
 
 def delta_property(snapshot):

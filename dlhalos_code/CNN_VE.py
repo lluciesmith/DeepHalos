@@ -1,13 +1,14 @@
-from tensorflow.keras.layers import Lambda, Input, Dense, Layer, Flatten
-from tensorflow.keras.models import Model
-from tensorflow.keras.datasets import mnist
-from tensorflow.keras.losses import mse, binary_crossentropy
-from tensorflow.keras.utils import plot_model
-from tensorflow.keras import backend as K
-import tensorflow.keras as keras
-import numpy as np
 import time
-import CNN
+
+import numpy as np
+import tensorflow.keras as keras
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Lambda, Input, Dense, Flatten
+from tensorflow.keras.losses import mse
+from tensorflow.keras.models import Model
+from tensorflow.keras.utils import plot_model
+
+from dlhalos_code import CNN
 
 
 class VCE(CNN.CNN):

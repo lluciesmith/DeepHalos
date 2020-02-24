@@ -1,13 +1,12 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
-import CNN
+from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras.callbacks import LearningRateScheduler
 from utils import generators_training_old as gbc
 import time
-import tensorflow
 
 
 def take_subset_ids_above_mass_threshold(particle_ids, log_mass_particle_ids, log_mass_threshold=13):

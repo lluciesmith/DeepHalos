@@ -2,13 +2,12 @@ import sys
 sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
 import tensorflow as tf
-import CNN
+from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow import set_random_seed
-from utils import generators_training as gbc
-from tensorflow.keras.models import load_model
+from utils.old import generators_training as gbc
 import time
 
 

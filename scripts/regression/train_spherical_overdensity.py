@@ -2,15 +2,12 @@ import sys
 sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
 import tensorflow as tf
-import CNN
+from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
-from tensorflow.keras.callbacks import LearningRateScheduler
 import tensorflow.compat.v1
-from utils import generators_training as gbc
+from utils.old import generators_training as gbc
 import time
-import sklearn.preprocessing
-
 
 if __name__ == "__main__":
     ########### CREATE GENERATORS FOR SIMULATIONS #########

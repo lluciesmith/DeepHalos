@@ -9,9 +9,8 @@ Original file is located at
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
-import CNN
-from tensorflow import set_random_seed
-from utils import generators_training as gbc
+from dlhalos_code import CNN
+from utils.old import generators_training as gbc
 from tensorflow.keras.models import load_model
 
 

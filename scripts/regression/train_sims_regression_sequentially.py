@@ -1,9 +1,7 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
-import CNN
-import data_processing as dp
-from tensorflow import set_random_seed
+from utils.old import data_generator_individual_files as dp
 from utils import generators_training as gbc
 from tensorflow.keras.models import load_model
 

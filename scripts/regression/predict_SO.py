@@ -1,12 +1,8 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
-import data_processing as dp
-import tensorflow as tf
-from utils import generators_training as gbc
+from utils.old import generators_training as gbc
 from tensorflow.keras.models import load_model
-import sklearn.preprocessing
-
 
 if __name__ == "__main__":
     path_model = "/lfstev/deepskies/luisals/regression/test_spherical_overden/standardize/scale_34/"

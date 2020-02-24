@@ -1,14 +1,16 @@
 # import os
 # os.environ['KMP_DUPLICATE_LIB_OK']='True'
-import tensorflow.keras as keras
-from tensorflow.keras.utils import multi_gpu_model
-import tensorflow as tf
-from tensorflow.keras.layers import Input, Dense, Conv3D, Flatten, Add, Activation
 import time
-from tensorflow.keras.callbacks import Callback
+
 import numpy as np
-import evaluation as eval
+import tensorflow as tf
+import tensorflow.keras as keras
 from tensorflow.keras import backend as K
+from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.layers import Input, Dense, Flatten, Add
+from tensorflow.keras.utils import multi_gpu_model
+
+from dlhalos_code import evaluation as eval
 
 
 class CNN:
@@ -70,7 +72,7 @@ class CNN:
         if self.model_type == "regression":
             with tf.device('/cpu:0'):
                 Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                       data_format=self.data_format, metrics=self.metrics)
+                                                       data_format=self.data_format)
                 parallel_model = multi_gpu_model(Model, gpus=num_gpus)
                 optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
                                                   amsgrad=True)
@@ -80,13 +82,15 @@ class CNN:
             with tf.device('/cpu:0'):
                 print("Initiating binary classification model")
                 Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                              data_format=self.data_format, metrics=self.metrics)
+                                                              data_format=self.data_format)
                 parallel_model = multi_gpu_model(Model, gpus=num_gpus)
                 optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
                                                   amsgrad=True)
                 parallel_model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
 
         else:
+            Model = {}
+            parallel_model = {}
             NameError("Choose either regression or binary classification as model type")
 
         t0 = time.time()

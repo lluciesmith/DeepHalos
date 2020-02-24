@@ -2,14 +2,11 @@ import sys
 sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
 import tensorflow as tf
-import CNN
+from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
-from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow import set_random_seed
-from utils import generators_training as gbc
-from tensorflow.keras.models import load_model
-
+from utils.old import generators_training as gbc
 
 if __name__ == "__main__":
     ########### CREATE GENERATORS FOR SIMULATIONS #########
@@ -48,7 +45,7 @@ if __name__ == "__main__":
         # auc -- use a subset of particles of the training set or it takes forever to compute AUC
         callback_data = (generator_1, labels_1)
         auc_call = CNN.AucCallback((generator_val, np.concatenate(labels_val)),
-                                    callback_data, name_training="i", names_val="1")
+                                   callback_data, name_training="i", names_val="1")
 
         # checkpoint
         filepath = path_model + "/weights.{epoch:02d}.hdf5"

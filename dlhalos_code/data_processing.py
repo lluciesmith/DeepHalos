@@ -12,7 +12,6 @@ from tensorflow.keras.utils import Sequence
 
 
 class SimulationPreparation:
-
     def __init__(self, sim_IDs, path="/lfstev/deepskies/luisals/"):
         """
         This class stores the simulations in dictionaries (accessible via sims_dic) and creates two new keys:
@@ -23,6 +22,7 @@ class SimulationPreparation:
         self.sims = sim_IDs
         self.path = path
 
+        self.sims_dic = None
         self.generate_simulation_dictionary()
 
     def generate_simulation_dictionary(self):
@@ -68,9 +68,8 @@ class SimulationPreparation:
 
 
 class InputsPreparation:
-
-    def __init__(self, sim_IDs, load_ids=True, ids_filename="balanced_training_set.txt", random_subset_each_sim=20000,
-                 path="/lfstev/deepskies/luisals/", scaler_output=None):
+    def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt", random_subset_each_sim=20000,
+                 path="/lfstev/deepskies/luisals/", scaler_output=None, rescale_output=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
         Particles and their labels are stored in a dictionary s.t.  particles are identified via the string
@@ -85,7 +84,12 @@ class InputsPreparation:
         self.ids_filename = ids_filename
         self.path = path
         self.random_subset = random_subset_each_sim
+        self.rescale_output = rescale_output
         self.scaler_output = scaler_output
+
+        self.labels_scaler = None
+        self.particle_IDs = None
+        self.labels_particle_IDS = None
 
         self.generate_particle_IDs_dictionary()
 
@@ -108,13 +112,14 @@ class InputsPreparation:
         ids_reordering = np.random.permutation(list(labels_dic.keys()))
         labels_reordered = dict([(key, labels_dic[key]) for key in ids_reordering])
 
-        if self.scaler_output is None:
-            rescaled_labels, output_scaler = self.output_scaler_transform_and_apply(labels_reordered)
-            self.labels_scaler = output_scaler
-        else:
-            rescaled_labels = self.transform_array_given_scaler(self.scaler_output, labels_reordered)
+        if self.rescale_output is True:
+            if self.scaler_output is None:
+                rescaled_labels, output_scaler = self.output_scaler_transform_and_apply(labels_reordered)
+                self.labels_scaler = output_scaler
+            else:
+                rescaled_labels = self.transform_array_given_scaler(self.scaler_output, labels_reordered)
 
-        labels_reordered = dict(zip(ids_reordering, rescaled_labels))
+            labels_reordered = dict(zip(ids_reordering, rescaled_labels))
 
         self.particle_IDs = list(labels_reordered.keys())
         self.labels_particle_IDS = labels_reordered
@@ -153,12 +158,18 @@ class InputsPreparation:
         return scaled_array
 
     def get_ids_and_regression_labels(self, sim="0"):
+        # if sim == "0":
+        #     path1 = self.path + "training_simulation/training_sim_"
+        #     halo_mass = np.load(self.path + "training_simulation/halo_mass_particles.npy")
+        # else:
+        #     path1 = self.path + "reseed" + sim + "_simulation/reseed_" + sim + "_"
+        #     halo_mass = np.load(self.path + "reseed" + sim + "_simulation/reseed" + sim + "_halo_mass_particles.npy")
         if sim == "0":
-            path1 = self.path + "training_simulation/training_sim_"
-            halo_mass = np.load(self.path + "training_simulation/halo_mass_particles.npy")
+            path1 = "/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/reseed_1_"
+            halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed50/features/halo_mass_particles.npy")
         else:
-            path1 = self.path + "reseed" + sim + "_simulation/reseed_" + sim + "_"
-            halo_mass = np.load(self.path + "reseed" + sim + "_simulation/reseed" + sim + "_halo_mass_particles.npy")
+            path1 = "/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/reseed_1_"
+            halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed50/features/halo_mass_particles.npy")
 
         with open(path1 + self.ids_filename, "r") as f:
             ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
@@ -168,7 +179,6 @@ class InputsPreparation:
 
 
 class DataGenerator(Sequence):
-
     def __init__(self, list_IDs, labels, sims,
                  batch_size=40, dim=(51, 51, 51), n_channels=1, shuffle=False,
                  rescale_mean=0, rescale_std=1):
@@ -236,7 +246,6 @@ class DataGenerator(Sequence):
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            print(ID)
             sim_index = ID[4]
             particle_ID = int(ID[9:])
 
@@ -245,7 +254,7 @@ class DataGenerator(Sequence):
             delta_sim = sim_snapshot['den_contrast'].reshape(self.shape_sim, self.shape_sim, self.shape_sim)
 
             output_matrix = np.zeros((self.res, self.res, self.res))
-            s = slicer_numba(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+            s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
 
             X[i] = self._process_input(s)
             y[i] = self.labels[ID]
@@ -254,7 +263,7 @@ class DataGenerator(Sequence):
 
 
 @njit(parallel=True)
-def slicer_numba(i0, j0, k0, width, input_matrix, output_matrix, shape_input):
+def compute_subbox(i0, j0, k0, width, input_matrix, output_matrix, shape_input):
     i0 -= width // 2
     j0 -= width // 2
     k0 -= width // 2

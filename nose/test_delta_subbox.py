@@ -6,11 +6,13 @@ particles.
 
 """
 
+import sys;
 
 import numpy as np
-import sys; sys.path.append("/Users/lls/Documents/mlhalos_code/")
+
+sys.path.append("/Users/lls/Documents/mlhalos_code/")
 from mlhalos import parameters
-from .. import subboxes
+from dlhalos_code import subboxes
 
 
 def from_ids_to_delta_in_subbox_old(ids, particle_id, delta_all, subbox_shape=9):

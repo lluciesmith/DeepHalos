@@ -1,12 +1,11 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
-import CNN
+from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
-from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras.callbacks import LearningRateScheduler
-from utils import data_loading as dl
+from utils.old import data_loading_large_files as dl
 import time
 import tensorflow
 
