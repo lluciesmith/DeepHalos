@@ -1,15 +1,11 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
-import numpy as np
-import CNN
+from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
-from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras.callbacks import LearningRateScheduler
-from utils import generators_training as gbc
-import time
 import tensorflow
-import data_processing as tn
+import dlhalos_code.data_processing as tn
 
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
@@ -18,7 +14,7 @@ import data_processing as tn
 # First you will have to load the simulation
 
 all_sims = ["0", "1"]
-s = tn.SimulationPreparation()
+s = tn.SimulationPreparation(all_sims)
 
 training_sims = ["0", "1"]
 validation_sims = ["1"]
@@ -26,16 +22,18 @@ batch_size = 80
 rescale_mean = 1.005
 rescale_std = 0.0505
 
-training_set = tn.InputsPreparation(training_sims, load_ids=False, random_subset_ids=100)
+training_set = tn.InputsPreparation(training_sims, load_ids=False, random_subset_each_sim=100)
 generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
-                                batch_size=100, rescale_mean=1.005, rescale_std=0.0505)
+                                      batch_size=batch_size, rescale_mean=0, rescale_std=1)
 
-validation_set = tn.InputsPreparation(validation_sims, load_ids=False, random_subset_ids=100,
-                                      output_scaler=training_set.labels_scaler)
+validation_set = tn.InputsPreparation(validation_sims, load_ids=False, random_subset_each_sim=100,
+                                      scaler_output=training_set.labels_scaler)
 generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
-                                batch_size=100, rescale_mean=1.005, rescale_std=0.0505)
+                                        batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
 
 ######### TRAINING MODEL ##############
+
+path_model = "."
 
 # checkpoint
 filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
