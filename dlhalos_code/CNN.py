@@ -76,7 +76,7 @@ class CNN:
                 Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                                        data_format=self.data_format)
                 parallel_model = multi_gpu_model(Model, gpus=num_gpus)
-                optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+                optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
                                                   amsgrad=True)
                 parallel_model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
 
@@ -86,7 +86,7 @@ class CNN:
                 Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                                               data_format=self.data_format)
                 parallel_model = multi_gpu_model(Model, gpus=num_gpus)
-                optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+                optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
                                                   amsgrad=True)
                 parallel_model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
 
@@ -116,7 +116,7 @@ class CNN:
             Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                                    data_format=self.data_format)
 
-            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
             Model.compile(loss='mse', optimizer=optimiser, metrics=self.metrics)
 
@@ -125,7 +125,7 @@ class CNN:
 
             Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
                                                               data_format=self.data_format)
-            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
             Model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
 
