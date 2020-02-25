@@ -16,18 +16,17 @@ import dlhalos_code.data_processing as tn
 all_sims = ["0", "1"]
 s = tn.SimulationPreparation(all_sims)
 
-training_sims = ["0", "1"]
+training_sims = ["0", "2", "4", "5", "6"]
 validation_sims = ["1"]
 batch_size = 80
 rescale_mean = 1.005
 rescale_std = 0.0505
 
-training_set = tn.InputsPreparation(training_sims, load_ids=False, random_subset_each_sim=100)
+training_set = tn.InputsPreparation(training_sims, load_ids=True)
 generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
                                       batch_size=batch_size, rescale_mean=0, rescale_std=1)
 
-validation_set = tn.InputsPreparation(validation_sims, load_ids=False, random_subset_each_sim=100,
-                                      scaler_output=training_set.labels_scaler)
+validation_set = tn.InputsPreparation(validation_sims, load_ids=True, scaler_output=training_set.labels_scaler)
 generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
                                         batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
 

@@ -5,6 +5,7 @@
 # Then prepare the data in the right format and generate the DataGenerator
 
 import numpy as np
+import time
 import pynbody
 import sklearn.preprocessing
 from numba import njit, prange
@@ -38,13 +39,13 @@ class SimulationPreparation:
 
     def load_snapshot_from_simulation_ID(self, sim_id):
         if sim_id == "0":
-            # path1 = self.path + "training_simulation/snapshots/"
-            path1 = "/Users/lls/Documents/mlhalos_files/Nina-Simulations/double/"
+            path1 = self.path + "training_simulation/snapshots/"
+            # path1 = "/Users/lls/Documents/mlhalos_files/Nina-Simulations/double/"
             snap_sim = pynbody.load(path1 + "ICs_z99_256_L50_gadget3.dat")
 
         else:
-            # path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
-            path1 = "/Users/lls/Documents/mlhalos_files/reseed50/"
+            path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
+            # path1 = "/Users/lls/Documents/mlhalos_files/reseed50/"
 
             if sim_id == "2":
                 snap_sim = pynbody.load(path1 + "ICs_z99_256_L50_gadget3.dat")
@@ -57,11 +58,13 @@ class SimulationPreparation:
     def prepare_sim(self, snapshot):
         snapshot.physical_units()
 
+        t0 = time.time()
         rho_m = pynbody.analysis.cosmology.rho_M(snapshot, unit=snapshot["rho"].units)
+        snapshot['den_contrast'] = snapshot['rho'] / rho_m
+        t1 = time.time()
+        print("Loading density contrast in simulation took " + str((t1 - t0)/60))
 
         shape_sim = int(round((snapshot["iord"].shape[0]) ** (1 / 3)))
-        snapshot['den_contrast'] = snapshot['rho'] / rho_m
-
         k, j, i = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
         snapshot['coords'] = snapshot['coords'] = np.column_stack((i, j, k))
         return snapshot
