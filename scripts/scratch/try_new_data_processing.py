@@ -65,9 +65,32 @@ param_fcc = {  # 'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.2},
     'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.4}}
 
 Model = CNN.CNN(param_conv, param_fcc, dim=(51, 51, 51),
+                training_generator=generator_training, validation_generator=generator_validation, validation_freq=1,
+                callbacks=callbacks_list, num_epochs=100,
+                use_multiprocessing=True, workers=8, max_queue_size=100,
+                verbose=1, model_type="regression", lr=0.0001, train=True)
+
+
+
+########## OPTION 2 ######################
+
+training_set = tn.InputsPreparation(training_sims, load_ids=True)
+generator_training2 = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
+                                      batch_size=100000, rescale_mean=0, rescale_std=1)
+X_train, y_train = generator_training2[0]
+
+validation_set = tn.InputsPreparation(validation_sims, load_ids=True, scaler_output=training_set.labels_scaler,
+                                      random_subset_each_sim=4000)
+generator_validation2 = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
+                                        batch_size=4000, rescale_mean=rescale_mean, rescale_std=rescale_std)
+X_val, y_val = generator_validation2[0]
+
+Model2 = CNN.CNN(param_conv, param_fcc, dim=(51, 51, 51),
                 training_generator=generator_training, validation_generator=None, validation_freq=1,
                 callbacks=callbacks_list, use_multiprocessing=True, num_epochs=100,
-                workers=12, verbose=1, model_type="regression", lr=0.0001, train=True)
+                workers=12, verbose=1, model_type="regression", lr=0.0001, train=False)
 
+history = Model2.model.fit(X_train, y_train, batch_size=80, verbose=1, epochs=100, validation_data=(X_val, y_val),
+                          shuffle=True, callbacks=callbacks_list)
 
 
