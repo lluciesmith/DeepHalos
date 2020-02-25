@@ -226,7 +226,8 @@ class CNN:
             initialiser = my_init
 
         else:
-            initialiser = keras.initializers.glorot_normal()
+            initialiser = keras.initializers.he_uniform()
+            print("Initialiser is he uniform")
 
         if conv_params == {}:
             x = Flatten(data_format=data_format, input_shape=(*input_shape_box, 1))(input_data)
