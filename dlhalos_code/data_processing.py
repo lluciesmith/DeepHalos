@@ -66,7 +66,7 @@ class SimulationPreparation:
 
         shape_sim = int(round((snapshot["iord"].shape[0]) ** (1 / 3)))
         i, j, k = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
-        snapshot['coords'] = snapshot['coords'] = np.column_stack((i, j, k))
+        snapshot['coords'] = np.column_stack((i, j, k))
         return snapshot
 
 
@@ -246,8 +246,9 @@ class DataGenerator(Sequence):
             np.random.shuffle(self.indexes)
 
     def _process_input(self, s):
+        s_t = np.transpose(s, axes=(1, 0, 2))
         # Rescale inputs
-        s_t_rescaled = (s - self.rescale_mean) / self.rescale_std
+        s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
 
         return s_t_rescaled.reshape((*self.dim, self.n_channels))
 
@@ -260,14 +261,30 @@ class DataGenerator(Sequence):
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             sim_index = ID[4]
-            particle_ID = int(ID[9:])
 
-            sim_snapshot = self.sims[sim_index]
-            i0, j0, k0 = sim_snapshot['coords'][particle_ID]
-            delta_sim = sim_snapshot['den_contrast'].reshape(self.shape_sim, self.shape_sim, self.shape_sim)
+            # particle_ID = int(ID[9:])
+            # sim_snapshot = self.sims[sim_index]
+            # i0, j0, k0 = sim_snapshot['coords'][particle_ID]
+            # delta_sim = sim_snapshot['den_contrast'].reshape(self.shape_sim, self.shape_sim, self.shape_sim)
+            #
+            # output_matrix = np.zeros((self.res, self.res, self.res))
+            # s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
 
-            output_matrix = np.zeros((self.res, self.res, self.res))
-            s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+            particle_ID = ID[9:]
+
+            if self.res == 51:
+                path_midddle = "training_set/"
+            elif self.res == 75:
+                path_midddle = "training_set_res75/"
+            else:
+                raise (ValueError, "I have subboxes only for 51 or 75 cubed resolution.")
+
+            if sim_index == "0":
+                s = np.load(self.path + 'training_simulation/' + path_midddle + particle_ID +
+                            '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
+            else:
+                s = np.load(self.path + "reseed" + sim_index + "_simulation/" + path_midddle +
+                            particle_ID + '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
 
             X[i] = self._process_input(s)
             y[i] = self.labels[ID]
