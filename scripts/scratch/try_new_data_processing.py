@@ -13,7 +13,7 @@ import dlhalos_code.data_processing as tn
 
 # First you will have to load the simulation
 
-all_sims = ["0", "1"]
+all_sims = ["0", "1", "2", "4", "5", "6"]
 s = tn.SimulationPreparation(all_sims)
 
 training_sims = ["0", "2", "4", "5", "6"]
