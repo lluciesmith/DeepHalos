@@ -171,7 +171,7 @@ class InputsPreparation:
             halo_mass = np.load(self.path + "training_simulation/halo_mass_particles.npy")
         else:
             path1 = self.path + "reseed" + sim + "_simulation/reseed_" + sim + "_"
-        #     halo_mass = np.load(self.path + "reseed" + sim + "_simulation/reseed" + sim + "_halo_mass_particles.npy")
+            halo_mass = np.load(self.path + "reseed" + sim + "_simulation/reseed" + sim + "_halo_mass_particles.npy")
         # if sim == "0":
         #     path1 = "/Users/lls/Documents/mlhalos_files/training_sim_"
         #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/stored_files/halo_mass_particles.npy")
