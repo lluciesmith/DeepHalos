@@ -30,10 +30,10 @@ class SimulationPreparation:
         sims = self.sims
         sims_dic = {}
 
-        for i in np.arange(len(sims)):
-            snapshot_i = self.load_snapshot_from_simulation_ID(sims[i])
+        for i, ID in enumerate(sims):
+            snapshot_i = self.load_snapshot_from_simulation_ID(ID)
             snapshot_i = self.prepare_sim(snapshot_i)
-            sims_dic[str(i)] = snapshot_i
+            sims_dic[ID] = snapshot_i
 
         self.sims_dic = sims_dic
 

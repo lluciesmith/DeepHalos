@@ -26,7 +26,8 @@ training_set = tn.InputsPreparation(training_sims, load_ids=True)
 generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
                                       batch_size=batch_size, rescale_mean=0, rescale_std=1)
 
-validation_set = tn.InputsPreparation(validation_sims, load_ids=True, scaler_output=training_set.labels_scaler)
+validation_set = tn.InputsPreparation(validation_sims, load_ids=True, scaler_output=training_set.labels_scaler,
+                                      random_subset_each_sim=4000)
 generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
                                         batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
 
@@ -67,4 +68,6 @@ Model = CNN.CNN(param_conv, param_fcc, dim=(51, 51, 51),
                 training_generator=generator_training, validation_generator=None, validation_freq=1,
                 callbacks=callbacks_list, use_multiprocessing=True, num_epochs=100,
                 workers=12, verbose=1, model_type="regression", lr=0.0001, train=True)
+
+
 
