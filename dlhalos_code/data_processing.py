@@ -280,10 +280,10 @@ class DataGenerator(Sequence):
                 raise (ValueError, "I have subboxes only for 51 or 75 cubed resolution.")
 
             if sim_index == "0":
-                s = np.load(self.path + 'training_simulation/' + path_midddle + particle_ID +
+                s = np.load('/lfstev/deepskies/luisals/training_simulation/' + path_midddle + particle_ID +
                             '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
             else:
-                s = np.load(self.path + "reseed" + sim_index + "_simulation/" + path_midddle +
+                s = np.load("/lfstev/deepskies/luisals/reseed" + sim_index + "_simulation/" + path_midddle +
                             particle_ID + '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
 
             X[i] = self._process_input(s)
