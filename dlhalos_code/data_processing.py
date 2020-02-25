@@ -71,7 +71,7 @@ class SimulationPreparation:
 
 
 class InputsPreparation:
-    def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt", random_subset_each_sim=20000,
+    def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt", random_subset_each_sim=None,
                  path="/lfstev/deepskies/luisals/", scaler_output=None, rescale_output=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
@@ -176,6 +176,10 @@ class InputsPreparation:
 
         with open(path1 + self.ids_filename, "r") as f:
             ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
+        
+        if self.random_subset is not None:
+            ids_i = np.random.choice(ids_bc, self.random_subset, replace=False)
+            ids_bc = ids_i
 
         output_ids = np.log10(halo_mass[ids_bc])
         return ids_bc, output_ids

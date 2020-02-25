@@ -32,7 +32,7 @@ generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_
 
 ######### TRAINING MODEL ##############
 
-path_model = "."
+path_model = "/lfstev/deepskies/luisals/scratch/"
 
 # checkpoint
 filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
@@ -63,8 +63,8 @@ param_fcc = {  # 'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.2},
     'dense_1': {'neurons': 256, 'bn': True, 'dropout': 0.4},
     'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.4}}
 
-Model = CNN.CNN(param_conv, param_fcc, dim=(75, 75, 75),
+Model = CNN.CNN(param_conv, param_fcc, dim=(51, 51, 51),
                 training_generator=generator_training, validation_generator=None, validation_freq=1,
-                callbacks=callbacks_list, use_multiprocessing=True, num_epochs=80,
+                callbacks=callbacks_list, use_multiprocessing=True, num_epochs=100,
                 workers=12, verbose=1, model_type="regression", lr=0.0001, train=True)
 
