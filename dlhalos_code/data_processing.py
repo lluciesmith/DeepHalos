@@ -65,14 +65,14 @@ class SimulationPreparation:
         print("Loading density contrast in simulation took " + str((t1 - t0)/60))
 
         shape_sim = int(round((snapshot["iord"].shape[0]) ** (1 / 3)))
-        k, j, i = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
+        i, j, k = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
         snapshot['coords'] = snapshot['coords'] = np.column_stack((i, j, k))
         return snapshot
 
 
 class InputsPreparation:
     def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt", random_subset_each_sim=None,
-                 path="/lfstev/deepskies/luisals/", scaler_output=None, rescale_output=True):
+                 path="/lfstev/deepskies/luisals/", scaler_output=None, rescale_output=True, shuffle=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
         Particles and their labels are stored in a dictionary s.t.  particles are identified via the string
@@ -89,6 +89,7 @@ class InputsPreparation:
         self.random_subset = random_subset_each_sim
         self.rescale_output = rescale_output
         self.scaler_output = scaler_output
+        self.shuffle = shuffle
 
         self.labels_scaler = None
         self.particle_IDs = None
@@ -111,8 +112,12 @@ class InputsPreparation:
             dict_i = dict(zip(name, mass_i))
             labels_dic.update(dict_i)
 
-        np.random.seed(5)
-        ids_reordering = np.random.permutation(list(labels_dic.keys()))
+        if self.shuffle is True:
+            np.random.seed(5)
+            ids_reordering = np.random.permutation(list(labels_dic.keys()))
+        else:
+            ids_reordering = list(labels_dic.keys())
+
         labels_reordered = dict([(key, labels_dic[key]) for key in ids_reordering])
 
         if self.rescale_output is True:
@@ -166,10 +171,10 @@ class InputsPreparation:
             halo_mass = np.load(self.path + "training_simulation/halo_mass_particles.npy")
         else:
             path1 = self.path + "reseed" + sim + "_simulation/reseed_" + sim + "_"
-            halo_mass = np.load(self.path + "reseed" + sim + "_simulation/reseed" + sim + "_halo_mass_particles.npy")
+        #     halo_mass = np.load(self.path + "reseed" + sim + "_simulation/reseed" + sim + "_halo_mass_particles.npy")
         # if sim == "0":
-        #     path1 = "/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/reseed_1_"
-        #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed50/features/halo_mass_particles.npy")
+        #     path1 = "/Users/lls/Documents/mlhalos_files/training_sim_"
+        #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/stored_files/halo_mass_particles.npy")
         # else:
         #     path1 = "/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/reseed_1_"
         #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed50/features/halo_mass_particles.npy")
@@ -208,7 +213,8 @@ class DataGenerator(Sequence):
         self.labels = labels
 
         self.sims = sims
-        self.shape_sim = int(round((sims['0']["iord"].shape[0]) ** (1 / 3)))
+        sim_id0 = list(sims.keys())[0]
+        self.shape_sim = int(round((sims[sim_id0]["iord"].shape[0]) ** (1 / 3)))
 
         self.shuffle = shuffle
         self.dim = dim
