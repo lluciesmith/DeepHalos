@@ -113,9 +113,12 @@ class InputsPreparation:
             names.append(name)
             masses.append(mass_i)
 
-        output_ids, output_scaler = self.get_standard_scaler_and_transform(masses)
+        flattened_name = [val for sublist in names for val in sublist]
+        flattened_mass = [val for sublist in masses for val in sublist]
 
-        dict_i = dict(zip(names, output_ids))
+        output_ids, output_scaler = self.get_standard_scaler_and_transform(flattened_mass)
+
+        dict_i = dict(zip(flattened_name, output_ids))
 
         if self.shuffle is True:
             np.random.seed(5)
