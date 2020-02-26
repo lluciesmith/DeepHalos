@@ -16,10 +16,10 @@ import numpy as np
 
 # First you will have to load the simulation
 
-all_sims = ["0", "1", "3", "4", "5"]
+all_sims = ["0", "1", "2", "3", "4", "5"]
 s = tn.SimulationPreparation(all_sims)
 
-training_sims = ["0", "3", "4", "5"]
+training_sims = ["0", "2", "3", "4", "5"]
 validation_sims = ["1"]
 batch_size = 80
 rescale_mean = 1.005
@@ -27,18 +27,16 @@ rescale_std = 0.05050
 
 training_set = tn.InputsPreparation(training_sims, load_ids=True)
 generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
-                                      batch_size=80000, rescale_mean=rescale_mean, rescale_std=rescale_std)
-X, y = generator_training[0]
+                                      batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
 
-validation_set = tn.InputsPreparation(validation_sims, load_ids=True, scaler_output=training_set.labels_scaler,
-                                      random_subset_each_sim=4000)
+validation_set = tn.InputsPreparation(validation_sims, load_ids=True, random_subset_each_sim=4000,
+                                      scaler_output=training_set.scaler_output)
 generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
-                                        batch_size=4000, rescale_mean=rescale_mean, rescale_std=rescale_std)
-X_val1, y_val1 = generator_validation[0]
+                                        batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
 
 ######### TRAINING MODEL ##############
 
-path_model = "/lfstev/deepskies/luisals/scratch2/"
+path_model = "/lfstev/deepskies/luisals/scratch/"
 
 # checkpoint
 filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
@@ -68,16 +66,20 @@ Model = CNN.CNN(param_conv, param_fcc, dim=(51, 51, 51),
                 training_generator=generator_training, validation_generator=generator_validation, validation_freq=1,
                 callbacks=callbacks_list, num_epochs=100,
                 use_multiprocessing=True, workers=2, max_queue_size=10,
-                verbose=1, model_type="regression", lr=0.001, train=False)
+                verbose=1, model_type="regression", lr=0.001, train=True)
 
-history = Model.model.fit(X, y, batch_size=80, verbose=1, epochs=100, validation_data=(X_val1, y_val1),
-                          shuffle=True, callbacks=callbacks_list)
-np.save(path_model + "/history_100_epochs_mixed_sims.npy", history.history)
+
+np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)
 Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")
 
 
-
 ########## OPTION 2 ######################
+
+validation_set = tn.InputsPreparation(validation_sims, load_ids=True, scaler_output=training_set.scaler_output)
+generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
+                                        batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
+
+Model.model.fit_generator()
 
 # training_set = tn.InputsPreparation(training_sims, load_ids=True)
 # generator_training2 = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
