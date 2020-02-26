@@ -263,29 +263,34 @@ class DataGenerator(Sequence):
         for i, ID in enumerate(list_IDs_temp):
             sim_index = ID[4]
 
-            # particle_ID = int(ID[9:])
-            # sim_snapshot = self.sims[sim_index]
-            # i0, j0, k0 = sim_snapshot['coords'][particle_ID]
-            # delta_sim = sim_snapshot['den_contrast'].reshape(self.shape_sim, self.shape_sim, self.shape_sim)
+            # generate box
+
+            particle_ID = int(ID[9:])
+
+            sim_snapshot = self.sims[sim_index]
+            i0, j0, k0 = sim_snapshot['coords'][particle_ID]
+            delta_sim = sim_snapshot['den_contrast'].reshape(self.shape_sim, self.shape_sim, self.shape_sim)
+
+            output_matrix = np.zeros((self.res, self.res, self.res))
+            s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+
+            # load box
+
+            # particle_ID = ID[9:]
             #
-            # output_matrix = np.zeros((self.res, self.res, self.res))
-            # s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
-
-            particle_ID = ID[9:]
-
-            if self.res == 51:
-                path_midddle = "training_set/"
-            elif self.res == 75:
-                path_midddle = "training_set_res75/"
-            else:
-                raise (ValueError, "I have subboxes only for 51 or 75 cubed resolution.")
-
-            if sim_index == "0":
-                s = np.load('/lfstev/deepskies/luisals/training_simulation/' + path_midddle + particle_ID +
-                            '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
-            else:
-                s = np.load("/lfstev/deepskies/luisals/reseed" + sim_index + "_simulation/" + path_midddle +
-                            particle_ID + '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
+            # if self.res == 51:
+            #     path_midddle = "training_set/"
+            # elif self.res == 75:
+            #     path_midddle = "training_set_res75/"
+            # else:
+            #     raise (ValueError, "I have subboxes only for 51 or 75 cubed resolution.")
+            #
+            # if sim_index == "0":
+            #     s = np.load('/lfstev/deepskies/luisals/training_simulation/' + path_midddle + particle_ID +
+            #                 '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
+            # else:
+            #     s = np.load("/lfstev/deepskies/luisals/reseed" + sim_index + "_simulation/" + path_midddle +
+            #                 particle_ID + '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
 
             X[i] = self._process_input(s)
             y[i] = self.labels[ID]

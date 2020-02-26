@@ -87,7 +87,7 @@ class DataGenerator(Sequence):
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            s = np.load(self.path + ID + '/subbox_' + self.res + '_particle_' + ID + '.npy')
+            s = np.load(self.path + ID + '/subbox_' + str(self.res) + '_particle_' + ID + '.npy')
 
             X[i] = self._process_input(s)
             y[i] = self.labels[ID]
