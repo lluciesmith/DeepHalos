@@ -36,7 +36,7 @@ generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_
 
 ######### TRAINING MODEL ##############
 
-path_model = "/lfstev/deepskies/luisals/scratch/"
+path_model = "/lfstev/deepskies/luisals/scratch2/"
 
 # checkpoint
 filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
