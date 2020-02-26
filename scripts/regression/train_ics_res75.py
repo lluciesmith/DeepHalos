@@ -57,7 +57,9 @@ param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
               'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_4': {'num_kernels': 4, 'dim_kernel': (1, 1, 1),
+              'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
+                         'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+              'conv_5': {'num_kernels': 4, 'dim_kernel': (1, 1, 1),
                          'strides': 1, 'padding': 'same', 'pool': None, 'bn': True}
               }
 
@@ -80,7 +82,7 @@ Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")
 
 # validation_set = tn.InputsPreparation(validation_sims, load_ids=True, scaler_output=training_set.scaler_output)
 # generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
-#                                         batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
+#            t                             batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
 #
 # Model.model.fit_generator()
 
