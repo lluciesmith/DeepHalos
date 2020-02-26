@@ -72,7 +72,7 @@ class SimulationPreparation:
 
 class InputsPreparation:
     def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt", random_subset_each_sim=None,
-                 path="/lfstev/deepskies/luisals/", scaler_output=None, rescale_output=True, shuffle=True):
+                 path="/lfstev/deepskies/luisals/", scaler_output=None, return_rescaled_outputs=True, shuffle=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
         Particles and their labels are stored in a dictionary s.t.  particles are identified via the string
@@ -87,11 +87,10 @@ class InputsPreparation:
         self.ids_filename = ids_filename
         self.path = path
         self.random_subset = random_subset_each_sim
-        self.rescale_output = rescale_output
-        self.scaler_output = scaler_output
+        self.return_rescaled_outputs = return_rescaled_outputs
         self.shuffle = shuffle
 
-        self.labels_scaler = None
+        self.scaler_output = scaler_output
         self.particle_IDs = None
         self.labels_particle_IDS = None
 
@@ -113,10 +112,16 @@ class InputsPreparation:
             names.append(name)
             masses.append(mass_i)
 
-        flattened_name = [val for sublist in names for val in sublist]
-        flattened_mass = [val for sublist in masses for val in sublist]
+        flattened_name = np.concatenate(names)
+        flattened_mass = np.concatenate(masses)
 
-        output_ids, output_scaler = self.get_standard_scaler_and_transform(flattened_mass)
+        if self.return_rescaled_outputs is True:
+            if self.scaler_output is None:
+                output_ids, self.scaler_output = self.get_standard_scaler_and_transform(flattened_mass)
+            else:
+                output_ids = self.transform_array_given_scaler(self.scaler_output, flattened_mass)
+        else:
+            output_ids = flattened_mass
 
         dict_i = dict(zip(flattened_name, output_ids))
 
@@ -129,41 +134,6 @@ class InputsPreparation:
 
         self.particle_IDs = list(labels_reordered.keys())
         self.labels_particle_IDS = labels_reordered
-        self.labels_scaler = output_scaler
-
-    # def generate_particle_IDs_dictionary(self):
-    #     labels_dic = {}
-    #
-    #     for i, sim_ID in enumerate(self.sims):
-    #
-    #         if self.load_ids:
-    #             ids_i, mass_i = self.load_ids_from_file(sim_ID)
-    #         else:
-    #             ids_i, mass_i = self.generate_random_set(sim_ID)
-    #
-    #         name = ['sim-' + str(sim_ID) + '-id-' + str(id_i) for id_i in ids_i]
-    #         dict_i = dict(zip(name, mass_i))
-    #         labels_dic.update(dict_i)
-    #
-    #     if self.shuffle is True:
-    #         np.random.seed(5)
-    #         ids_reordering = np.random.permutation(list(labels_dic.keys()))
-    #     else:
-    #         ids_reordering = list(labels_dic.keys())
-    #
-    #     labels_reordered = dict([(key, labels_dic[key]) for key in ids_reordering])
-    #
-    #     if self.rescale_output is True:
-    #         if self.scaler_output is None:
-    #             rescaled_labels, output_scaler = self.output_scaler_transform_and_apply(labels_reordered)
-    #             self.labels_scaler = output_scaler
-    #         else:
-    #             rescaled_labels = self.transform_array_given_scaler(self.scaler_output, labels_reordered)
-    #
-    #         labels_reordered = dict(zip(ids_reordering, rescaled_labels))
-    #
-    #     self.particle_IDs = list(labels_reordered.keys())
-    #     self.labels_particle_IDS = labels_reordered
 
     def generate_random_set(self, simulation_ID):
         if simulation_ID == "0":
@@ -182,21 +152,6 @@ class InputsPreparation:
     def load_ids_from_file(self, simulation_ID):
         ids_i, mass_i = self.get_ids_and_regression_labels(sim=simulation_ID)
         return ids_i, mass_i
-
-    # def output_scaler_transform_and_apply(self, dictionary_array):
-    #     outputs = np.array([val for (key, val) in dictionary_array.items()])
-    #
-    #     norm_scaler = sklearn.preprocessing.StandardScaler()
-    #     norm_scaler.fit(outputs.reshape(-1, 1))
-    #
-    #     rescaled_out = norm_scaler.transform(outputs.reshape(-1, 1)).flatten()
-    #     return rescaled_out, norm_scaler
-    #
-    # @staticmethod
-    # def transform_array_given_scaler(scaler, dictionary_array):
-    #     outputs = np.array([val for (key, val) in dictionary_array.items()])
-    #     scaled_array = scaler.transform(outputs.reshape(-1, 1)).flatten()
-    #     return scaled_array
 
     def get_ids_and_regression_labels(self, sim="0"):
         if sim == "0":
@@ -222,12 +177,12 @@ class InputsPreparation:
         output_ids = np.log10(halo_mass[ids_bc])
         return ids_bc, output_ids
 
-    def get_standard_scaler_and_transform(self, list_outputs):
-        outputs_conc = np.array(list_outputs)
+    def get_standard_scaler_and_transform(self, array_outputs):
         norm_scaler = sklearn.preprocessing.StandardScaler()
-        norm_scaler.fit(outputs_conc.reshape(-1, 1))
-        rescaled_out = self.transform_array_given_scaler(norm_scaler, outputs_conc)
-        return list(rescaled_out), norm_scaler
+        norm_scaler.fit(array_outputs.reshape(-1, 1))
+
+        rescaled_out = self.transform_array_given_scaler(norm_scaler, array_outputs)
+        return rescaled_out, norm_scaler
 
     def transform_array_given_scaler(self, scaler, array):
         scaled_array = scaler.transform(array.reshape(-1, 1)).flatten()
