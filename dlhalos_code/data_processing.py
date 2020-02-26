@@ -121,6 +121,7 @@ class InputsPreparation:
         labels_reordered = dict([(key, labels_dic[key]) for key in ids_reordering])
 
         if self.rescale_output is True:
+
             if self.scaler_output is None:
                 rescaled_labels, output_scaler = self.output_scaler_transform_and_apply(labels_reordered)
                 self.labels_scaler = output_scaler

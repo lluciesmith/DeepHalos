@@ -5,6 +5,7 @@ import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras.callbacks import LearningRateScheduler
 import tensorflow
+from tensorflow.keras.models import load_model
 import dlhalos_code.data_processing as tn
 import time
 import numpy as np
