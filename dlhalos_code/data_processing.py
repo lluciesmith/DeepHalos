@@ -223,7 +223,7 @@ class InputsPreparation:
         return ids_bc, output_ids
 
     def get_standard_scaler_and_transform(self, list_outputs):
-        outputs_conc = np.concatenate(list_outputs)
+        outputs_conc = np.array(list_outputs)
         norm_scaler = sklearn.preprocessing.StandardScaler()
         norm_scaler.fit(outputs_conc.reshape(-1, 1))
         rescaled_out = self.transform_array_given_scaler(norm_scaler, outputs_conc)
