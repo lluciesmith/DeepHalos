@@ -100,15 +100,14 @@ class InputsPreparation:
     def generate_particle_IDs_dictionary(self):
         labels_dic = {}
 
-        for i in range(len(self.sims)):
-            sim_i = self.sims[i]
+        for i, sim_ID in enumerate(self.sims):
 
             if self.load_ids:
-                ids_i, mass_i = self.load_ids_from_file(sim_i)
+                ids_i, mass_i = self.load_ids_from_file(sim_ID)
             else:
-                ids_i, mass_i = self.generate_random_set(sim_i)
+                ids_i, mass_i = self.generate_random_set(sim_ID)
 
-            name = ['sim-' + str(sim_i) + '-id-' + str(id_i) for id_i in ids_i]
+            name = ['sim-' + str(sim_ID) + '-id-' + str(id_i) for id_i in ids_i]
             dict_i = dict(zip(name, mass_i))
             labels_dic.update(dict_i)
 
@@ -122,11 +121,12 @@ class InputsPreparation:
 
         if self.rescale_output is True:
 
-            if self.scaler_output is None:
-                rescaled_labels, output_scaler = self.output_scaler_transform_and_apply(labels_reordered)
-                self.labels_scaler = output_scaler
-            else:
-                rescaled_labels = self.transform_array_given_scaler(self.scaler_output, labels_reordered)
+            rescaled_labels = labels_reordered
+            # if self.scaler_output is None:
+            #     rescaled_labels, output_scaler = self.output_scaler_transform_and_apply(labels_reordered)
+            #     self.labels_scaler = output_scaler
+            # else:
+            #     rescaled_labels = self.transform_array_given_scaler(self.scaler_output, labels_reordered)
 
             labels_reordered = dict(zip(ids_reordering, rescaled_labels))
 
