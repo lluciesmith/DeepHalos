@@ -120,13 +120,11 @@ class InputsPreparation:
         labels_reordered = dict([(key, labels_dic[key]) for key in ids_reordering])
 
         if self.rescale_output is True:
-
-            rescaled_labels = labels_reordered
-            # if self.scaler_output is None:
-            #     rescaled_labels, output_scaler = self.output_scaler_transform_and_apply(labels_reordered)
-            #     self.labels_scaler = output_scaler
-            # else:
-            #     rescaled_labels = self.transform_array_given_scaler(self.scaler_output, labels_reordered)
+            if self.scaler_output is None:
+                rescaled_labels, output_scaler = self.output_scaler_transform_and_apply(labels_reordered)
+                self.labels_scaler = output_scaler
+            else:
+                rescaled_labels = self.transform_array_given_scaler(self.scaler_output, labels_reordered)
 
             labels_reordered = dict(zip(ids_reordering, rescaled_labels))
 
