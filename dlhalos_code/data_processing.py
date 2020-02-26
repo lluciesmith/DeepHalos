@@ -191,7 +191,7 @@ class InputsPreparation:
 
 class DataGenerator(Sequence):
     def __init__(self, list_IDs, labels, sims,
-                 batch_size=40, dim=(51, 51, 51), n_channels=1, shuffle=False,
+                 batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False,
                  rescale_mean=0, rescale_std=1):
         """
         This class created the data generator that should be used to fit the deep learning model.
