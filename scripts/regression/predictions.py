@@ -37,9 +37,10 @@ generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_
 
 # load model
 
-model = load_model(path_model + "/model_100_epochs_mixed_sims.h5")
+# model = load_model(path_model + "/model_100_epochs_mixed_sims.h5")
+model = load_model(path_model + "/model/weights.20.hdf5")
 
-pred = model.fit_generator(generator_validation, use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1)
+pred = model.predict_generator(generator_validation, use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1)
 truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
 
 h_m_pred = scaler_output.inverse_transform(pred).flatten()
