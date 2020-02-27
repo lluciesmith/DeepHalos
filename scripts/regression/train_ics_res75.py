@@ -9,10 +9,12 @@ from tensorflow.keras.models import load_model
 import dlhalos_code.data_processing as tn
 import time
 import numpy as np
+from pickle import dump
 
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
+path_model = "/lfstev/deepskies/luisals/regression/ics_res75/"
 
 # First you will have to load the simulation
 
@@ -37,9 +39,9 @@ generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_
                                         batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std,
                                         dim=dim)
 
-######### TRAINING MODEL ##############
+dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
 
-path_model = "/lfstev/deepskies/luisals/regression/ics_res75/"
+######### TRAINING MODEL ##############
 
 # checkpoint
 filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
@@ -79,12 +81,6 @@ Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")
 
 
 ########## OPTION 2 ######################
-
-# validation_set = tn.InputsPreparation(validation_sims, load_ids=True, scaler_output=training_set.scaler_output)
-# generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
-#            t                             batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
-#
-# Model.model.fit_generator()
 
 # training_set = tn.InputsPreparation(training_sims, load_ids=True)
 # generator_training2 = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
