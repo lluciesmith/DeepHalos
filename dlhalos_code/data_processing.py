@@ -66,13 +66,13 @@ class SimulationPreparation:
 
         shape_sim = int(round((snapshot["iord"].shape[0]) ** (1 / 3)))
         i, j, k = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
-        snapshot['coords'] = snapshot['coords'] = np.column_stack((i, j, k))
+        snapshot['coords'] = np.column_stack((i, j, k))
         return snapshot
 
 
 class InputsPreparation:
     def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt", random_subset_each_sim=None,
-                 path="/lfstev/deepskies/luisals/", scaler_output=None, rescale_output=True, shuffle=True):
+                 path="/lfstev/deepskies/luisals/", scaler_output=None, return_rescaled_outputs=True, shuffle=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
         Particles and their labels are stored in a dictionary s.t.  particles are identified via the string
@@ -87,47 +87,50 @@ class InputsPreparation:
         self.ids_filename = ids_filename
         self.path = path
         self.random_subset = random_subset_each_sim
-        self.rescale_output = rescale_output
-        self.scaler_output = scaler_output
+        self.return_rescaled_outputs = return_rescaled_outputs
         self.shuffle = shuffle
 
-        self.labels_scaler = None
+        self.scaler_output = scaler_output
         self.particle_IDs = None
         self.labels_particle_IDS = None
 
         self.generate_particle_IDs_dictionary()
 
     def generate_particle_IDs_dictionary(self):
-        labels_dic = {}
+        names = []
+        masses = []
 
-        for i in range(len(self.sims)):
-            sim_i = self.sims[i]
+        for i, sim_ID in enumerate(self.sims):
 
             if self.load_ids:
-                ids_i, mass_i = self.load_ids_from_file(sim_i)
+                ids_i, mass_i = self.load_ids_from_file(sim_ID)
             else:
-                ids_i, mass_i = self.generate_random_set(sim_i)
+                ids_i, mass_i = self.generate_random_set(sim_ID)
 
-            name = ['sim-' + str(sim_i) + '-id-' + str(id_i) for id_i in ids_i]
-            dict_i = dict(zip(name, mass_i))
-            labels_dic.update(dict_i)
+            name = ['sim-' + str(sim_ID) + '-id-' + str(id_i) for id_i in ids_i]
+
+            names.append(name)
+            masses.append(mass_i)
+
+        flattened_name = np.concatenate(names)
+        flattened_mass = np.concatenate(masses)
+
+        if self.return_rescaled_outputs is True:
+            if self.scaler_output is None:
+                output_ids, self.scaler_output = self.get_standard_scaler_and_transform(flattened_mass)
+            else:
+                output_ids = self.transform_array_given_scaler(self.scaler_output, flattened_mass)
+        else:
+            output_ids = flattened_mass
+
+        dict_i = dict(zip(flattened_name, output_ids))
 
         if self.shuffle is True:
             np.random.seed(5)
-            ids_reordering = np.random.permutation(list(labels_dic.keys()))
+            ids_reordering = np.random.permutation(list(dict_i.keys()))
+            labels_reordered = dict([(key, dict_i[key]) for key in ids_reordering])
         else:
-            ids_reordering = list(labels_dic.keys())
-
-        labels_reordered = dict([(key, labels_dic[key]) for key in ids_reordering])
-
-        if self.rescale_output is True:
-            if self.scaler_output is None:
-                rescaled_labels, output_scaler = self.output_scaler_transform_and_apply(labels_reordered)
-                self.labels_scaler = output_scaler
-            else:
-                rescaled_labels = self.transform_array_given_scaler(self.scaler_output, labels_reordered)
-
-            labels_reordered = dict(zip(ids_reordering, rescaled_labels))
+            labels_reordered = dict_i
 
         self.particle_IDs = list(labels_reordered.keys())
         self.labels_particle_IDS = labels_reordered
@@ -149,21 +152,6 @@ class InputsPreparation:
     def load_ids_from_file(self, simulation_ID):
         ids_i, mass_i = self.get_ids_and_regression_labels(sim=simulation_ID)
         return ids_i, mass_i
-
-    def output_scaler_transform_and_apply(self, dictionary_array):
-        outputs = np.array([val for (key, val) in dictionary_array.items()])
-
-        norm_scaler = sklearn.preprocessing.StandardScaler()
-        norm_scaler.fit(outputs.reshape(-1, 1))
-
-        rescaled_out = norm_scaler.transform(outputs.reshape(-1, 1)).flatten()
-        return rescaled_out, norm_scaler
-
-    @staticmethod
-    def transform_array_given_scaler(scaler, dictionary_array):
-        outputs = np.array([val for (key, val) in dictionary_array.items()])
-        scaled_array = scaler.transform(outputs.reshape(-1, 1)).flatten()
-        return scaled_array
 
     def get_ids_and_regression_labels(self, sim="0"):
         if sim == "0":
@@ -189,10 +177,21 @@ class InputsPreparation:
         output_ids = np.log10(halo_mass[ids_bc])
         return ids_bc, output_ids
 
+    def get_standard_scaler_and_transform(self, array_outputs):
+        norm_scaler = sklearn.preprocessing.StandardScaler()
+        norm_scaler.fit(array_outputs.reshape(-1, 1))
+
+        rescaled_out = self.transform_array_given_scaler(norm_scaler, array_outputs)
+        return rescaled_out, norm_scaler
+
+    def transform_array_given_scaler(self, scaler, array):
+        scaled_array = scaler.transform(array.reshape(-1, 1)).flatten()
+        return scaled_array
+
 
 class DataGenerator(Sequence):
     def __init__(self, list_IDs, labels, sims,
-                 batch_size=40, dim=(51, 51, 51), n_channels=1, shuffle=False,
+                 batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False,
                  rescale_mean=0, rescale_std=1):
         """
         This class created the data generator that should be used to fit the deep learning model.
@@ -246,8 +245,9 @@ class DataGenerator(Sequence):
             np.random.shuffle(self.indexes)
 
     def _process_input(self, s):
+        s_t = np.transpose(s, axes=(1, 0, 2))
         # Rescale inputs
-        s_t_rescaled = (s - self.rescale_mean) / self.rescale_std
+        s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
 
         return s_t_rescaled.reshape((*self.dim, self.n_channels))
 
@@ -260,6 +260,9 @@ class DataGenerator(Sequence):
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
             sim_index = ID[4]
+
+            # generate box
+
             particle_ID = int(ID[9:])
 
             sim_snapshot = self.sims[sim_index]
@@ -268,6 +271,24 @@ class DataGenerator(Sequence):
 
             output_matrix = np.zeros((self.res, self.res, self.res))
             s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+
+            # load box
+
+            # particle_ID = ID[9:]
+            #
+            # if self.res == 51:
+            #     path_midddle = "training_set/"
+            # elif self.res == 75:
+            #     path_midddle = "training_set_res75/"
+            # else:
+            #     raise (ValueError, "I have subboxes only for 51 or 75 cubed resolution.")
+            #
+            # if sim_index == "0":
+            #     s = np.load('/lfstev/deepskies/luisals/training_simulation/' + path_midddle + particle_ID +
+            #                 '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
+            # else:
+            #     s = np.load("/lfstev/deepskies/luisals/reseed" + sim_index + "_simulation/" + path_midddle +
+            #                 particle_ID + '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
 
             X[i] = self._process_input(s)
             y[i] = self.labels[ID]
