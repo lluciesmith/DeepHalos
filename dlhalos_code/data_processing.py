@@ -10,6 +10,7 @@ import pynbody
 import sklearn.preprocessing
 from numba import njit, prange
 from tensorflow.keras.utils import Sequence
+from collections import OrderedDict
 
 
 class SimulationPreparation:
@@ -123,7 +124,7 @@ class InputsPreparation:
         else:
             output_ids = flattened_mass
 
-        dict_i = dict(zip(flattened_name, output_ids))
+        dict_i = OrderedDict(zip(flattened_name, output_ids))
 
         if self.shuffle is True:
             np.random.seed(5)

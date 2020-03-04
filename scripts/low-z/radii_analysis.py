@@ -11,21 +11,28 @@ if __name__ == "__main__":
     ic = parameters.InitialConditionsParameters(initial_snapshot="/Users/lls/Documents/mlhalos_files/reseed50/IC.gadget3",
                                                 final_snapshot="/Users/lls/Documents/mlhalos_files/reseed50/snapshot_099")
 
-    ids_i = np.loadtxt("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/reseed_1_random_training_set.txt")
-    ids_i = ids_i.astype("int")
+    # ids_i = np.loadtxt("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/reseed_1_random_training_set.txt")
+    # ids_i = ids_i.astype("int")
 
-    r_i = np.load("/Users/lls/Documents/mlhalos_files/reseed50/radii_properties_ids_random_training_set_above_1e11.npy")
-
-    ti = np.load("/Users/lls/Documents/deep_halos_files/z0/correct_ordering/truth1_80.npy")
-
-    ids = ids_i[np.where(ti >= 12)[0]]
-    halo_ids_i = ic.final_snapshot[ids_i]['grp']
-    ti_above_1e11 = ti[halo_ids_i <= 5300]
-    r = r_i[ti_above_1e11 >= 12]
+    # r_i = np.load("/Users/lls/Documents/mlhalos_files/reseed50/radii_properties_ids_random_training_set_above_1e11.npy")
+    #
+    # ti = np.load("/Users/lls/Documents/deep_halos_files/z0/correct_ordering/truth1_80.npy")
+    #
+    # ids = ids_i[np.where(ti >= 12)[0]]
+    # halo_ids_i = ic.final_snapshot[ids_i]['grp']
+    # ti_above_1e11 = ti[halo_ids_i <= 5300]
+    # r = r_i[ti_above_1e11 >= 12]
 
     # p1 = np.load("/Users/lls/Documents/deep_halos_files/z0/correct_ordering/pred1_80.npy")
     # t1 = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/true1_60.npy")
     # p1 = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/predicted1_60.npy")
+
+    ids = np.loadtxt("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/reseed_1_random_training_set.txt")
+    ids = ids.astype("int")
+
+    r = np.load("/Users/lls/Documents/mlhalos_files/reseed50/radii_properties_ids_random_training_set_above_1e11.npy")
+    p1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predicted1_100.npy")
+    t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_100.npy")
 
     halo_ids = ic.final_snapshot[ids]['grp']
     ids_above_1e11 = ids[halo_ids <= 5300]
@@ -74,7 +81,8 @@ if __name__ == "__main__":
     plt.yscale("log")
     plt.subplots_adjust(top=0.93)
     # plt.savefig("/Users/lls/Documents/deep_halos_files/z0/predictions_mass_and_radius_bins.png")
-    plt.savefig("/Users/lls/Documents/deep_halos_files/z0/high_mass/predictions_mass_and_radius_bins.png")
+    # plt.savefig("/Users/lls/Documents/deep_halos_files/z0/high_mass/predictions_mass_and_radius_bins.png")
+    plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predictions_mass_and_radius_bins.png")
 
 
     def mean_err(true, pred, bins=20):
