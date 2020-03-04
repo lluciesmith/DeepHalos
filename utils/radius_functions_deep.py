@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
+import pandas as pd
 
 def sort_ids_truth_pred(particle_ids, truth, predicted, ic_params):
     h = []
@@ -123,6 +125,7 @@ def plot_diff_predicted_true_radial_ranges(den_inner, truth_inner, den_mid, trut
                   histtype="step", density=density, lw=lw, color=col_mid)
     dd = ax3.hist(den_outer[high_mass_outer] - truth_outer[high_mass_outer], bins=bins_radial_distributions,
                   histtype="step", density=density, lw=lw, color=col_out)
+    print(stats.describe(den_outer[high_mass_outer] - truth_outer[high_mass_outer]))
     ax3.set_title(r"$\log(M_{\mathrm{true}}) \geq %.2f$" % mass_bins[2])
 
     plt.subplots_adjust(wspace=0, bottom=0.14, left=0.08)
@@ -244,3 +247,97 @@ def plot_radial_range_only_high_mass(den_inner, truth_inner, den_mid, truth_mid,
     ax3.set_ylabel(r"$n_{\mathrm{particles}}$")
     ax3.set_xlabel(r"$\log(M_{\mathrm{predicted}}/M_{\mathrm{true}})$")
     ax3.set_xticks([-3, -2, -1, 0, 1, 2, 3])
+
+
+def return_summary_statistics_three_panels(den_inner, truth_inner, den_mid, truth_mid, den_outer, truth_outer,
+                                          mass_bins):
+
+    low_mass_inner = (truth_inner >= mass_bins[0]) & (truth_inner < mass_bins[1])
+    low_mass_mid = (truth_mid >= mass_bins[0]) & (truth_mid < mass_bins[1])
+    low_mass_outer = (truth_outer >= mass_bins[0]) & (truth_outer < mass_bins[1])
+
+    d_in_low = stats.describe(den_inner[low_mass_inner] - truth_inner[low_mass_inner])
+    d_mid_low = stats.describe(den_mid[low_mass_mid] - truth_mid[low_mass_mid])
+    d_out_low = stats.describe(den_outer[low_mass_outer] - truth_outer[low_mass_outer])
+
+    mid_mass_inner = (truth_inner >= mass_bins[1]) & (truth_inner < mass_bins[2])
+    mid_mass_mid = (truth_mid >= mass_bins[1]) & (truth_mid < mass_bins[2])
+    mid_mass_outer = (truth_outer >= mass_bins[1]) & (truth_outer < mass_bins[2])
+
+    d_in_mid = stats.describe(den_inner[mid_mass_inner] - truth_inner[mid_mass_inner])
+    d_mid_mid = stats.describe(den_mid[mid_mass_mid] - truth_mid[mid_mass_mid])
+    d_out_mid = stats.describe(den_outer[mid_mass_outer] - truth_outer[mid_mass_outer])
+
+    high_mass_inner = (truth_inner >= mass_bins[2]) & (truth_inner <= mass_bins[3])
+    high_mass_mid = (truth_mid >= mass_bins[2]) & (truth_mid <= mass_bins[3])
+    high_mass_outer = (truth_outer >= mass_bins[2]) & (truth_outer <= mass_bins[3])
+
+    d_in_high = stats.describe(den_inner[high_mass_inner] - truth_inner[high_mass_inner])
+    d_mid_high = stats.describe(den_mid[high_mass_mid] - truth_mid[high_mass_mid])
+    d_out_high = stats.describe(den_outer[high_mass_outer] - truth_outer[high_mass_outer])
+
+    diction = {}
+
+    diction['low-mass'] = {'inner': {'mean': d_in_low.mean, 'var': d_in_low.variance, 'skew':d_in_low.skewness},
+                     'mid': {'mean': d_mid_low.mean, 'var': d_mid_low.variance, 'skew':d_mid_low.skewness},
+                     'outer': {'mean': d_out_low.mean, 'var': d_out_low.variance, 'skew':d_out_low.skewness}}
+    diction['mid-mass'] = {'inner': {'mean': d_in_mid.mean, 'var': d_in_mid.variance, 'skew': d_in_mid.skewness},
+                'mid': {'mean': d_mid_mid.mean, 'var': d_mid_mid.mean, 'skew': d_mid_mid.skewness},
+                'outer': {'mean': d_out_mid.mean, 'var': d_out_mid.variance, 'skew': d_out_mid.skewness}}
+    diction['high-mass'] = {'inner': {'mean': d_in_high.mean, 'var': d_in_high.variance, 'skew': d_in_high.skewness},
+                 'mid': {'mean': d_mid_high.mean, 'var': d_mid_high.variance, 'skew': d_mid_high.skewness},
+                 'outer': {'mean': d_out_high.mean, 'var': d_out_high.variance, 'skew': d_out_high.skewness}}
+
+    # d1 = pd.DataFrame.from_dict({(i, j): diction[i][j]
+    #                         for i in diction.keys()
+    #                         for j in diction[i].keys()},
+    #                        orient='columns')
+    #
+    # d = [dict(selector="th", props=[('text-align', 'center')]),
+    #      dict(selector="td", props=[('text-align', 'center')])]
+    # d1.style.set_properties(**{'width': '100cm', 'text-align': 'center'}).set_table_styles([d])
+    return diction
+
+
+def plot_stuff(diction1, diction2, col_in, col_mid, col_out, figsize=(10, 5.1), col_truth="dimgrey"):
+    f1, axs1 = plt.subplots(nrows=1, ncols=3, figsize=figsize, sharey=True, sharex=True, constrained_layout=True)
+    f2, axs2 = plt.subplots(nrows=1, ncols=3, figsize=figsize, sharey=True, sharex=True, constrained_layout=True)
+    f3, axs3 = plt.subplots(nrows=1, ncols=3, figsize=figsize, sharey=True, sharex=True, constrained_layout=True)
+
+    figs = (f1, f2, f3)
+    axes = (axs1, axs2, axs3)
+    cols = (col_in, col_mid, col_out)
+
+    for ax in axes:
+        for axi in ax:
+            axi.axhline(y=0,  color=col_truth, ls="--")
+
+    for i, mass_bin in enumerate(diction1):
+        ax = axes[i]
+        fig = figs[i]
+        fig.suptitle(mass_bin + " halos")
+        for j, radius_bin in enumerate(diction1[mass_bin]):
+            axi = ax[j]
+            col = cols[j]
+            axi.set_title(radius_bin + " radius bin")
+
+            for k1, val1 in enumerate(diction1[mass_bin][radius_bin]):
+                if j == 0 and k1 == 0:
+                    axi.scatter(k1, round(diction1[mass_bin][radius_bin][val1], 3), marker="^", c=col, label=r"$51^3$")
+                    axi.legend(loc="best")
+                else:
+                    axi.scatter(k1, round(diction1[mass_bin][radius_bin][val1], 3), marker="^", c=col)
+            for k2, val2 in enumerate(diction2[mass_bin][radius_bin]):
+                if j == 0 and k2 == 0:
+                    axi.scatter(k2, round(diction2[mass_bin][radius_bin][val2], 3), c=col, label=r"$75^3$")
+                    axi.legend(loc="best")
+                else:
+                    axi.scatter(k2, round(diction2[mass_bin][radius_bin][val2], 3), c=col)
+
+            axi.set_ylim(-1, 1.2)
+
+            axi.set_xticks([0, 1 , 2])
+            axi.set_xticklabels(list(diction1[mass_bin][radius_bin].keys()))
+
+        # plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res75/" + mass_bin + "_halos_comparison.png")
+        # plt.clf()

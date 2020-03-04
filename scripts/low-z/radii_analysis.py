@@ -1,10 +1,11 @@
 import sys
+sys.path.append('/Users/lls/Documents/Projects/DeepHalos')
+from utils import radius_functions_deep as rf
 sys.path.append('/Users/lls/Documents/mlhalos_code/')
 from mlhalos import parameters
 from mlhalos import distinct_colours
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import radius_functions_deep as rf
 
 
 if __name__ == "__main__":
@@ -31,8 +32,10 @@ if __name__ == "__main__":
     ids = ids.astype("int")
 
     r = np.load("/Users/lls/Documents/mlhalos_files/reseed50/radii_properties_ids_random_training_set_above_1e11.npy")
-    p1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predicted1_100.npy")
-    t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_100.npy")
+    p1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predicted1_65.npy")
+    t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_65.npy")
+    # p1 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/predicted1_60.npy")
+    # t1 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/true1_60.npy")
 
     halo_ids = ic.final_snapshot[ids]['grp']
     ids_above_1e11 = ids[halo_ids <= 5300]
@@ -71,7 +74,7 @@ if __name__ == "__main__":
     density = False
 
     m_p = ic.initial_conditions['mass'][0]
-    m_min = m_min = np.log10(m_p * 300)
+    m_min = np.log10(m_p * 300)
 
     mb = [11, 12, 13, truth_inner.max()]
     b = np.linspace(-4, 4, 50)
@@ -85,8 +88,8 @@ if __name__ == "__main__":
     plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predictions_mass_and_radius_bins.png")
 
 
-    def mean_err(true, pred, bins=20):
-        t_bins = np.linspace(m_min, 12 , bins, endpoint=True)
+    def mean_err(true, pred, bins=20, m_min=11, m_max=15):
+        t_bins = np.linspace(m_min, m_max , bins, endpoint=True)
         res = (pred - true)
         mean = []
         std = []
@@ -98,20 +101,23 @@ if __name__ == "__main__":
         return (t_bins[1:] + t_bins[:-1])/2, np.array(mean), np.array(std)
 
 
-    t = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/true1_60.npy")
-    p = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/predicted1_60.npy")
-    b, m, s = mean_err(t, p, 10)
+    # t = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/true1_60.npy")
+    # p = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/predicted1_60.npy")
+    p = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predicted1_65.npy")
+    t = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_65.npy")
+    b, m, s = mean_err(t, p, 10, m_min=13, m_max=t.max())
 
     fig, ax = plt.subplots()
-    ind = (t >= m_min) & (t <= 12)
+    ind = (t >= 13) & (t <= t.max())
+    #ind = (t >= 11) & (t <= 12)
     # ind = (t<=12)
     err = p - t
 
     ax.scatter(t[ind], err[ind], s=0.5)
     ax.axhline(y=0, color="grey")
     ax.errorbar(b, m, yerr=s, color="k")
-    ax.axhline(y=0.044, color="C1", label=r"std in bin $12 \leq \log(M)\leq 13$")
-    plt.legend(loc="best")
+    # ax.axhline(y=0.044, color="C1", label=r"std in bin $12 \leq \log(M)\leq 13$")
+    # plt.legend(loc="best")
 
     ax.set_xlabel(r"$\log(M_\mathrm{true})$")
     ax.set_ylabel(r"$\log(M_\mathrm{predicted}/M_\mathrm{true})$")

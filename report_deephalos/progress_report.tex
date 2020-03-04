@@ -27,7 +27,7 @@
 
 The training set is made of $100,000$ particles consisting of $20,000$ particles from each of five simulations based on different initial conditions realizations. The validation set is made of $20,000$ particles from one independent simulation from those used for training.
 
-The input to the CNN is given by the initial density field sampled in a 3D box of comoving length $L_\mathrm{box} \sim 10 \, \mathrm{Mpc} \, h^{-1} \, a$ and made of $N = 51^{3}$ voxels, centred on each particle's initial position. The resolution of the 3D input is set to be equal to the resolution of the simulation's grid, meaning that the length of each voxel, $l_\mathrm{voxel}$, is the same as the initial grid spacing in the simulation i.e., $l_\mathrm{voxel} = 0.2 \mathrm{Mpc} \, h^{-1} \, a$. Since the length of the voxel is fixed, the choice of $N =51^3$ sets the volume of the sub-box. This choice can be straightforwardly changed to be a larger value (e.g. $N =75^3$) since the sub-boxes are computed at the time each particle is called for training. The output of the CNN is given by the logarithmic mass of the halo to which each particle belongs at $z=0$. Both the inputs and outputs are rescaled in the training set such that their distributions have zero mean and unit variance. The validation and test sets will then also be rescaled by the same means and variances.
+The input to the CNN is given by the initial density field sampled in a 3D box of comoving length $L_\mathrm{box} \sim 10.2 \, \mathrm{Mpc} \, h^{-1} \, a$ and made of $N = 51^{3}$ voxels, centred on each particle's initial position. The resolution of the 3D input is set to be equal to the resolution of the simulation's grid, meaning that the length of each voxel, $l_\mathrm{voxel}$, is the same as the initial grid spacing in the simulation i.e., $l_\mathrm{voxel} = 0.2 \mathrm{Mpc} \, h^{-1} \, a$. Since the length of the voxel is fixed, the choice of $N =51^3$ sets the volume of the sub-box. This choice can be straightforwardly changed to be a larger value (e.g. $N =75^3$) since the sub-boxes are computed at the time each particle is called for training. The output of the CNN is given by the logarithmic mass of the halo to which each particle belongs at $z=0$. Both the inputs and outputs are rescaled in the training set such that their distributions have zero mean and unit variance. The validation and test sets will then also be rescaled by the same means and variances.
 
 \begin{figure}[t!]
 \centering
@@ -58,9 +58,44 @@ Fig.~\ref{fig:z99_predictions} shows the difference between predicted and true h
 \label{fig:z99_predictions}
 \end{figure}
 
-\subsection{Underestimating halo masses for high-mass halos}
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{z99/predictions_mass_and_radius_bins_ics_res75.png}
+\caption{Same as Fig.~\ref{fig:z99_predictions}, but for the case of training the CNN on a larger input sub-box of resolution $N=75^3$. The sub-box has size $L=14.8 \, \mathrm{Mpc} \, h^{-1} \, a$, compared to the previous case of a $N=75^3$ box of size $L = 10.2 \, \mathrm{Mpc} \, h^{-1} \, a$. The predictions are shown for the same independent simulation used for Fig.~\ref{fig:z99_predictions}.}
+\label{fig:z99_predictions_res75}
+\end{figure}
 
-The CNN underestimates halo masses for particles in the outskirts of high-mass halos. This behaviour is similar to that found in the $z=0$ test (Section \ref{sec:z0_training}), as shown in the left panel of Fig.~\ref{fig:histogram_radii}. In the $z=0$ case, we found that the reason for this was that the input sub-boxes was too small to capture the full extent of the halo. Since the CNN was not able to extrapolate beyond the boundary of the input box, it would not have enough information to yield a reliable mass estimate for particles in the outskirts of halos. By adopting a larger input sub-box, we were able to correct for this effect and achieve a similar mean and variance in the $\log(M_\mathrm{predicted}/M_\mathrm{true})$ distributions for all radial categories of particles. A similar issue could be happening in the initial conditions. We will therefore test whether by adopting a larger input sub-box, we will able to improve the predictions of outskirts particles and yield similar distributions in the right panel of Fig.~\ref{fig:z99_predictions} for all three radial categories.
+\subsection{Underestimating halo masses for high-mass halos}
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{z99/high_mass_comparison.png}
+\caption{A comparison between mean, variance and skewness for the two cases of $51^3$ and  $75^3$ input sub-boxes, for particles in high-mass halos split into the three radial bins.}
+\label{fig:high_mass_pred}
+\end{figure}
+
+The CNN underestimates halo masses for particles in the outskirts of high-mass halos. This behaviour is similar to that found in the $z=0$ test (Section \ref{sec:z0_training}), as shown in the left panel of Fig.~\ref{fig:histogram_radii}. In the $z=0$ case, we found that the reason for this was that the input sub-boxes was too small to capture the full extent of the halo. Since the CNN was not able to extrapolate beyond the boundary of the input box, it would not have enough information to yield a reliable mass estimate for particles in the outskirts of halos. By adopting a larger input sub-box, we were able to correct for this effect and achieve a similar mean and variance in the $\log(M_\mathrm{predicted}/M_\mathrm{true})$ distributions for all radial categories of particles (Fig.~\ref{radial_cat_6mpc}). A similar issue could be happening in the initial conditions. We therefore test whether by adopting a larger input sub-box, we are able to improve the predictions of outskirts particles and yield similar distributions in the right panel of Fig.~\ref{fig:z99_predictions} for all three radial categories.
+
+Figure \ref{fig:z99_predictions_res75} shows the results when training the CNN on larger input sub-boxes of resolution $N=75^3$ which implies a box size of $L=14.8 \, \mathrm{Mpc} \, h^{-1} \, a$. The increase in the spatial dimensions of the inputs from $51^3$ to $75^3$ required one additional convolutional layer after the third convolutional layer in Fig.~\ref{fig:CNN_architecture}, with 32 filters of size $3\times3\times3$. The subsequent $1\times1\times1$ convolutional layer reduced the channel dimensions from 32 to 8. For high mass halos, each radial-bin distribution in Fig.~\ref{fig:z99_predictions_res75} appears tighter and less skewed compared to the same radial-bin distribution in Fig.~\ref{fig:z99_predictions}. This means that a larger input sub-box can improve the overall predictions of high-mass halos. However, there remains some radial dependence in the predictions since the three distributions in Fig.~\ref{fig:z99_predictions_res75} do not exactly overlap. A more quantitative comparison between the two cases is shown in Fig.~\ref{fig:high_mass_pred}, where we compare the mean, variance and skewness for the two cases of $51^3$ and $75^3$ input sub-boxes, for each radial category in high-mass halos. Overall, the $75^3$ case improves both the variance and the skewness of all radial categories. In particular, the largest improvement is in the skewness of the distribution of inner particles. Although the variance and the skewness are also improved for particles in the outskirts and in the mid-region of halos, the improvement is not large enough to completely remove the radial dependence in the predictions. In other words, particles in the inner region of halos have a much smaller skew and a slightly lower variance, compared to particles in the outskirts and in the mid-region of halos. 
+
+One hypothesis is that even with a $75^3$ sub-box, the volume is still not large enough to capture all the protohalo. This can be seen in the left panel of Fig.~\ref{fig:protohalo_75} where I am showing the protohalo region of the most massive halo in the validation simulation in a sub-box of size L$=14.8 \, \mathrm{Mpc} \, h^{-1} \, a$. Clearly, the size of the box is not large enough to fully capture the extent of this protohalo in the initial conditions. Instead, one would require a box size of L$=24 \, \mathrm{Mpc} \, h^{-1} \, a$ to fully capture the extent of this halo within the input sub-box. This issue only affects the $\sim 10$ most massive halos in this simulation, where the 10th most massive halo has a mass of $M\sim 6 \times 10^{13} M_\odot$ and the most massive halo has a mass of $M\sim 4 \times 10^{14} M_\odot$. One way to resolve this would be to increase the input sub-box to a resolution of $N=121^3$ (which would however imply a much higher computational cost) and test that all the radial dependence in the right-panel of Fig.~\ref{fig:z99_predictions_res75} disappears.
+
+\begin{figure*}
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{z99/halo0_75^3.png}
+        \caption{Protohalo in a sub-box of size L$=14.8 \, \mathrm{Mpc} \, h^{-1} \, a$.}
+    \end{subfigure}%
+    ~ 
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{z99/halo0_121^3.png}
+        \caption{Protohalo in a sub-box of size L$=24 \, \mathrm{Mpc} \, h^{-1} \, a$.}
+    \end{subfigure}
+    \caption{Protohalo region of the most massive halo in the validation simulation in two sub-boxes, one of size L$=14.8 \, \mathrm{Mpc} \, h^{-1} \, a$ (\textit{left panel)}, which is what was used to make the predictions of Fig.~\ref{fig:z99_predictions_res75}, and the other of size L$=24 \, \mathrm{Mpc} \, h^{-1} \, a$ (\textit{right panel}), which is what is required to fully capture the extent of the protohalo in the initial conditions.}
+    \label{fig:protohalo_75}
+\end{figure*}
+
 
 \subsection{Overestimating halo masses for low-mass halos}
 
