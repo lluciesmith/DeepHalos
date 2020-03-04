@@ -33,14 +33,15 @@ scaler_output = load(open(path_model + 'scaler_output.pkl', 'rb'))
 
 validation_set = tn.InputsPreparation(validation_sims, load_ids=True, scaler_output=scaler_output, shuffle=False)
 generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
-                                        batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std)
+                                        batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std,
+                                        dim=dim)
 
 # load model
 
 # model = load_model(path_model + "/model_100_epochs_mixed_sims.h5")
 model = load_model(path_model + "/model/weights.65.hdf5")
 
-pred = model.predict_generator(generator_validation, use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1)
+pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
 truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
 
 h_m_pred = scaler_output.inverse_transform(pred).flatten()
