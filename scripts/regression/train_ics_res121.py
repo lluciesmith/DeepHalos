@@ -70,7 +70,7 @@ Model = CNN.CNN(param_conv, param_fcc, dim=dim,
                 training_generator=generator_training, validation_generator=generator_validation, validation_freq=1,
                 callbacks=callbacks_list, num_epochs=100,
                 use_multiprocessing=True, workers=2, max_queue_size=10,
-                verbose=1, model_type="regression", lr=0.0001, train=False)
+                verbose=1, model_type="regression", lr=0.0001, train=True)
 
 
 np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)
