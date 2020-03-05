@@ -78,7 +78,7 @@ param_fcc = {  # 'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.2},
     'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.4}}
 
 Model = CNN.CNN(param_conv, param_fcc,
-                dim={}, training_generator={}, validation_generator={}, validation_freq=1,
+                dim=(51, 51, 51), training_generator={}, validation_generator={}, validation_freq=1,
                 callbacks=callbacks_list, num_epochs=3,
                 use_multiprocessing=True, workers=2, max_queue_size=10,
                 verbose=1, model_type="regression", lr=0.0001, train=False)
