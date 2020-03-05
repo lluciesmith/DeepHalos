@@ -16,7 +16,7 @@ from dlhalos_code import evaluation as eval
 class CNN:
     def __init__(self, conv_params, fcc_params, model_type="regression",
                  training_generator=None, validation_generator=None, callbacks=None, metrics=None,
-                 num_epochs=5, dim=(51, 51, 51), initialiser=None, max_queue_size=10,
+                 num_epochs=5, dim=(51, 51, 51), pool_size=(2, 2, 2), initialiser=None, max_queue_size=10,
                  data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False,
                  model_name="my_model.h5", num_gpu=1, lr=0.0001, validation_freq=1, train=True, skip_connector=False):
 
@@ -29,6 +29,7 @@ class CNN:
         self.data_format = data_format
         self.val_freq = validation_freq
         self.initialiser = initialiser
+        self.pool_size = pool_size
 
         self.num_epochs = num_epochs
         self.use_multiprocessing = use_multiprocessing
@@ -136,7 +137,8 @@ class CNN:
         return Model
 
     def first_convolutional_layer(self, input_data, input_shape_box=(17, 17, 17, 1), num_kernels=3,
-                                  dim_kernel=(7, 7, 7), strides=2, padding='valid', data_format="channels_last",
+                                  dim_kernel=(7, 7, 7), pool_size=(2, 2, 2), strides=2, padding='valid',
+                                  data_format="channels_last",
                                   alpha_relu=0.03, activation=True, bn=True, pool=True, initialiser="normal"):
 
         x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format,
@@ -146,16 +148,17 @@ class CNN:
         if activation is True:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
         if pool == "average":
-            x = keras.layers.AveragePooling3D(pool_size=(2, 2, 2), strides=None, padding="valid",
+            x = keras.layers.AveragePooling3D(pool_size=pool_size, strides=None, padding="valid",
                                               data_format=data_format)(x)
         elif pool == "max":
-            x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2), strides=None, padding="valid",
+            x = keras.layers.MaxPooling3D(pool_size=pool_size, strides=None, padding="valid",
                                           data_format=data_format)(x)
         else:
             pass
         return x
 
-    def subsequent_convolutional_layer(self, x, num_kernels=3, dim_kernel=(3, 3, 3), strides=2, padding='valid',
+    def subsequent_convolutional_layer(self, x, num_kernels=3, dim_kernel=(3, 3, 3), pool_size=(2, 2, 2), strides=2,
+                                       padding='valid',
                                        data_format="channels_last", alpha_relu=0.03, activation=True, bn=True,
                                        pool=True, initialiser="normal"):
         x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format,
@@ -166,10 +169,10 @@ class CNN:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
 
         if pool == "average":
-            x = keras.layers.AveragePooling3D(pool_size=(2, 2, 2), strides=None, padding="valid",
+            x = keras.layers.AveragePooling3D(pool_size=pool_size, strides=None, padding="valid",
                                               data_format=data_format)(x)
         elif pool == "max":
-            x = keras.layers.MaxPooling3D(pool_size=(2, 2, 2), strides=None, padding="valid",
+            x = keras.layers.MaxPooling3D(pool_size=pool_size, strides=None, padding="valid",
                                           data_format=data_format)(x)
         else:
             pass

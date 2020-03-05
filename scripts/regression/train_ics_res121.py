@@ -11,7 +11,7 @@ from pickle import dump
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-path_model = "/lfstev/deepskies/luisals/regression/ics_res121/"
+path_model = "/lfstev/deepskies/luisals/regression/ics_res121/stride1/"
 
 # First you will have to load the simulation
 
@@ -50,16 +50,18 @@ csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=False
 callbacks_list = [checkpoint_call, csv_logger]
 tensorflow.compat.v1.set_random_seed(7)
 
-param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3),
-                         'strides': 2, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_2': {'num_kernels': 8, 'dim_kernel': (3, 3, 3),
+param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3), 'pool_size':(3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
+              'conv_2': {'num_kernels': 8, 'dim_kernel': (3, 3, 3), 'pool_size':(3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
+              'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3), 'pool_size':(3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              #'conv_5': {'num_kernels': 8, 'dim_kernel': (1, 1, 1),
-                         #'strides': 1, 'padding': 'same', 'pool': None, 'bn': True}
+              'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool_size':(3, 3, 3),
+                         'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+              'conv_5': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool_size':(3, 3, 3),
+                         'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+              'conv_6': {'num_kernels': 16, 'dim_kernel': (1, 1, 1), 'pool_size':(3, 3, 3),
+                         'strides': 1, 'padding': 'same', 'pool': None, 'bn': True}
               }
 
 param_fcc = {  # 'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.2},
@@ -69,7 +71,7 @@ param_fcc = {  # 'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.2},
 Model = CNN.CNN(param_conv, param_fcc, dim=dim,
                 training_generator=generator_training, validation_generator=generator_validation, validation_freq=1,
                 callbacks=callbacks_list, num_epochs=100,
-                use_multiprocessing=True, workers=2, max_queue_size=10,
+                use_multiprocessing=True, workers=2, max_queue_size=1,
                 verbose=1, model_type="regression", lr=0.0001, train=True)
 
 
