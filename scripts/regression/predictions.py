@@ -25,7 +25,7 @@ validation_sims = ["1"]
 batch_size = 80
 rescale_mean = 1.005
 rescale_std = 0.05050
-dim = (75, 75, 75)
+dim = (121, 121, 121)
 
 # load validation set
 
