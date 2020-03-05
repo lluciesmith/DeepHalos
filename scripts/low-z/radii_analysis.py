@@ -32,10 +32,12 @@ if __name__ == "__main__":
     ids = ids.astype("int")
 
     r = np.load("/Users/lls/Documents/mlhalos_files/reseed50/radii_properties_ids_random_training_set_above_1e11.npy")
-    p1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predicted1_65.npy")
-    t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_65.npy")
+    # p1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predicted1_65.npy")
+    # t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_65.npy")
     # p1 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/predicted1_60.npy")
     # t1 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/true1_60.npy")
+    p1 = np.load("/lfstev/deepskies/luisals/regression/ics_res121/predicted1_25.npy")
+    t1 = np.load("/lfstev/deepskies/luisals/regression/ics_res121/true1_25.npy")
 
     halo_ids = ic.final_snapshot[ids]['grp']
     ids_above_1e11 = ids[halo_ids <= 5300]
@@ -83,60 +85,61 @@ if __name__ == "__main__":
                                               lw=lw, density=density, figsize=(12, 5.2), fontsize=15)
     plt.yscale("log")
     plt.subplots_adjust(top=0.93)
+    plt.savefig("/lfstev/deepskies/luisals/regression/ics_res121/hist_radii_ics_res121.png")
     # plt.savefig("/Users/lls/Documents/deep_halos_files/z0/predictions_mass_and_radius_bins.png")
     # plt.savefig("/Users/lls/Documents/deep_halos_files/z0/high_mass/predictions_mass_and_radius_bins.png")
-    plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predictions_mass_and_radius_bins.png")
-
-
-    def mean_err(true, pred, bins=20, m_min=11, m_max=15):
-        t_bins = np.linspace(m_min, m_max , bins, endpoint=True)
-        res = (pred - true)
-        mean = []
-        std = []
-        for i in range(len(t_bins) - 1):
-            ind = np.where((true >= t_bins[i]) & (true <= t_bins[i + 1]))[0]
-            mean.append(np.mean(res[ind]))
-            std.append(np.std(res[ind]))
-
-        return (t_bins[1:] + t_bins[:-1])/2, np.array(mean), np.array(std)
-
-
-    # t = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/true1_60.npy")
-    # p = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/predicted1_60.npy")
-    p = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predicted1_65.npy")
-    t = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_65.npy")
-    b, m, s = mean_err(t, p, 10, m_min=13, m_max=t.max())
-
-    fig, ax = plt.subplots()
-    ind = (t >= 13) & (t <= t.max())
-    #ind = (t >= 11) & (t <= 12)
-    # ind = (t<=12)
-    err = p - t
-
-    ax.scatter(t[ind], err[ind], s=0.5)
-    ax.axhline(y=0, color="grey")
-    ax.errorbar(b, m, yerr=s, color="k")
-    # ax.axhline(y=0.044, color="C1", label=r"std in bin $12 \leq \log(M)\leq 13$")
-    # plt.legend(loc="best")
-
-    ax.set_xlabel(r"$\log(M_\mathrm{true})$")
-    ax.set_ylabel(r"$\log(M_\mathrm{predicted}/M_\mathrm{true})$")
-
-    def halomass_to_pnumber(x):
-        m_p = ic.initial_conditions['mass'][0]
-        V = 10**x / m_p
-        return ["%i" % z for z in V]
-
-    def pnumber_to_halomass(x):
-        m_p = ic.initial_conditions['mass'][0]
-        V = m_p * x
-        return ["%.3f" % z for z in V]
-
-    ax2 = ax.twiny()
-    xticks = ax.get_xticks()
-    xticks_new = xticks[1:-1]
-    ax2.set_xlim(ax.get_xlim())
-    ax2.set_xticks(xticks_new)
-    ax2.set_xticklabels(halomass_to_pnumber(xticks_new))
-    ax2.set_xlabel("Number of particles")
-    plt.subplots_adjust(bottom=0.14, top=0.87)
+    # plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predictions_mass_and_radius_bins.png")
+    #
+    #
+    # def mean_err(true, pred, bins=20, m_min=11, m_max=15):
+    #     t_bins = np.linspace(m_min, m_max , bins, endpoint=True)
+    #     res = (pred - true)
+    #     mean = []
+    #     std = []
+    #     for i in range(len(t_bins) - 1):
+    #         ind = np.where((true >= t_bins[i]) & (true <= t_bins[i + 1]))[0]
+    #         mean.append(np.mean(res[ind]))
+    #         std.append(np.std(res[ind]))
+    #
+    #     return (t_bins[1:] + t_bins[:-1])/2, np.array(mean), np.array(std)
+    #
+    #
+    # # t = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/true1_60.npy")
+    # # p = np.load("/Users/lls/Documents/deep_halos_files/z0/high_mass/predicted1_60.npy")
+    # p = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predicted1_65.npy")
+    # t = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_65.npy")
+    # b, m, s = mean_err(t, p, 10, m_min=13, m_max=t.max())
+    #
+    # fig, ax = plt.subplots()
+    # ind = (t >= 13) & (t <= t.max())
+    # #ind = (t >= 11) & (t <= 12)
+    # # ind = (t<=12)
+    # err = p - t
+    #
+    # ax.scatter(t[ind], err[ind], s=0.5)
+    # ax.axhline(y=0, color="grey")
+    # ax.errorbar(b, m, yerr=s, color="k")
+    # # ax.axhline(y=0.044, color="C1", label=r"std in bin $12 \leq \log(M)\leq 13$")
+    # # plt.legend(loc="best")
+    #
+    # ax.set_xlabel(r"$\log(M_\mathrm{true})$")
+    # ax.set_ylabel(r"$\log(M_\mathrm{predicted}/M_\mathrm{true})$")
+    #
+    # def halomass_to_pnumber(x):
+    #     m_p = ic.initial_conditions['mass'][0]
+    #     V = 10**x / m_p
+    #     return ["%i" % z for z in V]
+    #
+    # def pnumber_to_halomass(x):
+    #     m_p = ic.initial_conditions['mass'][0]
+    #     V = m_p * x
+    #     return ["%.3f" % z for z in V]
+    #
+    # ax2 = ax.twiny()
+    # xticks = ax.get_xticks()
+    # xticks_new = xticks[1:-1]
+    # ax2.set_xlim(ax.get_xlim())
+    # ax2.set_xticks(xticks_new)
+    # ax2.set_xticklabels(halomass_to_pnumber(xticks_new))
+    # ax2.set_xlabel("Number of particles")
+    # plt.subplots_adjust(bottom=0.14, top=0.87)
