@@ -63,7 +63,7 @@ class SimulationPreparation:
         rho_m = pynbody.analysis.cosmology.rho_M(snapshot, unit=snapshot["rho"].units)
         snapshot['den_contrast'] = snapshot['rho'] / rho_m
         t1 = time.time()
-        print("Loading density contrast in simulation took " + str((t1 - t0)/60))
+        print("Loading density contrast in simulation took " + str((t1 - t0)/60) + " minutes.")
 
         shape_sim = int(round((snapshot["iord"].shape[0]) ** (1 / 3)))
         i, j, k = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
