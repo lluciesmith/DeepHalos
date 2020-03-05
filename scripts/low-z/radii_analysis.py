@@ -36,8 +36,8 @@ if __name__ == "__main__":
     # t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_65.npy")
     # p1 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/predicted1_60.npy")
     # t1 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/true1_60.npy")
-    p1 = np.load("/lfstev/deepskies/luisals/regression/ics_res121/predicted1_25.npy")
-    t1 = np.load("/lfstev/deepskies/luisals/regression/ics_res121/true1_25.npy")
+    p1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res121/predicted1_25.npy")
+    t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res121/true1_25.npy")
 
     halo_ids = ic.final_snapshot[ids]['grp']
     ids_above_1e11 = ids[halo_ids <= 5300]
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                                               lw=lw, density=density, figsize=(12, 5.2), fontsize=15)
     plt.yscale("log")
     plt.subplots_adjust(top=0.93)
-    plt.savefig("/lfstev/deepskies/luisals/regression/ics_res121/hist_radii_ics_res121.png")
+    plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res121/hist_radii_ics_res121.png")
     # plt.savefig("/Users/lls/Documents/deep_halos_files/z0/predictions_mass_and_radius_bins.png")
     # plt.savefig("/Users/lls/Documents/deep_halos_files/z0/high_mass/predictions_mass_and_radius_bins.png")
     # plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res75/predictions_mass_and_radius_bins.png")
