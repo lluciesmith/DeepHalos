@@ -1,13 +1,7 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
-from dlhalos_code import CNN
-import tensorflow.keras.callbacks as callbacks
-from tensorflow.keras.callbacks import CSVLogger
-from tensorflow.keras.callbacks import LearningRateScheduler
-import tensorflow
-from tensorflow.keras.models import load_model
 import dlhalos_code.data_processing as tn
-import time
+from tensorflow.keras.models import load_model
 import numpy as np
 from pickle import load
 
@@ -20,7 +14,7 @@ from pickle import load
 
 path_model = "/lfstev/deepskies/luisals/regression/ics_res121/"
 
-num_epoch = "25"
+num_epoch = "30"
 validation_sims = ["1"]
 batch_size = 80
 rescale_mean = 1.005
