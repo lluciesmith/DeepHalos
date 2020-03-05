@@ -36,8 +36,8 @@ if __name__ == "__main__":
     # t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res75/true1_65.npy")
     # p1 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/predicted1_60.npy")
     # t1 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/true1_60.npy")
-    p1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res121/predicted1_25.npy")
-    t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res121/true1_25.npy")
+    p1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res121/predicted1_30.npy")
+    t1 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res121/true1_30.npy")
 
     halo_ids = ic.final_snapshot[ids]['grp']
     ids_above_1e11 = ids[halo_ids <= 5300]
