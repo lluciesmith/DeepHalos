@@ -10,8 +10,8 @@ from pickle import dump
 import time
 
 
-def split_training_validation_sims(sims_prep, output_scaler,
-                                   batch_size = 80, rescale_mean = 1.005, rescale_std = 0.05050, dim = (121, 121, 121)):
+def split_training_validation_sims(sims_prep, output_scaler, batch_size=80,
+                                   rescale_mean=1.005, rescale_std=0.05050, dim=(121, 121, 121)):
     all_sims = list(np.copy(sims_prep.sims))
     np.random.seed()
     n = int(np.random.choice(np.arange(len(all_sims)), 1))
@@ -31,11 +31,11 @@ def split_training_validation_sims(sims_prep, output_scaler,
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-path_model = "/lfstev/deepskies/luisals/regression/rolling_val/"
+path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3/"
 
 # First you will have to load the simulation
 
-all_sims = ["0", "1", "2", "3", "4", "5"]
+all_sims = ["0", "1", "2", "4", "5", "6"]
 s = tn.SimulationPreparation(all_sims)
 
 # define a common scaler for the output
