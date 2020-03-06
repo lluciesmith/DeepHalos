@@ -7,7 +7,7 @@ from pickle import load
 
 
 def get_sim_predictions_given_model(sims, model, scaler_output, val_sim="1",
-                                    path=".", batch_size=80, rescale_mean=1.005, rescale_std=0.05050,
+                                    path_model=".", batch_size=80, rescale_mean=1.005, rescale_std=0.05050,
                                     dim=(121, 121, 121), save=True, num_epoch="100"):
 
     validation_set = tn.InputsPreparation([val_sim], load_ids=True, scaler_output=scaler_output, shuffle=False)
@@ -23,8 +23,8 @@ def get_sim_predictions_given_model(sims, model, scaler_output, val_sim="1",
     true = scaler_output.inverse_transform(truth_rescaled).flatten()
 
     if save is True:
-        np.save(path + "predicted" + val_sim[0] + "_" + num_epoch + ".npy", h_m_pred)
-        np.save(path + "true" + val_sim[0] + "_" + num_epoch + ".npy", true)
+        np.save(path_model + "predictions/predicted" + val_sim + "_" + num_epoch + ".npy", h_m_pred)
+        np.save(path_model + "predictions/true" + val_sim + "_" + num_epoch + ".npy", true)
 
     return h_m_pred, true
 
@@ -34,9 +34,10 @@ if __name__ == "__main__":
 
     # First choose the correct path to the model and the parameters you used during training
 
-    params_model = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/",
-                    'num_epoch' : "100",
-                    'batch_size' : 80,
+    params_model = {# 'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/",
+                    'path_model': "/lfstev/deepskies/luisals/regression/train_mixed_sims/51_3_maxpool/",
+                    'num_epoch': "100",
+                    'batch_size': 80,
                     'rescale_mean': 1.005,
                     'rescale_std': 0.05050,
                     'dim': (51, 51, 51)
@@ -44,9 +45,10 @@ if __name__ == "__main__":
 
     # load validation sets
 
-    validation_sims = ["6", "1"]
+    validation_sims = ["6", "1", "0"]
     s = tn.SimulationPreparation(validation_sims)
-    s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
+    s_output = load(open('/lfstev/deepskies/luisals/regression/rolling_val/scaler_output.pkl', 'rb'))
+    # s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
 
     # load model
 
@@ -55,4 +57,9 @@ if __name__ == "__main__":
 
     p6, t6 = get_sim_predictions_given_model(s, model_roll, s_output, val_sim="6", **params_model)
     p1, t1 = get_sim_predictions_given_model(s, model_roll, s_output, val_sim="1", **params_model)
+    p0, t0 = get_sim_predictions_given_model(s, model_roll, s_output, val_sim="0", **params_model)
+
+    print(np.corrcoef(t6, p6))
+    print(np.corrcoef(t1, p1))
+    print(np.corrcoef(t0, p0))
 

@@ -47,6 +47,7 @@ class SimulationPreparation:
         else:
             path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
             # path1 = "/Users/lls/Documents/mlhalos_files/reseed50/"
+            # path1 = "/Users/lls/Documents/mlhalos_files/reseed6/"
 
             if sim_id == "2":
                 snap_sim = pynbody.load(path1 + "IC_doub_z99_256.gadget3")
@@ -144,6 +145,8 @@ class InputsPreparation:
             # halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed50/features/halo_mass_particles.npy")
             halo_mass = np.load(self.path + "reseed" + simulation_ID + "_simulation/reseed" + simulation_ID +
                                 "_halo_mass_particles.npy")
+            # halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed6/reseed" + simulation_ID +
+            #                     "_halo_mass_particles.npy")
 
         ids_in_halo = np.where(halo_mass > 0)[0]
         ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
@@ -165,8 +168,8 @@ class InputsPreparation:
         #     path1 = "/Users/lls/Documents/mlhalos_files/training_sim_"
         #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/stored_files/halo_mass_particles.npy")
         # else:
-        #     path1 = "/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/reseed_1_"
-        #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed50/features/halo_mass_particles.npy")
+        #     path1 = "/Users/lls/Documents/mlhalos_files/reseed6/reseed_6_"
+        #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed6/reseed6_halo_mass_particles.npy")
 
         with open(path1 + self.ids_filename, "r") as f:
             ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
