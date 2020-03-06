@@ -32,28 +32,27 @@ def get_sim_predictions_given_model(sims, model, scaler_output, val_sim="1",
 if __name__ == "__main__":
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    # First choose the correct path to the model and the parameters you used
-    # during training
+    # First choose the correct path to the model and the parameters you used during training
 
-    path_model = "/lfstev/deepskies/luisals/regression/rolling_val/"
+    params_model = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/",
+                    'num_epoch' : "100",
+                    'batch_size' : 80,
+                    'rescale_mean': 1.005,
+                    'rescale_std': 0.05050,
+                    'dim': (51, 51, 51)
+                    }
 
-    num_epoch = "100"
+    # load validation sets
+
     validation_sims = ["6", "1"]
-    batch_size = 80
-    rescale_mean = 1.005
-    rescale_std = 0.05050
-    dim = (51, 51, 51)
-
-    # load validation set
-
     s = tn.SimulationPreparation(validation_sims)
-    s_output = load(open(path_model + 'scaler_output.pkl', 'rb'))
+    s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
 
     # load model
 
-    model_roll = load_model(path_model + "/model_100_epochs_mixed_sims.h5")
+    model_roll = load_model(params_model['path_model'] + "/model_100_epochs_mixed_sims.h5")
     # model = load_model(path_model + "model/weights." + num_epoch + ".hdf5")
 
-    p6, t6 = get_sim_predictions_given_model(s, model_roll, s_output, val_sim="6", path=path_model, dim=dim)
-    p1, t1 = get_sim_predictions_given_model(s, model_roll, s_output, val_sim="1", path=path_model, dim=dim)
+    p6, t6 = get_sim_predictions_given_model(s, model_roll, s_output, val_sim="6", **params_model)
+    p1, t1 = get_sim_predictions_given_model(s, model_roll, s_output, val_sim="1", **params_model)
 

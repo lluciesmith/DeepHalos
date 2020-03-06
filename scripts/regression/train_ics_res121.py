@@ -20,21 +20,21 @@ s = tn.SimulationPreparation(all_sims)
 
 training_sims = ["0", "2", "3", "4", "5"]
 validation_sims = ["1"]
-batch_size = 40
-rescale_mean = 1.005
-rescale_std = 0.05050
-dim = (121, 121, 121)
+
+params_gen = {'batch_size': 40,
+              'rescale_mean': 1.005,
+              'rescale_std': 0.05050,
+              'dim': (121, 121, 121)
+              }
 
 training_set = tn.InputsPreparation(training_sims, load_ids=True)
 generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
-                                      batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std,
-                                      dim=dim)
+                                      **params_gen)
 
 validation_set = tn.InputsPreparation(validation_sims, load_ids=True, random_subset_each_sim=4000,
                                       scaler_output=training_set.scaler_output)
 generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
-                                        batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std,
-                                        dim=dim)
+                                        **params_gen)
 
 dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
 
@@ -68,11 +68,11 @@ param_fcc = {  # 'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.2},
     'dense_1': {'neurons': 256, 'bn': True, 'dropout': 0.4},
     'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.4}}
 
-Model = CNN.CNN(param_conv, param_fcc, dim=dim,
+Model = CNN.CNN(param_conv, param_fcc, dim=params_gen['dim'],
                 training_generator=generator_training, validation_generator=generator_validation, validation_freq=1,
                 callbacks=callbacks_list, num_epochs=100,
                 use_multiprocessing=True, workers=2, max_queue_size=10,
-                verbose=1, model_type="regression", lr=0.0001, train=False)
+                verbose=1, model_type="regression", lr=0.0001, train=True)
 
 
 np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)
