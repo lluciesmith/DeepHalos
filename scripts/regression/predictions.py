@@ -19,12 +19,15 @@ def get_sim_predictions_given_model(sims, model, scaler_output, val_sim="1",
     pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
     truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
 
+    print("Correlation coefficient non-rescaled for sim " + val_sim + " is :\n")
+    print(np.corrcoef(truth_rescaled, pred))
+
     h_m_pred = scaler_output.inverse_transform(pred).flatten()
     true = scaler_output.inverse_transform(truth_rescaled).flatten()
 
     if save is True:
-        np.save(path_model + "predicted" + val_sim + "_" + num_epoch + ".npy", h_m_pred)
-        np.save(path_model + "true" + val_sim + "_" + num_epoch + ".npy", true)
+        np.save(path_model + "predictions/predicted" + val_sim + "_" + num_epoch + ".npy", h_m_pred)
+        np.save(path_model + "predictions/true" + val_sim + "_" + num_epoch + ".npy", true)
 
     return h_m_pred, true
 
@@ -35,28 +38,30 @@ if __name__ == "__main__":
     # First choose the correct path to the model and the parameters you used during training
 
     params_model = {# 'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/",
-                    #'path_model': "/lfstev/deepskies/luisals/regression/train_mixed_sims/51_3_maxpool/",
-                    'path_model': "/lfstev/deepskies/luisals/regression/ics_res121/stride1/",
+                    'path_model': "/lfstev/deepskies/luisals/regression/train_mixed_sims/51_3_maxpool/",
+                    #'path_model': "/lfstev/deepskies/luisals/regression/ics_res121/stride1/",
                     'num_epoch': "30",
                     'batch_size': 40,
                     'rescale_mean': 1.005,
                     'rescale_std': 0.05050,
-                    'dim': (121, 121, 121)
+                    'dim': (51, 51, 51)
                     }
 
     # load validation sets
 
-    validation_sims = ["1"]
+    validation_sims = ["6", "0", "1"]
     s = tn.SimulationPreparation(validation_sims)
     s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
 
     # load model
 
-    # model_roll = load_model(params_model['path_model'] + "/model_100_epochs_mixed_sims.h5")
-    model_epoch = load_model(params_model['path_model'] + "model/weights." + params_model['num_epoch'] + ".hdf5")
+    model_epoch = load_model(params_model['path_model'] + "/model_100_epochs_mixed_sims.h5")
+    # model_epoch = load_model(params_model['path_model'] + "model/weights." + params_model['num_epoch'] + ".hdf5")
 
     for val_sim in validation_sims:
-        pi, ti = get_sim_predictions_given_model(s, model_epoch, s_output, val_sim="1", **params_model)
+        pi, ti = get_sim_predictions_given_model(s, model_epoch, s_output, val_sim=val_sim, **params_model)
+
+        print("Correlation coefficient rescaled for sim " + val_sim + " is :\n")
         print(np.corrcoef(ti, pi))
 
 
