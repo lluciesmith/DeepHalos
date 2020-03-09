@@ -299,7 +299,8 @@ def return_summary_statistics_three_panels(den_inner, truth_inner, den_mid, trut
     return diction
 
 
-def plot_stuff(diction1, diction2, col_in, col_mid, col_out, figsize=(10, 5.1), col_truth="dimgrey"):
+def plot_stuff(dictions, col_in, col_mid, col_out, labels=[r"$51^3$", r"$75^3$", r"$121^3$"], figsize=(10, 5.1),
+               col_truth="dimgrey"):
     f1, axs1 = plt.subplots(nrows=1, ncols=3, figsize=figsize, sharey=True, sharex=True, constrained_layout=True)
     f2, axs2 = plt.subplots(nrows=1, ncols=3, figsize=figsize, sharey=True, sharex=True, constrained_layout=True)
     f3, axs3 = plt.subplots(nrows=1, ncols=3, figsize=figsize, sharey=True, sharex=True, constrained_layout=True)
@@ -312,32 +313,29 @@ def plot_stuff(diction1, diction2, col_in, col_mid, col_out, figsize=(10, 5.1), 
         for axi in ax:
             axi.axhline(y=0,  color=col_truth, ls="--")
 
-    for i, mass_bin in enumerate(diction1):
+    for i, mass_bin in enumerate(dictions[0]):
         ax = axes[i]
         fig = figs[i]
         fig.suptitle(mass_bin + " halos")
-        for j, radius_bin in enumerate(diction1[mass_bin]):
+        for j, radius_bin in enumerate(dictions[0][mass_bin]):
             axi = ax[j]
             col = cols[j]
             axi.set_title(radius_bin + " radius bin")
 
-            for k1, val1 in enumerate(diction1[mass_bin][radius_bin]):
-                if j == 0 and k1 == 0:
-                    axi.scatter(k1, round(diction1[mass_bin][radius_bin][val1], 3), marker="^", c=col, label=r"$51^3$")
-                    axi.legend(loc="best")
-                else:
-                    axi.scatter(k1, round(diction1[mass_bin][radius_bin][val1], 3), marker="^", c=col)
-            for k2, val2 in enumerate(diction2[mass_bin][radius_bin]):
-                if j == 0 and k2 == 0:
-                    axi.scatter(k2, round(diction2[mass_bin][radius_bin][val2], 3), c=col, label=r"$75^3$")
-                    axi.legend(loc="best")
-                else:
-                    axi.scatter(k2, round(diction2[mass_bin][radius_bin][val2], 3), c=col)
+            for i, diction in enumerate(dictions):
+
+                for k1, val1 in enumerate(diction[mass_bin][radius_bin]):
+                    if j == 0 and k1 == 0:
+                        axi.scatter(k1, round(diction[mass_bin][radius_bin][val1], 3), marker="^", c=col,
+                                    label=labels[i])
+                        axi.legend(loc="best")
+                    else:
+                        axi.scatter(k1, round(diction[mass_bin][radius_bin][val1], 3), marker="^", c=col)
 
             axi.set_ylim(-1, 1.2)
 
             axi.set_xticks([0, 1 , 2])
-            axi.set_xticklabels(list(diction1[mass_bin][radius_bin].keys()))
+            axi.set_xticklabels(list(dictions[0][mass_bin][radius_bin].keys()))
 
         # plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res75/" + mass_bin + "_halos_comparison.png")
         # plt.clf()

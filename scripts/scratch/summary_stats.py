@@ -67,12 +67,17 @@ if __name__ == "__main__":
     p_51 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/predicted1_60.npy")
     t_51 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/true1_60.npy")
 
+    p_121 = np.load("/Users/lls/Documents/mlhalos_files/z99/ics_res121/predicted1_30.npy")
+    t_121 = np.load("/Users/lls/Documents/mlhalos_files/z99/ics_res121//true1_30.npy")
+
+
     stats_75 = get_summary_stats_mass_bins_radius_bins(p_75, t_75, initial_params=ic)
     stats_51 = get_summary_stats_mass_bins_radius_bins(p_51, t_51, initial_params=ic)
+    stats_121 = get_summary_stats_mass_bins_radius_bins(p_121, t_121, initial_params=ic)
 
     color = distinct_colours.get_distinct(4)
     c0 = color[0]
     c1 = color[1]
     c2 = color[3]
 
-    rf.plot_stuff(stats_51, stats_75, c0, c1, c2, figsize=(10, 5.1), col_truth="dimgrey")
+    rf.plot_stuff([stats_51, stats_75, stats_121], c0, c1, c2, figsize=(10, 5.1), col_truth="dimgrey")
