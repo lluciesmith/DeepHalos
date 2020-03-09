@@ -270,8 +270,7 @@ class DataGenerator(Sequence):
             particle_ID = int(ID[9:])
 
             sim_snapshot = self.sims[sim_index]
-            ids = sim_snapshot['iord']
-            i0, j0, k0 = sim_snapshot['coords'][ids == particle_ID]
+            i0, j0, k0 = sim_snapshot['coords'][particle_ID]
             delta_sim = sim_snapshot['den_contrast'].reshape(self.shape_sim, self.shape_sim, self.shape_sim)
 
             output_matrix = np.zeros((self.res, self.res, self.res))
