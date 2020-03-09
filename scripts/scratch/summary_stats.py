@@ -67,8 +67,8 @@ if __name__ == "__main__":
     p_51 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/predicted1_60.npy")
     t_51 = np.load("/Users/lls/Documents/mlhalos_files/reseed50/CNN_results/true1_60.npy")
 
-    p_121 = np.load("/Users/lls/Documents/mlhalos_files/z99/ics_res121/predicted1_30.npy")
-    t_121 = np.load("/Users/lls/Documents/mlhalos_files/z99/ics_res121//true1_30.npy")
+    p_121 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res121/predicted1_30.npy")
+    t_121 = np.load("/Users/lls/Documents/deep_halos_files/z99/ics_res121/true1_30.npy")
 
 
     stats_75 = get_summary_stats_mass_bins_radius_bins(p_75, t_75, initial_params=ic)
