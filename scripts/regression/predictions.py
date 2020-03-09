@@ -26,8 +26,8 @@ def get_sim_predictions_given_model(sims, model, scaler_output, val_sim="1",
     true = scaler_output.inverse_transform(truth_rescaled).flatten()
 
     if save is True:
-        np.save(path_model + "predictions/predicted" + val_sim + "_" + num_epoch + ".npy", h_m_pred)
-        np.save(path_model + "predictions/true" + val_sim + "_" + num_epoch + ".npy", true)
+        np.save(path_model + "predicted" + val_sim + "_" + num_epoch + ".npy", h_m_pred)
+        np.save(path_model + "true" + val_sim + "_" + num_epoch + ".npy", true)
 
     return h_m_pred, true
 
@@ -37,10 +37,10 @@ if __name__ == "__main__":
 
     # First choose the correct path to the model and the parameters you used during training
 
-    params_model = {# 'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/",
-                    'path_model': "/lfstev/deepskies/luisals/regression/train_mixed_sims/51_3_maxpool/",
+    params_model = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/",
+                    # 'path_model': "/lfstev/deepskies/luisals/regression/train_mixed_sims/51_3_maxpool/",
                     #'path_model': "/lfstev/deepskies/luisals/regression/ics_res121/stride1/",
-                    'num_epoch': "30",
+                    'num_epoch': "100",
                     'batch_size': 40,
                     'rescale_mean': 1.005,
                     'rescale_std': 0.05050,
