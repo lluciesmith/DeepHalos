@@ -322,12 +322,12 @@ def plot_stuff(dictions, col_in, col_mid, col_out, labels=[r"$51^3$", r"$75^3$",
             col = cols[j]
             axi.set_title(radius_bin + " radius bin")
 
-            for i, diction in enumerate(dictions):
+            for ii, diction in enumerate(dictions):
 
                 for k1, val1 in enumerate(diction[mass_bin][radius_bin]):
                     if j == 0 and k1 == 0:
                         axi.scatter(k1, round(diction[mass_bin][radius_bin][val1], 3), marker="^", c=col,
-                                    label=labels[i])
+                                    label=labels[ii])
                         axi.legend(loc="best")
                     else:
                         axi.scatter(k1, round(diction[mass_bin][radius_bin][val1], 3), marker="^", c=col)
