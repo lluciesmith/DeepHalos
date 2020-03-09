@@ -337,5 +337,5 @@ def plot_stuff(dictions, col_in, col_mid, col_out, labels=[r"$51^3$", r"$75^3$",
             axi.set_xticks([0, 1 , 2])
             axi.set_xticklabels(list(dictions[0][mass_bin][radius_bin].keys()))
 
-        # plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res75/" + mass_bin + "_halos_comparison.png")
-        # plt.clf()
+        plt.savefig("/Users/lls/Documents/deep_halos_files/z99/ics_res75/" + mass_bin + "_halos_comparison.png")
+        plt.clf()
