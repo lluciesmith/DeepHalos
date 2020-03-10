@@ -19,7 +19,7 @@ if __name__ == "__main__":
         # get halo masses each particles
         print("Loading the halos...")
         t0 = time.time()
-        h = f.halos(make_grp=True)
+        h = f.halos(order=False, make_grp=True)
         t1 = time.time()
         print("Loading halos took " + str((t1 - t0)/60) + " minutes.")
         print("Done loading halos.")
