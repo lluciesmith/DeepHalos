@@ -1,6 +1,7 @@
 import numpy as np
 import sys; sys.path.append("/home/lls/mlhalos_code/")
 from mlhalos import parameters
+import pynbody
 
 
 if __name__ == "__main__":
@@ -11,15 +12,25 @@ if __name__ == "__main__":
         path_sim = "/share/hypatia/lls/simulations/standard_reseed" + sim + "/"
         saving_path = "/share/hypatia/lls/deep_halos/reseed_" + sim + "/"
 
-        initial_params = parameters.InitialConditionsParameters(initial_snapshot=path_sim + "IC.gadget2",
-                                                                final_snapshot=path_sim + "output/snapshot_007",
-                                                                load_final=True)
+        f = pynbody.load(final_snapshot=path_sim + "output/snapshot_007")
+        f.physical_units()
+
+        # get halo masses each particles
+
+        h = f.halos(order=False, make_grp=True)
+        h_id = f['grp']
+
+        halo_ids = np.arange(len(h))
+        halo_mass_ids = np.zeros(len(f),)
+
+        for i, hi in enumerate(halo_ids):
+            ind = np.where(h_id == hi)[0]
+            halo_mass_ids[ind] = h[hi]['mass'].sum()
 
         # Save halo mass of particles and select training samples
-        particle_ids = initial_params.final_snapshot["iord"]
-        halo_mass_ids = np.load(saving_path + "reseed" + sim + "_halo_mass_particles.npy")
+        particle_ids = f["iord"]
 
         ind = np.argsort(particle_ids)
-        assert np.allclose(particle_ids[ind], np.arange(256**3).astype("int"))
+        assert np.allclose(particle_ids[ind], np.arange(len(f)).astype("int"))
 
         np.save(saving_path + "reseed" + sim + "_halo_mass_particles.npy", halo_mass_ids[ind])
