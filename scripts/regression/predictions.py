@@ -41,7 +41,7 @@ if __name__ == "__main__":
                     # 'path_model': "/lfstev/deepskies/luisals/regression/train_mixed_sims/51_3_maxpool/",
                     #'path_model': "/lfstev/deepskies/luisals/regression/ics_res121/stride1/",
                     'num_epoch': "100",
-                    'batch_size': 40,
+                    'batch_size': 80,
                     'rescale_mean': 1.005,
                     'rescale_std': 0.05050,
                     'dim': (51, 51, 51)
@@ -49,14 +49,15 @@ if __name__ == "__main__":
 
     # load validation sets
 
-    validation_sims = ["6", "0", "1"]
+    validation_sims = ["6", "1"]
     s = tn.SimulationPreparation(validation_sims)
     s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
 
     # load model
-
-    model_epoch = load_model(params_model['path_model'] + "/model_100_epochs_mixed_sims.h5")
-    # model_epoch = load_model(params_model['path_model'] + "model/weights." + params_model['num_epoch'] + ".hdf5")
+    if params_model['num_epoch'] == 100:
+        model_epoch = load_model(params_model['path_model'] + "/model_100_epochs_mixed_sims.h5")
+    else:
+        model_epoch = load_model(params_model['path_model'] + "model/weights." + params_model['num_epoch'] + ".hdf5")
 
     for val_sim in validation_sims:
         pi, ti = get_sim_predictions_given_model(s, model_epoch, s_output, val_sim=val_sim, **params_model)

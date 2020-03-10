@@ -1,6 +1,5 @@
 import numpy as np
 import sys; sys.path.append("/home/lls/mlhalos_code/")
-from mlhalos import parameters
 import pynbody
 import time
 
