@@ -19,23 +19,26 @@ if __name__ == "__main__":
         # get halo masses each particles
         print("Loading the halos...")
         t0 = time.time()
-        h = f.halos(order=False, make_grp=True)
+        h = f.halos()
         t1 = time.time()
         print("Loading halos took " + str((t1 - t0)/60) + " minutes.")
         print("Done loading halos.")
-        h_id = f['grp']
+        assert h._ordered == False
+        #h_id = f['grp']
 
         halo_ids = np.arange(len(h))
         halo_mass_ids = np.zeros(len(f),)
 
-        for i, hi in enumerate(halo_ids):
-            ind = np.where(h_id == hi)[0]
-            halo_mass_ids[ind] = h[hi]['mass'].sum()
+        for hi in halo_ids:
+            ids_in_halos = h[hi]["iord"]
+            halo_mass_ids[ids_in_halos] = h[hi]['mass'].sum()
 
-        # Save halo mass of particles and select training samples
-        particle_ids = f["iord"]
+        np.save(saving_path + "reseed" + sim + "_halo_mass_particles.npy", halo_mass_ids)
 
-        ind = np.argsort(particle_ids)
-        assert np.allclose(particle_ids[ind], np.arange(len(f)).astype("int"))
-
-        np.save(saving_path + "reseed" + sim + "_halo_mass_particles.npy", halo_mass_ids[ind])
+        # # Save halo mass of particles and select training samples
+        # particle_ids = f["iord"]
+        #
+        # ind = np.argsort(particle_ids)
+        # assert np.allclose(particle_ids[ind], np.arange(len(f)).astype("int"))
+        #
+        # np.save(saving_path + "reseed" + sim + "_halo_mass_particles.npy", halo_mass_ids[ind])
