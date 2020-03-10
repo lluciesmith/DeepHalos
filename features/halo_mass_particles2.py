@@ -35,7 +35,7 @@ if __name__ == "__main__":
         path_sim = "/share/hypatia/lls/simulations/standard_reseed" + sim + "/"
         saving_path = "/share/hypatia/lls/deep_halos/reseed_" + sim + "/"
 
-        f = pynbody.load(path_sim + "snapshot_007")
+        f = pynbody.load(path_sim + "output/snapshot_007")
         f.physical_units()
 
 
