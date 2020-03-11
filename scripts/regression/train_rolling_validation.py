@@ -37,7 +37,7 @@ def split_training_validation_sims(sims_prep, output_scaler, batch_size=80,
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3/"
+path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_75_3_4conv/"
 
 # First you will have to load the simulation
 
@@ -69,9 +69,9 @@ param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
               'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              # 'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
-              #            'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_4': {'num_kernels': 4, 'dim_kernel': (1, 1, 1),
+              'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
+                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+              'conv_5': {'num_kernels': 8, 'dim_kernel': (1, 1, 1),
                          'strides': 1, 'padding': 'same', 'pool': None, 'bn': True}
               }
 
