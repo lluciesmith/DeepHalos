@@ -19,9 +19,6 @@ def get_sim_predictions_given_model(sims, model, scaler_output, val_sim="1",
     pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
     truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
 
-    print("Correlation coefficient non-rescaled for sim " + val_sim + " is :\n")
-    print(np.corrcoef(truth_rescaled, pred))
-
     h_m_pred = scaler_output.inverse_transform(pred).flatten()
     true = scaler_output.inverse_transform(truth_rescaled).flatten()
 
