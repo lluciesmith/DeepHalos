@@ -41,74 +41,77 @@ def split_training_validation_sims(sims_prep, output_scaler, batch_size=80,
 
     return generator_training, generator_validation, generator_val_training, val_sim
 
-########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval/"
+if __name__ == "__main__":
 
-# First you will have to load the simulation
+    ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-all_sims = ["0", "1", "2", "4", "5", "6"]
-s = tn.SimulationPreparation(all_sims)
+    path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval/"
 
-# define a common scaler for the output
+    # First you will have to load the simulation
 
-data_set = tn.InputsPreparation(all_sims, load_ids=True)
-scaler_output = data_set.scaler_output
-dump(scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
+    all_sims = ["0", "1", "2", "4", "5", "6"]
+    s = tn.SimulationPreparation(all_sims)
 
+    # define a common scaler for the output
 
-######### TRAINING MODEL ##############
-
-# checkpoint
-filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
-checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5)
-
-# save histories
-csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=True)
-
-callbacks_list = [checkpoint_call, csv_logger]
-tensorflow.compat.v1.set_random_seed(7)
-
-param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3),
-                         'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_2': {'num_kernels': 8, 'dim_kernel': (3, 3, 3),
-                         'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
-                         'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              # 'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
-              #             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_5': {'num_kernels': 4, 'dim_kernel': (1, 1, 1),
-                         'strides': 1, 'padding': 'same', 'pool': None, 'bn': True}
-              }
-
-param_fcc = {'dense_1': {'neurons': 256, 'bn': True, 'dropout': 0.4},
-             'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.4}}
-
-Model = CNN.CNN(param_conv, param_fcc,
-                dim=(75, 75, 75), training_generator={}, validation_generator={}, validation_freq=1,
-                callbacks=callbacks_list, num_epochs=100,
-                use_multiprocessing=True, workers=2, max_queue_size=10,
-                verbose=1, model_type="regression", lr=0.0001, train=False)
+    data_set = tn.InputsPreparation(all_sims, load_ids=True)
+    scaler_output = data_set.scaler_output
+    dump(scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
 
 
-model = Model.model
-epochs = Model.num_epochs
-val_sims = []
-eval_loss = open(path_model + "eval_loss.txt","w+")
+    ######### TRAINING MODEL ##############
 
-for epoch in np.arange(epochs):
-    train_gen, val_gen, val_train, val_sim = split_training_validation_sims(s, scaler_output, batch_size=80,
-                                                                     rescale_mean=1.005,
-                                                                 rescale_std=0.05050, dim=(75, 75, 75))
-    val_sims.append(val_sim)
-    history = model.fit_generator(generator=train_gen, validation_data=val_gen,
-                                  use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1, epochs=epoch+1,
-                                  shuffle=True, callbacks=callbacks_list, validation_freq=1, initial_epoch=epoch)
+    # checkpoint
+    filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
+    checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5)
 
-    l_tr = model.evaluate_generator(val_train, use_multiprocessing=False, workers=1, verbose=1)
-    l_val = model.evaluate_generator(val_gen, use_multiprocessing=False, workers=1, verbose=1)
-    eval_loss.write("%i,%f,%f\r\n" % (epoch, l_tr, l_val))
+    # save histories
+    csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=True)
 
-eval_loss.close()
-model.save(path_model + "/model_100_epochs_mixed_sims.h5")
-np.save(path_model + "/validation_sims.npy", val_sims)
+    callbacks_list = [checkpoint_call, csv_logger]
+    tensorflow.compat.v1.set_random_seed(7)
+
+    param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3),
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+                  'conv_2': {'num_kernels': 8, 'dim_kernel': (3, 3, 3),
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+                  'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+                  # 'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
+                  #             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+                  'conv_4': {'num_kernels': 4, 'dim_kernel': (1, 1, 1),
+                             'strides': 1, 'padding': 'same', 'pool': None, 'bn': True}
+                  }
+
+    param_fcc = {'dense_1': {'neurons': 256, 'bn': True, 'dropout': 0.4},
+                 'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.4}}
+
+    Model = CNN.CNN(param_conv, param_fcc,
+                    dim=(75, 75, 75), training_generator={}, validation_generator={}, validation_freq=1,
+                    callbacks=callbacks_list, num_epochs=100,
+                    use_multiprocessing=True, workers=2, max_queue_size=10,
+                    verbose=1, model_type="regression", lr=0.0001, train=False)
+
+
+    model = Model.model
+    epochs = Model.num_epochs
+    val_sims = []
+    eval_loss = open(path_model + "eval_loss.txt","w+")
+
+    for epoch in np.arange(epochs):
+        train_gen, val_gen, val_train, val_sim = split_training_validation_sims(s, scaler_output, batch_size=80,
+                                                                         rescale_mean=1.005,
+                                                                     rescale_std=0.05050, dim=(75, 75, 75))
+        val_sims.append(val_sim)
+        history = model.fit_generator(generator=train_gen, validation_data=val_gen,
+                                      use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1, epochs=epoch+1,
+                                      shuffle=True, callbacks=callbacks_list, validation_freq=1, initial_epoch=epoch)
+
+        l_tr = model.evaluate_generator(val_train, use_multiprocessing=False, workers=1, verbose=1)
+        l_val = model.evaluate_generator(val_gen, use_multiprocessing=False, workers=1, verbose=1)
+        eval_loss.write("%i,%f,%f\r\n" % (epoch, l_tr, l_val))
+
+    eval_loss.close()
+    model.save(path_model + "/model_100_epochs_mixed_sims.h5")
+    np.save(path_model + "/validation_sims.npy", val_sims)
