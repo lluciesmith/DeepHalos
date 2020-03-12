@@ -101,15 +101,19 @@ if __name__ == "__main__":
 
     for epoch in np.arange(epochs):
         train_gen, val_gen, val_train, val_sim = split_training_validation_sims(s, scaler_output, batch_size=80,
-                                                                         rescale_mean=1.005,
-                                                                     rescale_std=0.05050, dim=(75, 75, 75))
+                                                                                rescale_mean=1.005,
+                                                                                rescale_std=0.05050, dim=(75, 75, 75))
         val_sims.append(val_sim)
         history = model.fit_generator(generator=train_gen, validation_data=val_gen,
                                       use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1, epochs=epoch+1,
                                       shuffle=True, callbacks=callbacks_list, validation_freq=1, initial_epoch=epoch)
 
+        print("evaluated training set")
         l_tr = model.evaluate_generator(val_train, use_multiprocessing=False, workers=1, verbose=1)
+
+        print("evaluated validation set")
         l_val = model.evaluate_generator(val_gen, use_multiprocessing=False, workers=1, verbose=1)
+
         eval_loss.write("%i,%f,%f\r\n" % (epoch, l_tr, l_val))
 
     eval_loss.close()
