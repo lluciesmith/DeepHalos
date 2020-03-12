@@ -11,6 +11,7 @@ import sklearn.preprocessing
 from numba import njit, prange
 from tensorflow.keras.utils import Sequence
 from collections import OrderedDict
+import warnings
 
 
 class SimulationPreparation:
@@ -170,9 +171,14 @@ class InputsPreparation:
         # else:
         #     path1 = "/Users/lls/Documents/mlhalos_files/reseed6/reseed_6_"
         #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed6/reseed6_halo_mass_particles.npy")
-
-        with open(path1 + self.ids_filename, "r") as f:
-            ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
+        try:
+            with open(path1 + self.ids_filename, "r") as f:
+                ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
+        except FileNotFoundError:
+            warnings.warn("File was not found. I am therefore taking 20000 random particles and saving them to file.")
+            ids_in_halo = np.where(halo_mass > 0)[0]
+            ids_bc = np.random.choice(ids_in_halo, 20000, replace=False)
+            np.savetxt(path1 + self.ids_filename, ids_bc, delimiter=",", fmt="int")
         
         if self.random_subset is not None:
             ids_i = np.random.choice(ids_bc, self.random_subset, replace=False)
