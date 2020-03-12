@@ -178,7 +178,7 @@ class InputsPreparation:
             warnings.warn("File was not found. I am therefore taking 20000 random particles and saving them to file.")
             ids_in_halo = np.where(halo_mass > 0)[0]
             ids_bc = np.random.choice(ids_in_halo, 20000, replace=False)
-            np.savetxt(path1 + self.ids_filename, ids_bc, delimiter=",", fmt="int")
+            np.savetxt(path1 + self.ids_filename, ids_bc, delimiter=",", fmt="%i")
         
         if self.random_subset is not None:
             ids_i = np.random.choice(ids_bc, self.random_subset, replace=False)
