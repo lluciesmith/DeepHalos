@@ -27,17 +27,23 @@ def split_training_validation_sims(sims_prep, output_scaler, batch_size=80,
                                           sims_prep.sims_dic, batch_size=batch_size, rescale_mean=rescale_mean,
                                           rescale_std=rescale_std, dim=dim)
 
+    training_set_val = tn.InputsPreparation(train_sims, load_ids=True, random_subset_each_sim=4000,
+                                            scaler_output=output_scaler)
+    generator_val_training = tn.DataGenerator(training_set_val.particle_IDs, training_set_val.labels_particle_IDS,
+                                          sims_prep.sims_dic, batch_size=batch_size, rescale_mean=rescale_mean,
+                                          rescale_std=rescale_std, dim=dim)
+
     validation_set = tn.InputsPreparation(val_sim, load_ids=True, random_subset_each_sim=4000,
                                           scaler_output=output_scaler)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
                                             sims_prep.sims_dic, batch_size=batch_size, rescale_mean=rescale_mean,
                                             rescale_std=rescale_std, dim=dim)
 
-    return generator_training, generator_validation, val_sim
+    return generator_training, generator_validation, generator_val_training, val_sim
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_75_3_4conv/"
+path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval/"
 
 # First you will have to load the simulation
 
@@ -69,9 +75,9 @@ param_conv = {'conv_1': {'num_kernels': 4, 'dim_kernel': (3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
               'conv_3': {'num_kernels': 16, 'dim_kernel': (3, 3, 3),
                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
-                          'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-              'conv_5': {'num_kernels': 8, 'dim_kernel': (1, 1, 1),
+              # 'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
+              #             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+              'conv_5': {'num_kernels': 4, 'dim_kernel': (1, 1, 1),
                          'strides': 1, 'padding': 'same', 'pool': None, 'bn': True}
               }
 
@@ -88,14 +94,21 @@ Model = CNN.CNN(param_conv, param_fcc,
 model = Model.model
 epochs = Model.num_epochs
 val_sims = []
+eval_loss = open(path_model + "eval_loss.txt","w+")
 
 for epoch in np.arange(epochs):
-    train_gen, val_gen, val_sim = split_training_validation_sims(s, scaler_output, batch_size=80, rescale_mean=1.005,
+    train_gen, val_gen, val_train, val_sim = split_training_validation_sims(s, scaler_output, batch_size=80,
+                                                                     rescale_mean=1.005,
                                                                  rescale_std=0.05050, dim=(75, 75, 75))
     val_sims.append(val_sim)
     history = model.fit_generator(generator=train_gen, validation_data=val_gen,
                                   use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1, epochs=epoch+1,
                                   shuffle=True, callbacks=callbacks_list, validation_freq=1, initial_epoch=epoch)
 
+    l_tr = model.evaluate_generator(val_train, use_multiprocessing=False, workers=1, verbose=1)
+    l_val = model.evaluate_generator(val_gen, use_multiprocessing=False, workers=1, verbose=1)
+    eval_loss.write("%i,%f,%f\r\n" % (epoch, l_tr, l_val))
+
+eval_loss.close()
 model.save(path_model + "/model_100_epochs_mixed_sims.h5")
 np.save(path_model + "/validation_sims.npy", val_sims)
