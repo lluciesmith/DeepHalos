@@ -74,7 +74,8 @@ class SimulationPreparation:
 
 
 class InputsPreparation:
-    def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt", random_subset_each_sim=None,
+    def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt",
+                 random_subset_each_sim=None, random_subset_all=None,
                  path="/lfstev/deepskies/luisals/", scaler_output=None, return_rescaled_outputs=True, shuffle=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
@@ -90,6 +91,7 @@ class InputsPreparation:
         self.ids_filename = ids_filename
         self.path = path
         self.random_subset = random_subset_each_sim
+        self.random_subset_all = random_subset_all
         self.return_rescaled_outputs = return_rescaled_outputs
         self.shuffle = shuffle
 
@@ -117,6 +119,11 @@ class InputsPreparation:
 
         flattened_name = np.concatenate(names)
         flattened_mass = np.concatenate(masses)
+
+        if self.random_subset_all is not None:
+            ind = np.random.choice(np.arange(len(flattened_name)), self.random_subset_all, replace=False)
+            flattened_name = flattened_name[ind]
+            flattened_mass = flattened_mass[ind]
 
         if self.return_rescaled_outputs is True:
             if self.scaler_output is None:
@@ -171,14 +178,8 @@ class InputsPreparation:
         # else:
         #     path1 = "/Users/lls/Documents/mlhalos_files/reseed6/reseed_6_"
         #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed6/reseed6_halo_mass_particles.npy")
-        try:
-            with open(path1 + self.ids_filename, "r") as f:
-                ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
-        except FileNotFoundError:
-            warnings.warn("File was not found. I am therefore taking 20000 random particles and saving them to file.")
-            ids_in_halo = np.where(halo_mass > 0)[0]
-            ids_bc = np.random.choice(ids_in_halo, 20000, replace=False)
-            np.savetxt(path1 + self.ids_filename, ids_bc, delimiter=",", fmt="%i")
+        with open(path1 + self.ids_filename, "r") as f:
+            ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
         
         if self.random_subset is not None:
             ids_i = np.random.choice(ids_bc, self.random_subset, replace=False)

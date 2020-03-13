@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 import pandas as pd
 
+
 def sort_ids_truth_pred(particle_ids, truth, predicted, ic_params):
     h = []
     for i in particle_ids:
@@ -18,6 +19,7 @@ def sort_ids_truth_pred(particle_ids, truth, predicted, ic_params):
     assert np.allclose(truth_sort, har[ind_sort_ids])
 
     return np.sort(ids_sort), truth_sort[np.argsort(ids_sort)], pred_sort[np.argsort(ids_sort)]
+
 
 def get_indices_particles_in_bin_limits(radii_properties, bin_lower_lim=0, bin_upper_lim=100, return_ids=False):
     ids = radii_properties[:, 0]
