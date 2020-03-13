@@ -4,6 +4,7 @@ from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 import tensorflow
+from tensorflow.keras.models import load_model
 import dlhalos_code.data_processing as tn
 import numpy as np
 from pickle import dump
@@ -27,12 +28,13 @@ def split_training_validation_sims(sims_prep, output_scaler, batch_size=80,
     generator_val_training = tn.DataGenerator(training_set_val.particle_IDs, training_set_val.labels_particle_IDS,
                                           sims_prep.sims_dic, batch_size=batch_size, rescale_mean=rescale_mean,
                                           rescale_std=rescale_std, dim=dim)
-    validation_set = tn.InputsPreparation(val_sim, load_ids=True, random_subset_each_sim=4000,
-                                          scaler_output=output_scaler)
-    generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
-                                            sims_prep.sims_dic, batch_size=batch_size, rescale_mean=rescale_mean,
-                                            rescale_std=rescale_std, dim=dim)
-    return generator_training, generator_validation, generator_val_training, val_sim
+    # validation_set = tn.InputsPreparation(val_sim, load_ids=True, random_subset_each_sim=4000,
+    #                                       scaler_output=output_scaler)
+    # generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
+    #                                         sims_prep.sims_dic, batch_size=batch_size, rescale_mean=rescale_mean,
+    #                                         rescale_std=rescale_std, dim=dim)
+    # return generator_training, generator_validation, generator_val_training, val_sim
+    return generator_training, generator_val_training
 
 
 if __name__ == "__main__":
@@ -86,26 +88,22 @@ if __name__ == "__main__":
                     use_multiprocessing=True, workers=2, max_queue_size=10,
                     verbose=1, model_type="regression", lr=0.0001, train=False)
 
-
     model = Model.model
-epochs = Model.num_epochs
-val_sims = []
-eval_loss = open(path_model + "eval_loss.txt","w+")
+    epochs = Model.num_epochs
 
-for epoch in np.arange(epochs):
-    train_gen, val_gen, val_train, val_sim = split_training_validation_sims(s, scaler_output, batch_size=80,
-                                                                            rescale_mean=1.005,
-                                                                            rescale_std=0.05050, dim=(75, 75, 75))
-    val_sims.append(val_sim)
-    history = model.fit_generator(generator=train_gen, validation_data=val_gen,
-                                  use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1, epochs=epoch+1,
-                                  shuffle=True, callbacks=callbacks_list, validation_freq=1, initial_epoch=epoch)
-    print("evaluated training set")
-    l_tr = model.evaluate_generator(val_train, use_multiprocessing=False, workers=1, verbose=1)
-    print("evaluated validation set")
-    l_val = model.evaluate_generator(val_gen, use_multiprocessing=False, workers=1, verbose=1)
-    eval_loss.write("%i,%f,%f\r\n" % (epoch, l_tr, l_val))
-    eval_loss.close()
+    model = load_model("/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval/model/weights.45.hdf5")
+    epochs_init = 45
+
+    for epoch in np.arange(epochs_init, epochs):
+        # train_gen, val_gen, val_train, val_sim = split_training_validation_sims(s, scaler_output, batch_size=80,
+        #                                                                         rescale_mean=1.005,
+        #                                                                         rescale_std=0.05050, dim=(75, 75, 75))
+        # val_sims.append(val_sim)
+        train_gen, val_gen = split_training_validation_sims(s, scaler_output, batch_size=80, rescale_mean=1.005,
+                                                            rescale_std=0.05050, dim=(75, 75, 75))
+        history = model.fit_generator(generator=train_gen, validation_data=val_gen,
+                                      use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1, epochs=epoch+1,
+                                      shuffle=True, callbacks=callbacks_list, validation_freq=1, initial_epoch=epoch)
 
     model.save(path_model + "/model_100_epochs_mixed_sims.h5")
-    np.save(path_model + "/validation_sims.npy", val_sims)
+    # np.save(path_model + "/validation_sims.npy", val_sims)
