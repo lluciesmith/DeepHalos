@@ -88,7 +88,7 @@ if __name__ == "__main__":
                     use_multiprocessing=True, workers=2, max_queue_size=10,
                     verbose=1, model_type="regression", lr=0.0001, train=False)
 
-    model = Model.model
+    # model = Model.model
     epochs = Model.num_epochs
 
     model = load_model("/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval/model/weights.45.hdf5")
@@ -102,8 +102,8 @@ if __name__ == "__main__":
         train_gen, val_gen = split_training_validation_sims(s, scaler_output, batch_size=80, rescale_mean=1.005,
                                                             rescale_std=0.05050, dim=(75, 75, 75))
         history = model.fit_generator(generator=train_gen, validation_data=val_gen,
-                                      use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1, epochs=epoch+1,
+                                      use_multiprocessing=False, workers=1, max_queue_size=10, verbose=1, epochs=epoch+1,
                                       shuffle=True, callbacks=callbacks_list, validation_freq=1, initial_epoch=epoch)
 
     model.save(path_model + "/model_100_epochs_mixed_sims.h5")
-    # np.save(path_model + "/validation_sims.npy", val_sims)
+        # np.save(path_model + "/validation_sims.npy", val_sims)
