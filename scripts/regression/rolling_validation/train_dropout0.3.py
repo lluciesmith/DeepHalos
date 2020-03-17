@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.2dropout/"
+    path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.3dropout/"
 
     # First you will have to load the simulation
 
