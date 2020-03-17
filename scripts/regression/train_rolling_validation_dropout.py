@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.1dropout/"
+    path_model = "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.2dropout/"
 
     # First you will have to load the simulation
 
@@ -93,8 +93,8 @@ if __name__ == "__main__":
                              'strides': 1, 'padding': 'same', 'pool': None, 'bn': True}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 256, 'bn': True, 'dropout': 0.1},
-                 'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.1}}
+    param_fcc = {'dense_1': {'neurons': 256, 'bn': True, 'dropout': 0.2},
+                 'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.2}}
 
     Model = CNN.CNN(param_conv, param_fcc,
                     dim=(75, 75, 75), training_generator={}, validation_generator={}, validation_freq=1,
