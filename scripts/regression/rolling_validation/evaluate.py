@@ -7,17 +7,16 @@ from pickle import load
 
 
 if __name__ == "__main__":
-    ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
+    ########## CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     # First choose the correct path to the model and the parameters you used during training
+    params_model01 = {'path_model': "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.1dropout/"}
+    params_model02 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.2dropout/"}
+    params_model03 = {'path_model': "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.3dropout/"}
 
-    params_model1 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.2dropout/"}
+    for params_model in [params_model01, params_model02, params_model03]:
+        # params_model = {'path_model': "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3/"}
 
-    params_model2 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.1dropout/"}
-
-    for params_model in [params_model1, params_model2]:
-
-        # params_model = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0dropout/"}
         params_inputs = {'batch_size': 80,
                          'rescale_mean': 1.005,
                          'rescale_std': 0.05050,
@@ -39,17 +38,17 @@ if __name__ == "__main__":
         generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
 
-        epochs = [5*i for i in range(1, 20)]
+        epochs = [5*i for i in range(1, 21)]
         epochs = np.array(epochs).astype('str')
         epochs[0] = "05"
 
         loss = np.zeros((len(epochs), 3))
-        loss[:, 0] = [5*i for i in range(1, 20)]
+        loss[:, 0] = [5*i for i in range(1, 21)]
 
         for i, epoch in enumerate(epochs):
             model_epoch = load_model(params_model['path_model'] + "model/weights." + epoch + ".hdf5")
-            # loss[i, 1] = model_epoch.evaluate_generator(generator_training, use_multiprocessing=False, workers=1,
-            #                                             verbose=1)
+            loss[i, 1] = model_epoch.evaluate_generator(generator_training, use_multiprocessing=False, workers=1,
+                                                        verbose=1)
             loss[i, 2] = model_epoch.evaluate_generator(generator_validation, use_multiprocessing=False, workers=1,
                                                         verbose=1)
             del model_epoch
