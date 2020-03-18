@@ -75,7 +75,7 @@ class SimulationPreparation:
 
 class InputsPreparation:
     def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt",
-                 random_subset_each_sim=None, random_subset_all=None,
+                 random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None,
                  path="/lfstev/deepskies/luisals/", scaler_output=None, return_rescaled_outputs=True, shuffle=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
@@ -93,6 +93,7 @@ class InputsPreparation:
         self.random_subset = random_subset_each_sim
         self.random_subset_all = random_subset_all
         self.return_rescaled_outputs = return_rescaled_outputs
+        self.log_high_mass_limit = log_high_mass_limit
         self.shuffle = shuffle
 
         self.scaler_output = scaler_output
@@ -124,6 +125,8 @@ class InputsPreparation:
             ind = np.random.choice(np.arange(len(flattened_name)), self.random_subset_all, replace=False)
             flattened_name = flattened_name[ind]
             flattened_mass = flattened_mass[ind]
+
+        print("Highest halo mass value is " + str(flattened_mass.max()))
 
         if self.return_rescaled_outputs is True:
             if self.scaler_output is None:
@@ -157,6 +160,11 @@ class InputsPreparation:
             #                     "_halo_mass_particles.npy")
 
         ids_in_halo = np.where(halo_mass > 0)[0]
+
+        if self.log_high_mass_limit is not None:
+            ind = np.log10(halo_mass[ids_in_halo]) <= self.log_high_mass_limit
+            ids_in_halo = ids_in_halo[ind]
+
         ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
         mass_i = np.log10(halo_mass[ids_i])
         return ids_i, mass_i
@@ -180,6 +188,10 @@ class InputsPreparation:
         #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed6/reseed6_halo_mass_particles.npy")
         with open(path1 + self.ids_filename, "r") as f:
             ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
+
+        if self.log_high_mass_limit is not None:
+            ind = np.log10(halo_mass[ids_bc]) <= self.log_high_mass_limit
+            ids_bc = ids_bc[ind]
         
         if self.random_subset is not None:
             ids_i = np.random.choice(ids_bc, self.random_subset, replace=False)
