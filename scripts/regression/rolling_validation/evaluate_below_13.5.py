@@ -15,7 +15,7 @@ if __name__ == "__main__":
     params_model03 = {'path_model': "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_w_eval_0.3dropout/"}
     params_model04 = {'path_model': "/lfstev/deepskies/luisals/regression/rolling_val/no_sim3/"}
 
-    for params_model in [params_model01, params_model02, params_model03, params_model04]:
+    for params_model in [ params_model01, params_model02, params_model03, params_model04]:
 
         params_inputs = {'batch_size': 80,
                          'rescale_mean': 1.005,
@@ -62,29 +62,19 @@ if __name__ == "__main__":
             loss[i, 2] = model_epoch.evaluate_generator(generator7, use_multiprocessing=False, workers=1, verbose=1)
             del model_epoch
 
-        #################### simulation-7 ####################
+        #################### validation sim at given epoch ####################
 
         validation_sims_each_epoch = np.concatenate(np.load(params_model['path_model'] + 'validation_sims.npy'))
 
-        val_sim = ["7"]
-        s_val = tn.SimulationPreparation(val_sim)
-        validation_set7 = tn.InputsPreparation(val_sim,
-                                               load_ids=True, log_high_mass_limit=13.5, random_subset_each_sim=4000,
-                                               scaler_output=s_output, shuffle=False)
-        generator7 = tn.DataGenerator(validation_set7.particle_IDs, validation_set7.labels_particle_IDS,
-                                      s_val.sims_dic, **params_inputs)
-
         for i, epoch in enumerate(epochs):
             epoch_int = epoch.astype("int")
-            val_sim_epoch = validation_sims_each_epoch[epoch_int]
-
+            val_sim_epoch = validation_sims_each_epoch[epoch_int - 1]
             s1 = tn.SimulationPreparation(val_sim_epoch)
             val_set = tn.InputsPreparation(val_sim_epoch,
                                            load_ids=True, log_high_mass_limit=13.5, random_subset_each_sim=4000,
                                            scaler_output=s_output, shuffle=False)
             generator_val = tn.DataGenerator(val_set.particle_IDs, val_set.labels_particle_IDS, s1.sims_dic,
                                              **params_inputs)
-
             model_epoch = load_model(params_model['path_model'] + "model/weights." + epoch + ".hdf5")
             loss[i, 3] = model_epoch.evaluate_generator(generator_val, use_multiprocessing=False, workers=1, verbose=1)
             del model_epoch
