@@ -31,6 +31,7 @@ class CNN:
         self.initialiser = initialiser
         self.pool_size = pool_size
 
+        self.num_gpu = num_gpu
         self.num_epochs = num_epochs
         self.use_multiprocessing = use_multiprocessing
         self.max_queue_size = max_queue_size
@@ -46,15 +47,13 @@ class CNN:
         self.model_name = model_name
 
         if train is True:
-            if num_gpu == 1:
-                self.model, self.history = self.fit_model_single_gpu()
-            elif num_gpu > 1:
-                self.model, self.history = self.fit_model_multiple_gpu(num_gpu)
-        else:
-            self.model = self.compile_model()
+            self.model, self.history = self.compile_and_fit_model()
 
-    def fit_model_single_gpu(self):
-        Model = self.compile_model()
+        else:
+            self.model = self.compile_model(self.num_epochs)
+
+    def compile_and_fit_model(self):
+        Model = self.compile_model(self.num_gpu)
 
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
@@ -70,47 +69,46 @@ class CNN:
 
         return Model, history
 
-    def fit_model_multiple_gpu(self, num_gpus):
+    def compile_model(self, num_gpus):
+        if num_gpus == 1:
+            model = self.compile_model_single_gpu()
+        elif num_gpus > 1:
+            model = self.compile_model_multiple_gpu(num_gpus)
+        else:
+            raise ValueError
+        return model
+
+    def compile_model_multiple_gpu(self, num_gpus):
 
         if self.model_type == "regression":
-            with tf.device('/cpu:0'):
-                Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                       data_format=self.data_format)
-                parallel_model = multi_gpu_model(Model, gpus=num_gpus)
-                optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
-                                                  amsgrad=True)
-                parallel_model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
+            print("Initiating regression model on multiple GPUs")
+            # with tf.device('/cpu:0'):
+            Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                   data_format=self.data_format)
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
+                                              amsgrad=True)
+
+            parallel_model = multi_gpu_model(Model, gpus=num_gpus)
+            parallel_model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
 
         elif self.model_type == "binary_classification":
-            with tf.device('/cpu:0'):
-                print("Initiating binary classification model")
-                Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                              data_format=self.data_format)
-                parallel_model = multi_gpu_model(Model, gpus=num_gpus)
-                optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0,
-                                                  amsgrad=True)
-                parallel_model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
+            # with tf.device('/cpu:0'):
+            print("Initiating binary classification model on multiple GPUs")
+            Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                          data_format=self.data_format)
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
+                                              amsgrad=True)
+
+            parallel_model = multi_gpu_model(Model, gpus=num_gpus)
+            parallel_model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
 
         else:
-            Model = {}
-            parallel_model = {}
-            NameError("Choose either regression or binary classification as model type")
+            raise NameError("Choose either regression or binary classification as model type")
 
-        t0 = time.time()
-        history = parallel_model.fit_generator(generator=self.training_generator,
-                                               validation_data=self.validation_generator,
-                                               use_multiprocessing=self.use_multiprocessing, workers=self.workers,
-                                               verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
-                                               callbacks=self.callbacks)
-        t1 = time.time()
-        print("This model took " + str((t1 - t0)/60) + " minutes to train.")
+        print(parallel_model.summary())
+        return parallel_model
 
-        if self.save is True:
-            Model.save(self.model_name)
-
-        return parallel_model, history
-
-    def compile_model(self):
+    def compile_model_single_gpu(self):
         if self.model_type == "regression":
             print("Initiating regression model")
 
