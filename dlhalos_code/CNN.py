@@ -50,10 +50,10 @@ class CNN:
             self.model, self.history = self.compile_and_fit_model()
 
         else:
-            self.model = self.compile_model(self.num_epochs)
+            self.model = self.compile_model()
 
     def compile_and_fit_model(self):
-        Model = self.compile_model(self.num_gpu)
+        Model = self.compile_model()
 
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
@@ -69,11 +69,11 @@ class CNN:
 
         return Model, history
 
-    def compile_model(self, num_gpus):
-        if num_gpus == 1:
+    def compile_model(self):
+        if self.num_gpu == 1:
             model = self.compile_model_single_gpu()
-        elif num_gpus > 1:
-            model = self.compile_model_multiple_gpu(num_gpus)
+        elif self.num_gpu > 1:
+            model = self.compile_model_multiple_gpu()
         else:
             raise ValueError
         return model
@@ -105,7 +105,7 @@ class CNN:
         else:
             raise NameError("Choose either regression or binary classification as model type")
 
-        print(parallel_model.summary())
+        print(Model.summary())
         return parallel_model
 
     def compile_model_single_gpu(self):
