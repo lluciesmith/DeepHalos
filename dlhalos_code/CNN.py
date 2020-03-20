@@ -14,11 +14,11 @@ from dlhalos_code import evaluation as eval
 
 
 class CNN:
-    def __init__(self, conv_params, fcc_params, model_type="regression",
-                 training_generator=None, validation_generator=None, callbacks=None, metrics=None,
-                 num_epochs=5, dim=(51, 51, 51), pool_size=(2, 2, 2), initialiser=None, max_queue_size=10,
-                 data_format="channels_last", use_multiprocessing=False, workers=1, verbose=1, save=False,
-                 model_name="my_model.h5", num_gpu=1, lr=0.0001, validation_freq=1, train=True, skip_connector=False):
+    def __init__(self, conv_params, fcc_params, model_type="regression", training_generator=None,
+                 validation_generator=None, callbacks=None, metrics=None, num_epochs=5, dim=(51, 51, 51),
+                 pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
+                 use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
+                 lr=0.0001, save_summary=False, path_summary=".", validation_freq=1, train=True, skip_connector=False):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -43,12 +43,13 @@ class CNN:
         self.model_type = model_type
         self.skip_connector = skip_connector
 
-        self.save = save
+        self.save = save_model
         self.model_name = model_name
+        self.save_summary = save_summary
+        self.path_summary = path_summary
 
         if train is True:
             self.model, self.history = self.compile_and_fit_model()
-
         else:
             self.model = self.compile_model()
 
@@ -76,6 +77,11 @@ class CNN:
             model = self.compile_model_multiple_gpu()
         else:
             raise ValueError
+
+        if self.save_summary is True:
+            with open(self.path_summary + 'model_summary.txt', 'w') as fh:
+                model.summary(print_fn=lambda x: fh.write(x + '\n'))
+
         return model
 
     def compile_model_multiple_gpu(self):
@@ -83,22 +89,22 @@ class CNN:
 
         if self.model_type == "regression":
             print("Initiating regression model on multiple GPUs")
-            with tf.device('/cpu:0'):
-                Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                       data_format=self.data_format)
-                optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
-                                                  amsgrad=True)
+            # with tf.device('/cpu:0'):
+            Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                   data_format=self.data_format)
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
+                                              amsgrad=True)
 
-            parallel_model = multi_gpu_model(Model, gpus=num_gpus)
+            parallel_model = multi_gpu_model(Model, gpus=num_gpus, cpu_relocation=True, cpu_merge=True)
             parallel_model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
 
         elif self.model_type == "binary_classification":
             print("Initiating binary classification model on multiple GPUs")
-            with tf.device('/cpu:0'):
-                Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                              data_format=self.data_format)
-                optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
-                                                  amsgrad=True)
+            # with tf.device('/cpu:0'):
+            Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                          data_format=self.data_format)
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
+                                              amsgrad=True)
 
             parallel_model = multi_gpu_model(Model, gpus=num_gpus)
             parallel_model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
