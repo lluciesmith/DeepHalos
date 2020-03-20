@@ -78,7 +78,8 @@ class CNN:
             raise ValueError
         return model
 
-    def compile_model_multiple_gpu(self, num_gpus):
+    def compile_model_multiple_gpu(self):
+        num_gpus = self.num_gpu
 
         if self.model_type == "regression":
             print("Initiating regression model on multiple GPUs")

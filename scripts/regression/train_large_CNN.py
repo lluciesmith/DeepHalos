@@ -22,7 +22,7 @@ path_model = "/lfstev/deepskies/luisals/regression/large_CNN/"
 all_sims = ["0", "1", "2", "4", "5", "6"]
 s = tn.SimulationPreparation(all_sims)
 
-params_inputs = {'batch_size': 1,
+params_inputs = {'batch_size': 80,
                  'rescale_mean': 1.005,
                  'rescale_std': 0.05050,
                  'dim': (75, 75, 75)
@@ -73,7 +73,7 @@ param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.2},
 Model = CNN.CNN(param_conv, param_fcc, dim=params_inputs['dim'],
                 training_generator=generator_training, validation_generator=generator_validation,
                 validation_freq=1, callbacks=callbacks_list, num_epochs=100,
-                use_multiprocessing=True, workers=2, max_queue_size=10,
+                use_multiprocessing=True, workers=2, max_queue_size=1,
                 verbose=1, model_type="regression", lr=0.0001, train=True, num_gpu=2)
 
     np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)
