@@ -102,7 +102,7 @@ class CNN:
             print("Initiating binary classification model on multiple GPUs")
             # with tf.device('/cpu:0'):
             Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                          data_format=self.data_format)
+                                                              data_format=self.data_format)
             optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
 
@@ -140,6 +140,28 @@ class CNN:
 
         print(Model.summary())
         return Model
+
+    def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
+        input_data = Input(shape=(*input_shape_box, 1))
+
+        if self.skip_connector is True:
+            x = self._model_skip_connection(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+        else:
+            x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+
+        predictions = Dense(1, activation='linear')(x)
+
+        model = keras.Model(inputs=input_data, outputs=predictions)
+        return model
+
+    def binary_classification_model_w_layers(self, input_shape_box, conv_params, fcc_params,
+                                             data_format="channels_last"):
+        input_data = Input(shape=(*input_shape_box, 1))
+        x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+        predictions = Dense(1, activation='sigmoid')(x)
+
+        model = keras.Model(inputs=input_data, outputs=predictions)
+        return model
 
     def first_convolutional_layer(self, input_data, input_shape_box=(17, 17, 17, 1), num_kernels=3,
                                   dim_kernel=(7, 7, 7), pool_size=(2, 2, 2), strides=2, padding='valid',
@@ -290,28 +312,6 @@ class CNN:
         x = Flatten(data_format=data_format)(x)
         x = self._fcc_layers(x, fcc_params, initialiser)
         return x
-
-    def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
-        input_data = Input(shape=(*input_shape_box, 1))
-
-        if self.skip_connector is True:
-            x = self._model_skip_connection(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
-        else:
-            x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
-
-        predictions = Dense(1, activation='linear')(x)
-
-        model = keras.Model(inputs=input_data, outputs=predictions)
-        return model
-
-    def binary_classification_model_w_layers(self, input_shape_box, conv_params, fcc_params,
-                                             data_format="channels_last"):
-        input_data = Input(shape=(*input_shape_box, 1))
-        x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
-        predictions = Dense(1, activation='sigmoid')(x)
-
-        model = keras.Model(inputs=input_data, outputs=predictions)
-        return model
 
     # def my_init(self, shape, dtype=None):
     #     weight_matrix = np.zeros((3, 3, 3))

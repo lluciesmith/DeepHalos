@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/minmax_scaler/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/"
 
     # First you will have to load the simulation
 
