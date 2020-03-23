@@ -75,7 +75,7 @@ class SimulationPreparation:
 
 class InputsPreparation:
     def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt",
-                 random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None,
+                 random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None, weights=False,
                  path="/lfstev/deepskies/luisals/", scaler_output=None, return_rescaled_outputs=True, shuffle=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
@@ -95,6 +95,7 @@ class InputsPreparation:
         self.return_rescaled_outputs = return_rescaled_outputs
         self.log_high_mass_limit = log_high_mass_limit
         self.shuffle = shuffle
+        self.weights = weights
 
         self.scaler_output = scaler_output
         self.particle_IDs = None
@@ -126,8 +127,6 @@ class InputsPreparation:
             flattened_name = flattened_name[ind]
             flattened_mass = flattened_mass[ind]
 
-        print("Highest halo mass value is " + str(flattened_mass.max()))
-
         if self.return_rescaled_outputs is True:
             if self.scaler_output is None:
                 output_ids, self.scaler_output = self.get_standard_scaler_and_transform(flattened_mass)
@@ -138,15 +137,37 @@ class InputsPreparation:
 
         dict_i = OrderedDict(zip(flattened_name, output_ids))
 
-        if self.shuffle is True:
-            np.random.seed(5)
-            ids_reordering = np.random.permutation(list(dict_i.keys()))
-            labels_reordered = dict([(key, dict_i[key]) for key in ids_reordering])
-        else:
-            labels_reordered = dict_i
+        if self.weights is True:
+            weights_particle_IDs = self.get_weights_samples(flattened_mass)
+            dict_weights = OrderedDict(zip(flattened_name, weights_particle_IDs))
 
-        self.particle_IDs = list(labels_reordered.keys())
-        self.labels_particle_IDS = labels_reordered
+            if self.shuffle is True:
+                np.random.seed(5)
+
+                ids_reordering = np.random.permutation(list(dict_i.keys()))
+                labels_reordered = dict([(key, dict_i[key]) for key in ids_reordering])
+                weights_reordered = dict([(key, dict_weights[key]) for key in ids_reordering])
+            else:
+                labels_reordered = dict_i
+                weights_reordered = dict_weights
+
+            self.particle_IDs = list(labels_reordered.keys())
+            self.labels_particle_IDS = labels_reordered
+            self.weights_particle_IDs = weights_reordered
+
+        else:
+
+            if self.shuffle is True:
+                np.random.seed(5)
+
+                ids_reordering = np.random.permutation(list(dict_i.keys()))
+                labels_reordered = dict([(key, dict_i[key]) for key in ids_reordering])
+
+            else:
+                labels_reordered = dict_i
+
+            self.particle_IDs = list(labels_reordered.keys())
+            self.labels_particle_IDS = labels_reordered
 
     def generate_random_set(self, simulation_ID):
         if simulation_ID == "0":
@@ -212,9 +233,24 @@ class InputsPreparation:
         scaled_array = scaler.transform(array.reshape(-1, 1)).flatten()
         return scaled_array
 
+    def get_weights_samples(self, outputs):
+        bins = np.load("/lfstev/deepskies/luisals/regression/large_CNN/weighted/log_m_Msol_bins.npy")
+        weights = np.load("/lfstev/deepskies/luisals/regression/large_CNN/weighted/weights.npy")
+
+        weights_samples = np.ones((len(outputs),))
+        for i in range(len(bins) - 1):
+            if i == range(len(bins) - 1)[-1]:
+                ind = np.where((outputs >= bins[i]) & (outputs <= bins[i + 1]))[0]
+            else:
+                ind = np.where((outputs >= bins[i]) & (outputs < bins[i+1]))[0]
+
+            weights_samples[ind] = weights[i]
+
+        return weights_samples
+
 
 class DataGenerator(Sequence):
-    def __init__(self, list_IDs, labels, sims,
+    def __init__(self, list_IDs, labels, sims, weights=None,
                  batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False,
                  rescale_mean=0, rescale_std=1):
         """
@@ -239,6 +275,7 @@ class DataGenerator(Sequence):
         sim_id0 = list(sims.keys())[0]
         self.shape_sim = int(round((sims[sim_id0]["iord"].shape[0]) ** (1 / 3)))
 
+        self.weights = weights
         self.shuffle = shuffle
         self.dim = dim
         self.res = dim[0]
@@ -259,8 +296,12 @@ class DataGenerator(Sequence):
         indexes = self.indexes[index * self.batch_size: (index+1) * self.batch_size]
         list_IDs_temp = [self.list_IDs[k] for k in indexes]
 
-        X, y = self.__data_generation(list_IDs_temp)
-        return X, y
+        if self.weights is None:
+            X, y = self.__data_generation(list_IDs_temp)
+            return X, y
+        else:
+            X, y, w = self.__data_generation_w_weights(list_IDs_temp)
+            return X, y, w
 
     def on_epoch_end(self):
         self.indexes = np.arange(len(self.list_IDs))
@@ -275,6 +316,15 @@ class DataGenerator(Sequence):
 
         return s_t_rescaled.reshape((*self.dim, self.n_channels))
 
+    def generate_input(self, simulation_index, particle_id):
+        sim_snapshot = self.sims[simulation_index]
+        i0, j0, k0 = sim_snapshot['coords'][particle_id]
+        delta_sim = sim_snapshot['den_contrast'].reshape(self.shape_sim, self.shape_sim, self.shape_sim)
+
+        output_matrix = np.zeros((self.res, self.res, self.res))
+        s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+        return s
+
     def __data_generation(self, list_IDs_temp):
         """ Loads data containing batch_size samples """
 
@@ -288,13 +338,7 @@ class DataGenerator(Sequence):
             # generate box
 
             particle_ID = int(ID[9:])
-
-            sim_snapshot = self.sims[sim_index]
-            i0, j0, k0 = sim_snapshot['coords'][particle_ID]
-            delta_sim = sim_snapshot['den_contrast'].reshape(self.shape_sim, self.shape_sim, self.shape_sim)
-
-            output_matrix = np.zeros((self.res, self.res, self.res))
-            s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+            s = self.generate_input(sim_index, particle_ID)
 
             # load box
 
@@ -318,6 +362,26 @@ class DataGenerator(Sequence):
             y[i] = self.labels[ID]
 
         return X, y
+
+    def __data_generation_w_weights(self, list_IDs_temp):
+        X = np.empty((self.batch_size, *self.dim, self.n_channels))
+        y = np.empty((self.batch_size,))
+        w = np.empty((self.batch_size,))
+
+        # Generate data
+        for i, ID in enumerate(list_IDs_temp):
+            sim_index = ID[4]
+
+            # generate box
+
+            particle_ID = int(ID[9:])
+            s = self.generate_input(sim_index, particle_ID)
+
+            X[i] = self._process_input(s)
+            y[i] = self.labels[ID]
+            w[i] = self.weights[ID]
+
+        return X, y, w
 
 
 @njit(parallel=True)
