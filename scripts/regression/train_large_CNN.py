@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/minmax_scaler/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/lr_1e-5/"
 
     # First you will have to load the simulation
 
@@ -67,14 +67,14 @@ if __name__ == "__main__":
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.2},
-                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.2}}
+    param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.4},
+                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4}}
 
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
                     validation_generator=generator_validation, callbacks=callbacks_list, num_epochs=100,
                     dim=params_inputs['dim'], max_queue_size=10, use_multiprocessing=True, workers=2,
                     verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
-                    lr=0.0001, validation_freq=1, train=True)
+                    lr=0.00001, validation_freq=1, train=True)
 
     np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)
     Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")
