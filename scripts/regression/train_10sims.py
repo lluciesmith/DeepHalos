@@ -15,14 +15,14 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/10_sims/"
 
     # First you will have to load the simulation
 
-    all_sims = ["0", "1", "2", "4", "5", "6"]
+    all_sims = ["0", "1", "2", "4", "5", "6", "7", "8", "9", "10"]
     s = tn.SimulationPreparation(all_sims)
 
-    params_inputs = {'batch_size': 40,
+    params_inputs = {'batch_size': 80,
                      'rescale_mean': 1.005,
                      'rescale_std': 0.05050,
                      'dim': (75, 75, 75)
@@ -33,11 +33,11 @@ if __name__ == "__main__":
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
-    training_set = tn.InputsPreparation(train_sims, load_ids=True, shuffle=True)
+    training_set = tn.InputsPreparation(train_sims, load_ids=False, random_subset_each_sim=10000, shuffle=True)
     generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
                                           s.sims_dic, **params_inputs)
 
-    validation_set = tn.InputsPreparation([val_sim], load_ids=True, random_subset_all=4000,
+    validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_all=4000,
                                             scaler_output=training_set.scaler_output, shuffle=True)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
