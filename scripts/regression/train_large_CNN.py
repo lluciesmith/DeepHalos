@@ -51,7 +51,7 @@ if __name__ == "__main__":
     checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5)
 
     # save histories
-    csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=True)
+    csv_logger = CSVLogger(path_model + "/training.log", separator=',')
 
     callbacks_list = [checkpoint_call, csv_logger]
     tensorflow.compat.v1.set_random_seed(7)
