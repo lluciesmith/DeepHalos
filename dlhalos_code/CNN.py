@@ -10,6 +10,7 @@ from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.layers import Input, Dense, Flatten, Add
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras import regularizers
+import inspect
 
 from dlhalos_code import evaluation as eval
 
@@ -230,7 +231,12 @@ class CNN:
                 if "dropout" in params:
                     x = keras.layers.Dropout(params['dropout'])(x)
 
-                x = Dense(params['neurons'], kernel_initializer=initialiser, **params)(x)
+                if "kernel_regularizer" in params:
+                    kernel_regularizer = params["kernel_regularizer"]
+                else:
+                    kernel_regularizer = None
+
+                x = Dense(params['neurons'], kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
 
                 if params["bn"] is True:
                     x = keras.layers.BatchNormalization(axis=-1)(x)
