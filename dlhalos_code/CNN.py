@@ -9,6 +9,7 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.layers import Input, Dense, Flatten, Add
 from tensorflow.keras.utils import multi_gpu_model
+from tensorflow.keras import regularizers
 
 from dlhalos_code import evaluation as eval
 
@@ -165,11 +166,12 @@ class CNN:
 
     def first_convolutional_layer(self, input_data, input_shape_box=(17, 17, 17, 1), num_kernels=3,
                                   dim_kernel=(7, 7, 7), pool_size=(2, 2, 2), strides=2, padding='valid',
-                                  data_format="channels_last",
+                                  data_format="channels_last", kernel_regularizer=None,
                                   alpha_relu=0.03, activation=True, bn=True, pool=True, initialiser="normal"):
 
         x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format,
-                                input_shape=input_shape_box, kernel_initializer=initialiser)(input_data)
+                                input_shape=input_shape_box, kernel_initializer=initialiser,
+                                kernel_regularizer=kernel_regularizer)(input_data)
         if bn is True:
             x = keras.layers.BatchNormalization(axis=-1)(x)
         if activation is True:
@@ -185,11 +187,11 @@ class CNN:
         return x
 
     def subsequent_convolutional_layer(self, x, num_kernels=3, dim_kernel=(3, 3, 3), pool_size=(2, 2, 2), strides=2,
-                                       padding='valid',
-                                       data_format="channels_last", alpha_relu=0.03, activation=True, bn=True,
+                                       padding='valid', kernel_regularizer=None, data_format="channels_last",
+                                       alpha_relu=0.03, activation=True, bn=True,
                                        pool=True, initialiser="normal"):
         x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format,
-                                kernel_initializer=initialiser)(x)
+                                kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
         if bn is True:
             x = keras.layers.BatchNormalization(axis=-1)(x)
         if activation is True:
@@ -228,7 +230,7 @@ class CNN:
                 if "dropout" in params:
                     x = keras.layers.Dropout(params['dropout'])(x)
 
-                x = Dense(params['neurons'], kernel_initializer=initialiser)(x)
+                x = Dense(params['neurons'], kernel_initializer=initialiser, **params)(x)
 
                 if params["bn"] is True:
                     x = keras.layers.BatchNormalization(axis=-1)(x)

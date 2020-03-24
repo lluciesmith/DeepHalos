@@ -1,8 +1,8 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 import numpy as np
-from utils.old import data_generator_individual_files as dp
-from utils import generators_training as gbc
+from utilss.old import data_generator_individual_files as dp
+from utilss.old import generators_training as gbc
 from tensorflow.keras.models import load_model
 
 

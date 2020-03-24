@@ -37,6 +37,8 @@ if __name__ == "__main__":
     generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
                                           s.sims_dic, **params_inputs)
 
+    lab = np.array([training_set.labels_particle_IDS[key] for key in training_set.particle_IDs])
+
     validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_all=4000,
                                             scaler_output=training_set.scaler_output, shuffle=True)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,

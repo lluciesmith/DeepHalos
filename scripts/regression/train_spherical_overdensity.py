@@ -6,7 +6,7 @@ from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 import tensorflow.compat.v1
-from utils.old import generators_training as gbc
+from utilss.old import generators_training as gbc
 import time
 
 if __name__ == "__main__":
@@ -108,11 +108,9 @@ if __name__ == "__main__":
                                  }
                      }
 
-        Model = CNN.CNN(generator_training, param_conv, param_fcc,
-                        validation_generator=generator_1,
-                        # metrics=["mae"],
-                        callbacks=callbacks_list, use_multiprocessing=True, num_epochs=80,
-                        workers=14, verbose=1, model_type="regression", lr=0.0001)
+        Model = CNN.CNN(generator_training, param_conv, model_type="regression", validation_generator=generator_1,
+                        callbacks=callbacks_list, num_epochs=80, use_multiprocessing=True, workers=14, verbose=1,
+                        lr=0.0001)
 
         model = Model.model
         history = Model.history

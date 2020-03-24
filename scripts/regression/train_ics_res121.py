@@ -21,10 +21,10 @@ s = tn.SimulationPreparation(all_sims)
 training_sims = ["0", "2", "3", "4", "5"]
 validation_sims = ["1"]
 
-params_gen = {'batch_size': 40,
+params_gen = {'batch_size': 1,
               'rescale_mean': 1.005,
               'rescale_std': 0.05050,
-              'dim': (121, 121, 121)
+              'dim': (51, 51, 51)
               }
 
 training_set = tn.InputsPreparation(training_sims, load_ids=True)
@@ -68,11 +68,10 @@ param_fcc = {  # 'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.2},
     'dense_1': {'neurons': 256, 'bn': True, 'dropout': 0.4},
     'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.4}}
 
-Model = CNN.CNN(param_conv, param_fcc, dim=params_gen['dim'],
-                training_generator=generator_training, validation_generator=generator_validation, validation_freq=1,
-                callbacks=callbacks_list, num_epochs=100,
-                use_multiprocessing=True, workers=2, max_queue_size=10,
-                verbose=1, model_type="regression", lr=0.0001, train=True)
+Model = CNN.CNN(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                validation_generator=generator_validation, callbacks=callbacks_list, num_epochs=100,
+                dim=params_gen['dim'], max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1, lr=0.0001,
+                validation_freq=1, train=True)
 
 
 np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)

@@ -4,6 +4,7 @@ from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 import tensorflow
+from tensorflow.keras import regularizers
 from tensorflow.keras.models import load_model
 import dlhalos_code.data_processing as tn
 import numpy as np
@@ -15,7 +16,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/lr_1e-5/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/kernel_reg/"
 
     # First you will have to load the simulation
 
@@ -55,26 +56,28 @@ if __name__ == "__main__":
     callbacks_list = [checkpoint_call, csv_logger]
     tensorflow.compat.v1.set_random_seed(7)
 
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
+    kernel_reg = regularizers.l2(0.0005)
+
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-                  'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3),
+                  'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-                  'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3),
+                  'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-                  'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3),
+                  'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
                               'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-                  'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3),
+                  'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.4},
-                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4}}
+    param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.2, 'kernel_regularizer':kernel_reg},
+                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.2, 'kernel_regularizer':kernel_reg}}
 
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
                     validation_generator=generator_validation, callbacks=callbacks_list, num_epochs=100,
                     dim=params_inputs['dim'], max_queue_size=10, use_multiprocessing=True, workers=2,
                     verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
-                    lr=0.00001, validation_freq=1, train=True)
+                    lr=0.0001, validation_freq=1, train=True)
 
     np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)
     Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")

@@ -27,17 +27,13 @@ def get_sim_predictions_given_model(sims, model, scaler_output, val_sim="1",
                                             sims.sims_dic,
                                             batch_size=batch_size, rescale_mean=rescale_mean, rescale_std=rescale_std,
                                             dim=dim)
-
     pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
     truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
-
     h_m_pred = scaler_output.inverse_transform(pred).flatten()
     true = scaler_output.inverse_transform(truth_rescaled).flatten()
-
     if save is True:
         np.save(path_model + "predicted" + val_sim + "_" + num_epoch + ".npy", h_m_pred)
         np.save(path_model + "true" + val_sim + "_" + num_epoch + ".npy", true)
-
     return h_m_pred, true
 
 
@@ -45,6 +41,9 @@ if __name__ == "__main__":
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     # First choose the correct path to the model and the parameters you used during training
+
+# params_model = {'path_model':"/lfstev/deepskies/luisals/regression/large_CNN/",
+#                  'num_epoch': "05"}
 
     params_model1 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_75_3_4conv/",
                      'num_epoch': "100"}
@@ -61,7 +60,7 @@ if __name__ == "__main__":
 
         # load validation sets
 
-        validation_sims = ["1", "7"]
+        validation_sims = ["7"]
         s = tn.SimulationPreparation(validation_sims)
         s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
 
