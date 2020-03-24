@@ -77,7 +77,7 @@ if __name__ == "__main__":
                     validation_generator=generator_validation, callbacks=callbacks_list, num_epochs=100,
                     dim=params_inputs['dim'], max_queue_size=10, use_multiprocessing=True, workers=2,
                     verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
-                    lr=0.0001, validation_freq=1, train=True)
+                    lr=0.00001, validation_freq=1, train=True)
 
     np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)
     Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")
