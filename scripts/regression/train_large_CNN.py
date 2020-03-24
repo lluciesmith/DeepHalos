@@ -56,7 +56,7 @@ if __name__ == "__main__":
     callbacks_list = [checkpoint_call, csv_logger]
     tensorflow.compat.v1.set_random_seed(7)
 
-    kernel_reg = regularizers.l2(0.01)
+    kernel_reg = regularizers.l2(0.00001)
 
     param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
