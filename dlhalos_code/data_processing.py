@@ -222,8 +222,8 @@ class InputsPreparation:
         return ids_bc, output_ids
 
     def get_standard_scaler_and_transform(self, array_outputs):
-        norm_scaler = sklearn.preprocessing.StandardScaler()
-        # norm_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1))
+        # norm_scaler = sklearn.preprocessing.StandardScaler()
+        norm_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1))
         norm_scaler.fit(array_outputs.reshape(-1, 1))
 
         rescaled_out = self.transform_array_given_scaler(norm_scaler, array_outputs)

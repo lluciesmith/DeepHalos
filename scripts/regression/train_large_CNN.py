@@ -56,22 +56,22 @@ if __name__ == "__main__":
     callbacks_list = [checkpoint_call, csv_logger]
     tensorflow.compat.v1.set_random_seed(7)
 
-    kernel_reg = regularizers.l2(0.00001)
+    tkernel_reg = regularizers.l2(0.00001)
 
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':None,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-                  'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
+                  'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':None,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-                  'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
+                  'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':None,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-                  'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
+                  'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':None,
                               'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
-                  'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':kernel_reg,
+                  'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer':None,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.2, 'kernel_regularizer':kernel_reg},
-                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.2, 'kernel_regularizer':kernel_reg}}
+    param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.4, 'kernel_regularizer':None},
+                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4, 'kernel_regularizer':None}}
 
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
                     validation_generator=generator_validation, callbacks=callbacks_list, num_epochs=100,

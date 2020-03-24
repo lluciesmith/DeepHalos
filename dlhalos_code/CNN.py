@@ -223,28 +223,35 @@ class CNN:
 
     def _fcc_layers(self, x, fcc_params, initialiser):
         num_fully_connected = len(fcc_params)
+        ind = range(num_fully_connected)
 
         if num_fully_connected > 1:
-            for i in range(num_fully_connected):
+            for i in ind:
                 params = fcc_params['dense_' + str(i + 1)]
-
-                if "dropout" in params:
-                    x = keras.layers.Dropout(params['dropout'])(x)
 
                 if "kernel_regularizer" in params:
                     kernel_regularizer = params["kernel_regularizer"]
                 else:
                     kernel_regularizer = None
 
-                x = Dense(params['neurons'], kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
+                # if "dropout" in params:
+                #     x = keras.layers.Dropout(params['dropout'])(x)
+                #
+                # x = Dense(params['neurons'], kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
+                #
+                # if params["bn"] is True:
+                #     x = keras.layers.BatchNormalization(axis=-1)(x)
+                #
+                # if "alpha_relu" in params:
+                #     x = keras.layers.LeakyReLU(alpha=params['alpha_relu'])(x)
+                # else:
+                #     x = keras.layers.LeakyReLU(alpha=0.03)(x)
 
-                if params["bn"] is True:
-                    x = keras.layers.BatchNormalization(axis=-1)(x)
+                x = Dense(params['neurons'], activation='tanh',
+                           kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
 
-                if "alpha_relu" in params:
-                    x = keras.layers.LeakyReLU(alpha=params['alpha_relu'])(x)
-                else:
-                    x = keras.layers.LeakyReLU(alpha=0.03)(x)
+                if "dropout" in params:
+                    x = keras.layers.Dropout(params['dropout'])(x)
 
         return x
 
