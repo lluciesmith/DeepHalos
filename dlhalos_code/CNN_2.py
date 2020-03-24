@@ -234,18 +234,11 @@ class CNN:
                 else:
                     kernel_regularizer = None
 
+                x = Dense(params['neurons'], activation='tanh',
+                          kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
+
                 if "dropout" in params:
                     x = keras.layers.Dropout(params['dropout'])(x)
-
-                x = Dense(params['neurons'], kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
-
-                if params["bn"] is True:
-                    x = keras.layers.BatchNormalization(axis=-1)(x)
-
-                if "alpha_relu" in params:
-                    x = keras.layers.LeakyReLU(alpha=params['alpha_relu'])(x)
-                else:
-                    x = keras.layers.LeakyReLU(alpha=0.03)(x)
 
         return x
 
