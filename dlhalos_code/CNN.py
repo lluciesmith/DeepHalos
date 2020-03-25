@@ -62,6 +62,7 @@ class CNN:
         Model = self.compile_model()
 
         if self.tensorboard is True:
+            pass
             # import tensorflow as tf
             # from tensorboard import main as tb
             # tf.flags.FLAGS.logdir = self.path_summary
