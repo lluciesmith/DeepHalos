@@ -22,7 +22,7 @@ class CNN:
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
                  lr=0.0001, save_summary=False, path_summary=".", validation_freq=1, train=True,
-                 skip_connector=False, tensorboard=False):
+                 skip_connector=False):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -34,7 +34,6 @@ class CNN:
         self.val_freq = validation_freq
         self.initialiser = initialiser
         self.pool_size = pool_size
-        self.tensorboard = tensorboard
 
         self.num_gpu = num_gpu
         self.num_epochs = num_epochs
@@ -60,14 +59,6 @@ class CNN:
 
     def compile_and_fit_model(self):
         Model = self.compile_model()
-
-        if self.tensorboard is True:
-            pass
-            # import tensorflow as tf
-            # from tensorboard import main as tb
-            # tf.flags.FLAGS.logdir = self.path_summary
-            # tb.main()
-            os.system('tensorboard --logdir ' + self.path_summary + "/logs --host localhost")
 
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
