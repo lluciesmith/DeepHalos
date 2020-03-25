@@ -11,6 +11,7 @@ from tensorflow.keras.layers import Input, Dense, Flatten, Add
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras import regularizers
 import inspect
+import os
 
 from dlhalos_code import evaluation as eval
 
@@ -61,10 +62,11 @@ class CNN:
         Model = self.compile_model()
 
         if self.tensorboard is True:
-            import tensorflow as tf
-            from tensorboard import main as tb
-            tf.flags.FLAGS.logdir = self.path_summary
-            tb.main()
+            # import tensorflow as tf
+            # from tensorboard import main as tb
+            # tf.flags.FLAGS.logdir = self.path_summary
+            # tb.main()
+            os.system('tensorboard --logdir=' + self.path_summary)
 
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
