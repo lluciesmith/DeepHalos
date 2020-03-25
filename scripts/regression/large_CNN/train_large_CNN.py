@@ -29,6 +29,11 @@ if __name__ == "__main__":
                      'rescale_std': 0.05050,
                      'dim': (75, 75, 75)
                      }
+    params_inputs_val = {'batch_size': 1,
+                     'rescale_mean': 1.005,
+                     'rescale_std': 0.05050,
+                     'dim': (75, 75, 75)
+                     }
 
         # define a common scaler for the output
 
@@ -42,7 +47,7 @@ if __name__ == "__main__":
     validation_set = tn.InputsPreparation([val_sim], load_ids=True, random_subset_all=4000,
                                             scaler_output=training_set.scaler_output, shuffle=True)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
-                                              s.sims_dic, **params_inputs)
+                                              s.sims_dic, **params_inputs_val)
     dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
 
     ######### TRAINING MODEL ##############
