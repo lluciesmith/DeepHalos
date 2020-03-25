@@ -60,10 +60,10 @@ if __name__ == "__main__":
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
 
     # tensorboard
-    # tb = TensorBoard(log_dir=path_model + '/logs', histogram_freq=1, write_grads=True)
+    tb = TensorBoard(log_dir=path_model + '/logs', histogram_freq=1, write_grads=True)
 
-    # callbacks_list = [checkpoint_call, csv_logger, tb]
-    callbacks_list = [checkpoint_call, csv_logger]
+    callbacks_list = [checkpoint_call, csv_logger, tb]
+    # callbacks_list = [checkpoint_call, csv_logger]
     tensorflow.compat.v1.set_random_seed(7)
 
     kernel_reg = regularizers.l2(0.0005)
