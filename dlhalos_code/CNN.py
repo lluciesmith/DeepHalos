@@ -20,7 +20,8 @@ class CNN:
                  validation_generator=None, callbacks=None, metrics=None, num_epochs=5, dim=(51, 51, 51),
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
-                 lr=0.0001, save_summary=False, path_summary=".", validation_freq=1, train=True, skip_connector=False):
+                 lr=0.0001, save_summary=False, path_summary=".", validation_freq=1, train=True,
+                 skip_connector=False, tensorboard=False):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -32,6 +33,7 @@ class CNN:
         self.val_freq = validation_freq
         self.initialiser = initialiser
         self.pool_size = pool_size
+        self.tensorboard = tensorboard
 
         self.num_gpu = num_gpu
         self.num_epochs = num_epochs
@@ -57,6 +59,12 @@ class CNN:
 
     def compile_and_fit_model(self):
         Model = self.compile_model()
+
+        if self.tensorboard is True:
+            import tensorflow as tf
+            from tensorboard import main as tb
+            tf.flags.FLAGS.logdir = self.path_summary
+            tb.main()
 
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
@@ -234,9 +242,6 @@ class CNN:
                 else:
                     kernel_regularizer = None
 
-                if "dropout" in params:
-                    x = keras.layers.Dropout(params['dropout'])(x)
-
                 x = Dense(params['neurons'], kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
 
                 if params["bn"] is True:
@@ -246,6 +251,9 @@ class CNN:
                     x = keras.layers.LeakyReLU(alpha=params['alpha_relu'])(x)
                 else:
                     x = keras.layers.LeakyReLU(alpha=0.03)(x)
+
+                if "dropout" in params:
+                    x = keras.layers.Dropout(params['dropout'])(x)
 
         return x
 

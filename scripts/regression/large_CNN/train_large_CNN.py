@@ -10,13 +10,14 @@ import dlhalos_code.data_processing as tn
 import numpy as np
 from pickle import dump
 import time
+from tensorflow.keras.callbacks import TensorBoard
 
 
 if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/kernel_reg/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/tensorboard/"
 
     # First you will have to load the simulation
 
@@ -44,7 +45,7 @@ if __name__ == "__main__":
                                               s.sims_dic, **params_inputs)
     dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
 
-        ######### TRAINING MODEL ##############
+    ######### TRAINING MODEL ##############
 
     # checkpoint
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
@@ -53,31 +54,35 @@ if __name__ == "__main__":
     # save histories
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
 
-    callbacks_list = [checkpoint_call, csv_logger]
+    # tensorboard
+    tb = TensorBoard(histogram_freq=1, write_grads=True)
+
+    callbacks_list = [checkpoint_call, csv_logger, tb]
     tensorflow.compat.v1.set_random_seed(7)
 
-    kernel_reg = regularizers.l2(0.00001)
+    kernel_reg = regularizers.l2(0.0001)
 
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
-                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': None,
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
                   'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
-                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
                   'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
-                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
                   'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
-                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True},
+                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
                   'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
-                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True}
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.4, 'kernel_regularizer': kernel_reg},
-                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4, 'kernel_regularizer': kernel_reg}}
+    param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.4, 'kernel_regularizer': None},
+                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4, 'kernel_regularizer': None}}
 
-    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
-                    validation_generator=generator_validation, callbacks=callbacks_list, num_epochs=100,
-                    dim=params_inputs['dim'], max_queue_size=10, use_multiprocessing=True, workers=2,
-                    verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
-                    lr=0.00001, validation_freq=1, train=True)
+    Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
+                    training_generator=generator_training, validation_generator=generator_validation,
+                    lr=0.00001, callbacks=callbacks_list, metrics=['mae', 'mse'],
+                    num_epochs=100, dim=params_inputs['dim'], tensorboard=True,
+                    max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
+                    num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True)
 
     np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)
     Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")
