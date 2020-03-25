@@ -67,7 +67,7 @@ class CNN:
             # from tensorboard import main as tb
             # tf.flags.FLAGS.logdir = self.path_summary
             # tb.main()
-            # os.system('tensorboard --logdir=' + self.path_summary + " --host localhost")
+            os.system('tensorboard --logdir ' + self.path_summary + "/logs --host localhost")
 
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
