@@ -29,7 +29,7 @@ if __name__ == "__main__":
                      'rescale_std': 0.05050,
                      'dim': (75, 75, 75)
                      }
-    params_inputs_val = {'batch_size': 1,
+    params_inputs_val = {'batch_size': 20,
                      'rescale_mean': 1.005,
                      'rescale_std': 0.05050,
                      'dim': (75, 75, 75)
@@ -60,32 +60,41 @@ if __name__ == "__main__":
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
 
     # tensorboard
-    tb = TensorBoard(log_dir=path_model + '/logs', histogram_freq=1, write_grads=True)
+    tb = TensorBoard(log_dir=path_model + '/logs', histogram_freq=1, write_grads=True, write_graph=False)
 
     callbacks_list = [checkpoint_call, csv_logger, tb]
     # callbacks_list = [checkpoint_call, csv_logger]
     tensorflow.compat.v1.set_random_seed(7)
 
     kernel_reg = regularizers.l2(0.0005)
+    bias_reg = regularizers.l2(0.0005)
 
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
+                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
-                            'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
-                            'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
+                  'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3),
+                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'kernel_regularizer': kernel_reg,
-                            'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False}
+                  'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3),
+                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
+                  'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3),
+                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
+                  'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3),
+                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.4, 'kernel_regularizer': kernel_reg},
-                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4, 'kernel_regularizer': kernel_reg}}
+    param_fcc = {'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.4,
+                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
+                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4,
+                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg}
+                 }
 
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,
-                    lr=0.00001, callbacks=callbacks_list, metrics=['mae', 'mse'],
+                    lr=0.001, callbacks=callbacks_list, metrics=['mae', 'mse'],
                     num_epochs=100, dim=params_inputs['dim'],
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True)

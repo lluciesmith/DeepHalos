@@ -169,12 +169,12 @@ class CNN:
 
     def first_convolutional_layer(self, input_data, input_shape_box=(17, 17, 17, 1), num_kernels=3,
                                   dim_kernel=(7, 7, 7), pool_size=(2, 2, 2), strides=2, padding='valid',
-                                  data_format="channels_last", kernel_regularizer=None,
+                                  data_format="channels_last", kernel_regularizer=None, bias_regularizer=None,
                                   alpha_relu=0.03, activation=True, bn=True, pool=True, initialiser="normal"):
 
         x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format,
                                 input_shape=input_shape_box, kernel_initializer=initialiser,
-                                kernel_regularizer=kernel_regularizer)(input_data)
+                                kernel_regularizer=kernel_regularizer, bias_regularizer=bias_regularizer)(input_data)
         if bn is True:
             x = keras.layers.BatchNormalization(axis=-1)(x)
         if activation is True:
@@ -191,10 +191,11 @@ class CNN:
 
     def subsequent_convolutional_layer(self, x, num_kernels=3, dim_kernel=(3, 3, 3), pool_size=(2, 2, 2), strides=2,
                                        padding='valid', kernel_regularizer=None, data_format="channels_last",
-                                       alpha_relu=0.03, activation=True, bn=True,
+                                       alpha_relu=0.03, activation=True, bn=True, bias_regularizer=None,
                                        pool=True, initialiser="normal"):
         x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format,
-                                kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
+                                kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer,
+                                bias_regularizer=bias_regularizer)(x)
         if bn is True:
             x = keras.layers.BatchNormalization(axis=-1)(x)
         if activation is True:
@@ -223,6 +224,23 @@ class CNN:
 
         return x
 
+    def subsequent_fcc_layer(self, x, neurons=1, kernel_regularizer=None, alpha_relu=0.03, activation=True, bn=True,
+                             bias_regularizer=None,  initialiser="normal", dropout=None):
+
+        x = Dense(neurons, kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer,
+                  bias_regularizer=bias_regularizer)(x)
+
+        if bn is True:
+            x = keras.layers.BatchNormalization(axis=-1)(x)
+
+        if activation is True:
+            x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
+
+        if dropout is not None:
+            x = keras.layers.Dropout(dropout)(x)
+
+        return x
+
     def _fcc_layers(self, x, fcc_params, initialiser):
         num_fully_connected = len(fcc_params)
         ind = range(num_fully_connected)
@@ -230,24 +248,7 @@ class CNN:
         if num_fully_connected > 1:
             for i in ind:
                 params = fcc_params['dense_' + str(i + 1)]
-
-                if "kernel_regularizer" in params:
-                    kernel_regularizer = params["kernel_regularizer"]
-                else:
-                    kernel_regularizer = None
-
-                x = Dense(params['neurons'], kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer)(x)
-
-                if params["bn"] is True:
-                    x = keras.layers.BatchNormalization(axis=-1)(x)
-
-                if "alpha_relu" in params:
-                    x = keras.layers.LeakyReLU(alpha=params['alpha_relu'])(x)
-                else:
-                    x = keras.layers.LeakyReLU(alpha=0.03)(x)
-
-                if "dropout" in params:
-                    x = keras.layers.Dropout(params['dropout'])(x)
+                x = self.subsequent_fcc_layer(x, initialiser=initialiser, **params)
 
         return x
 
