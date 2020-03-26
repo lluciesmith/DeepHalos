@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/tensorboard/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/lr_1-3/"
 
     # First you will have to load the simulation
 
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
-    training_set = tn.InputsPreparation(train_sims, load_ids=True, shuffle=True)
+    training_set = tn.InputsPreparation(train_sims, load_ids=False, random_subset_each_sim=5000, shuffle=True)
     generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
                                           s.sims_dic, **params_inputs)
 
