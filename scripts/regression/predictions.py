@@ -29,8 +29,8 @@ def get_sim_predictions_given_model(sims, model, scaler_output, val_sim="1",
                                             dim=dim)
     pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
     truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
-    h_m_pred = scaler_output.inverse_transform(pred).flatten()
-    true = scaler_output.inverse_transform(truth_rescaled).flatten()
+    h_m_pred = scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+    true = scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
     if save is True:
         np.save(path_model + "predicted" + val_sim + "_" + num_epoch + ".npy", h_m_pred)
         np.save(path_model + "true" + val_sim + "_" + num_epoch + ".npy", true)
@@ -42,16 +42,19 @@ if __name__ == "__main__":
 
     # First choose the correct path to the model and the parameters you used during training
 
-# params_model = {'path_model':"/lfstev/deepskies/luisals/regression/large_CNN/",
-#                  'num_epoch': "05"}
+    # params_model = {'path_model':"/lfstev/deepskies/luisals/regression/large_CNN/",
+    #                  'num_epoch': "05"}
 
-    params_model1 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_75_3_4conv/",
-                     'num_epoch': "100"}
+    # params_model1 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_75_3_4conv/",
+    #                  'num_epoch': "100"}
+    #
+    # params_model2 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3/",
+    #                  'num_epoch': "100"}
 
-    params_model2 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3/",
-                     'num_epoch': "100"}
+    params_model1 = {'path_model': "/lfstev/deepskies/luisals/regression/large_CNN/tensorboard/",
+                     'num_epoch': "15"}
 
-    for params_model in [params_model1, params_model2]:
+    for params_model in [params_model1]:
         params_inputs = {'batch_size': 80,
                          'rescale_mean': 1.005,
                          'rescale_std': 0.05050,
@@ -60,7 +63,7 @@ if __name__ == "__main__":
 
         # load validation sets
 
-        validation_sims = ["7"]
+        validation_sims = ["1", "7"]
         s = tn.SimulationPreparation(validation_sims)
         s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
 
@@ -74,7 +77,6 @@ if __name__ == "__main__":
         for val_sim in validation_sims:
             pi, ti = get_sim_predictions_given_model(s, model_epoch, s_output, val_sim=val_sim,
                                                      **params_model, **params_inputs)
-
             print("Correlation coefficient rescaled for sim " + val_sim + " is :\n")
             print(np.corrcoef(ti, pi))
 
