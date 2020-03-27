@@ -244,7 +244,7 @@ class CNN:
 
     def _fcc_layers(self, x, fcc_params, initialiser):
         num_fully_connected = len(fcc_params)
-        ind = range(num_fully_connected)
+        ind = range(num_fully_connected - 1)
 
         if num_fully_connected > 1:
             for i in ind:
