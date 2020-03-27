@@ -172,7 +172,8 @@ class CNN:
                                   data_format="channels_last", kernel_regularizer=None, bias_regularizer=None,
                                   alpha_relu=0.03, activation=True, bn=True, pool=True, initialiser="normal"):
 
-        x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format,
+        x = keras.layers.Conv3D(num_kernels, dim_kernel, activation=activation,
+                                strides=strides, padding=padding, data_format=data_format,
                                 input_shape=input_shape_box, kernel_initializer=initialiser,
                                 kernel_regularizer=kernel_regularizer, bias_regularizer=bias_regularizer)(input_data)
         if bn is True:
@@ -193,7 +194,8 @@ class CNN:
                                        padding='valid', kernel_regularizer=None, data_format="channels_last",
                                        alpha_relu=0.03, activation=True, bn=True, bias_regularizer=None,
                                        pool=True, initialiser="normal"):
-        x = keras.layers.Conv3D(num_kernels, dim_kernel, strides=strides, padding=padding, data_format=data_format,
+        x = keras.layers.Conv3D(num_kernels, dim_kernel, activation=activation,
+                                strides=strides, padding=padding, data_format=data_format,
                                 kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer,
                                 bias_regularizer=bias_regularizer)(x)
         if bn is True:
@@ -228,13 +230,15 @@ class CNN:
     def subsequent_fcc_layer(self, x, neurons=1, kernel_regularizer=None, alpha_relu=0.03, activation=True, bn=True,
                              bias_regularizer=None,  initialiser="normal", dropout=None):
 
-        x = Dense(neurons, kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer,
+        x = Dense(neurons, activation=activation,
+                  kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer,
                   bias_regularizer=bias_regularizer)(x)
 
         if bn is True:
             x = keras.layers.BatchNormalization(axis=-1)(x)
 
         if activation is True:
+            print("leaky relu")
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
 
         if dropout is not None:
