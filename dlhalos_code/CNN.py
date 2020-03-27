@@ -153,7 +153,7 @@ class CNN:
         else:
             x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
 
-        predictions = Dense(1, activation='linear')(x)
+        predictions = Dense(1, activation='linear', **fcc_params['last'])(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
@@ -162,7 +162,7 @@ class CNN:
                                              data_format="channels_last"):
         input_data = Input(shape=(*input_shape_box, 1))
         x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
-        predictions = Dense(1, activation='sigmoid')(x)
+        predictions = Dense(1, activation='sigmoid', **fcc_params['last'])(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
@@ -198,6 +198,7 @@ class CNN:
                                 bias_regularizer=bias_regularizer)(x)
         if bn is True:
             x = keras.layers.BatchNormalization(axis=-1)(x)
+
         if activation is True:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
 

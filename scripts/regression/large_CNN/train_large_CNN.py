@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/lr_1-3/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test/"
 
     # First you will have to load the simulation
 
@@ -70,27 +70,28 @@ if __name__ == "__main__":
     kernel_reg = regularizers.l2(0.0005)
     bias_reg = regularizers.l2(0.0005)
 
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3),
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'activation': False,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3),
+                  'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'activation': False,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3),
+                  'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'activation': False,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3),
+                  'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'activation': False,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3),
+                  'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'activation': False,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.4,
+    param_fcc = {'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.4, 'activation': False,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
-                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4,
-                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg}
+                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4, 'activation': False,
+                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
+                 'last': {'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg}
                  }
 
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
