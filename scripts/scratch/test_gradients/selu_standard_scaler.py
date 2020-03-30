@@ -102,7 +102,7 @@ if __name__ == "__main__":
                     lr=0.001, callbacks=callbacks_list, metrics=['mae', 'mse'],
                     num_epochs=100, dim=params_inputs['dim'], initialiser=initialiser,
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
-                    num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=False)
+                    num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True)
 
     np.save(path_model + "/history_100_epochs_mixed_sims.npy", Model.history)
     Model.model.save(path_model + "/model_100_epochs_mixed_sims.h5")
