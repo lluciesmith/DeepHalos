@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test/"
+    path_model = "/lfstev/deepskies/luisals/regression/gradient_test/relu/"
 
     # First you will have to load the simulation
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
 
     # tensorboard
-    tb = TensorBoard(log_dir=path_model + '/logs', histogram_freq=5, update_freq='epoch',
+    tb = TensorBoard(log_dir=path_model + '/logs', histogram_freq=1, update_freq='epoch',
                      write_grads=True, write_graph=False)
 
     callbacks_list = [checkpoint_call, csv_logger, tb]
@@ -69,30 +69,33 @@ if __name__ == "__main__":
 
     kernel_reg = regularizers.l2(0.0005)
     bias_reg = regularizers.l2(0.0005)
+    activation = "linear"
+    relu = True
 
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'activation': False,
+    param_conv = {'conv_1': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_2': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'activation': False,
+                  'conv_2': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_3': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'activation': False,
+                  'conv_3': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_4': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'activation': False,
+                  'conv_4': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
-                  'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'activation': False,
-                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
-                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False}
+                  # 'conv_5': {'num_kernels': 256, 'dim_kernel': (3, 3, 3), 'activation': False,
+                  #            'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
+                  #            'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.4, 'activation': False,
+    param_fcc = {'dense_1': {'neurons': 10, 'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
-                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4, 'activation': False,
+                 'dense_2': {'neurons': 2, 'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
                  'last': {'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg}
                  }
+
 
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,

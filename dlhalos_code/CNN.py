@@ -170,7 +170,8 @@ class CNN:
     def first_convolutional_layer(self, input_data, input_shape_box=(17, 17, 17, 1), num_kernels=3,
                                   dim_kernel=(7, 7, 7), pool_size=(2, 2, 2), strides=2, padding='valid',
                                   data_format="channels_last", kernel_regularizer=None, bias_regularizer=None,
-                                  alpha_relu=0.03, activation=True, bn=True, pool=True, initialiser="normal"):
+                                  activation="linear", relu=True, alpha_relu=0.03,
+                                  bn=True, pool=True, initialiser="normal"):
 
         x = keras.layers.Conv3D(num_kernels, dim_kernel, activation=activation,
                                 strides=strides, padding=padding, data_format=data_format,
@@ -178,7 +179,7 @@ class CNN:
                                 kernel_regularizer=kernel_regularizer, bias_regularizer=bias_regularizer)(input_data)
         if bn is True:
             x = keras.layers.BatchNormalization(axis=-1)(x)
-        if activation is True:
+        if relu is True:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
         if pool == "average":
             x = keras.layers.AveragePooling3D(pool_size=pool_size, strides=None, padding="valid",
@@ -192,7 +193,8 @@ class CNN:
 
     def subsequent_convolutional_layer(self, x, num_kernels=3, dim_kernel=(3, 3, 3), pool_size=(2, 2, 2), strides=2,
                                        padding='valid', kernel_regularizer=None, data_format="channels_last",
-                                       alpha_relu=0.03, activation=True, bn=True, bias_regularizer=None,
+                                       activation="linear", relu=True, alpha_relu=0.03,
+                                       bn=True, bias_regularizer=None,
                                        pool=True, initialiser="normal"):
         x = keras.layers.Conv3D(num_kernels, dim_kernel, activation=activation,
                                 strides=strides, padding=padding, data_format=data_format,
@@ -201,7 +203,7 @@ class CNN:
         if bn is True:
             x = keras.layers.BatchNormalization(axis=-1)(x)
 
-        if activation is True:
+        if relu is True:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
 
         if pool == "average":
@@ -227,7 +229,8 @@ class CNN:
 
         return x
 
-    def subsequent_fcc_layer(self, x, neurons=1, kernel_regularizer=None, alpha_relu=0.03, activation=True, bn=True,
+    def subsequent_fcc_layer(self, x, neurons=1, kernel_regularizer=None, alpha_relu=0.03, activation="linear",
+                             relu=True, bn=True,
                              bias_regularizer=None,  initialiser="normal", dropout=None):
 
         x = Dense(neurons, activation=activation,
@@ -237,7 +240,7 @@ class CNN:
         if bn is True:
             x = keras.layers.BatchNormalization(axis=-1)(x)
 
-        if activation is True:
+        if relu is True:
             print("leaky relu")
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
 
