@@ -231,7 +231,7 @@ class CNN:
 
     def subsequent_fcc_layer(self, x, neurons=1, kernel_regularizer=None, alpha_relu=0.03, activation="linear",
                              relu=True, bn=True,
-                             bias_regularizer=None,  initialiser="normal", dropout=None):
+                             bias_regularizer=None,  initialiser="normal", dropout=None, alpha_dropout=None):
 
         x = Dense(neurons, activation=activation,
                   kernel_initializer=initialiser, kernel_regularizer=kernel_regularizer,
@@ -246,6 +246,9 @@ class CNN:
 
         if dropout is not None:
             x = keras.layers.Dropout(dropout)(x)
+
+        if alpha_dropout is not None:
+            x = keras.layers.AlphaDropout(alpha_dropout)(x)
 
         return x
 
@@ -274,6 +277,9 @@ class CNN:
                     return K.random_normal(shape, dtype=dtype)
 
             initialiser = my_init
+
+        elif self.initialiser == "lecun_normal":
+            initialiser = keras.initializers.lecun_normal()
 
         else:
             initialiser = keras.initializers.he_uniform()
