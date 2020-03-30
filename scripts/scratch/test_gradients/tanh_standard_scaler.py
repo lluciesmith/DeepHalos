@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/tanh/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/tanh2/"
 
     # First you will have to load the simulation
 
