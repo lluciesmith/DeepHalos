@@ -76,7 +76,9 @@ class SimulationPreparation:
 class InputsPreparation:
     def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt",
                  random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None, weights=False,
-                 path="/lfstev/deepskies/luisals/", scaler_output=None, return_rescaled_outputs=True, shuffle=True):
+                 path="/lfstev/deepskies/luisals/", scaler_output=None, scaler_type="standard",
+                 return_rescaled_outputs=True,
+                 shuffle=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
         Particles and their labels are stored in a dictionary s.t.  particles are identified via the string
@@ -98,6 +100,7 @@ class InputsPreparation:
         self.weights = weights
 
         self.scaler_output = scaler_output
+        self.scaler_type = scaler_type
         self.particle_IDs = None
         self.labels_particle_IDS = None
 
@@ -129,7 +132,7 @@ class InputsPreparation:
 
         if self.return_rescaled_outputs is True:
             if self.scaler_output is None:
-                output_ids, self.scaler_output = self.get_standard_scaler_and_transform(flattened_mass)
+                output_ids, self.scaler_output = self.fit_scaler_and_transform(flattened_mass)
             else:
                 output_ids = self.transform_array_given_scaler(self.scaler_output, flattened_mass)
         else:
@@ -221,9 +224,14 @@ class InputsPreparation:
         output_ids = np.log10(halo_mass[ids_bc])
         return ids_bc, output_ids
 
-    def get_standard_scaler_and_transform(self, array_outputs):
-        norm_scaler = sklearn.preprocessing.StandardScaler()
-        # norm_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1))
+    def fit_scaler_and_transform(self, array_outputs):
+        if self.scaler_type == "standard":
+            norm_scaler = sklearn.preprocessing.StandardScaler()
+        elif self.scaler_type == "minmax":
+            norm_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1))
+        else:
+            raise NameError("Choose between 'standard' and 'minmax' scalers")
+
         norm_scaler.fit(array_outputs.reshape(-1, 1))
 
         rescaled_out = self.transform_array_given_scaler(norm_scaler, array_outputs)
