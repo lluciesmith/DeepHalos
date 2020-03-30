@@ -51,8 +51,8 @@ if __name__ == "__main__":
     # params_model2 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3/",
     #                  'num_epoch': "100"}
 
-    params_model1 = {'path_model': '/lfstev/deepskies/luisals/regression/large_CNN/lr_1-3/',
-                     'num_epoch': "70"}
+    params_model1 = {'path_model': '/lfstev/deepskies/luisals/regression/large_CNN/tanh/',
+                     'num_epoch': "25"}
 
     for params_model in [params_model1]:
         params_inputs = {'batch_size': 80,
