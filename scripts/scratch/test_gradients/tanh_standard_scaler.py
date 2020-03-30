@@ -106,9 +106,9 @@ if __name__ == "__main__":
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False}
                   }
 
-    param_fcc = {'dense_1': {'neurons': 1024, 'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu,
+    param_fcc = {'dense_1': {'neurons': 256, 'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
-                 'dense_2': {'neurons': 256, 'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu,
+                 'dense_2': {'neurons': 128, 'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
                  'last': {'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg}
                  }
