@@ -59,12 +59,16 @@ if __name__ == "__main__":
     # save histories
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
 
+    # learning rate scheduler
+
+    lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1)
+
     # tensorboard
     tb = TensorBoard(log_dir=path_model + '/logs', histogram_freq=5, update_freq='epoch',
                      write_grads=True, write_graph=False)
 
-    callbacks_list = [checkpoint_call, csv_logger, tb]
-    # callbacks_list = [checkpoint_call, csv_logger]
+    callbacks_list = [checkpoint_call, csv_logger, tb, lr]
+
     tensorflow.compat.v1.set_random_seed(7)
 
     kernel_reg = regularizers.l2(0.0005)
@@ -75,7 +79,7 @@ if __name__ == "__main__":
 
     param_conv = {'conv_1': {'num_kernels': 16, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
-                             'strides': 2, 'padding': 'same', 'pool': "max", 'bn': False},
+                             'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg,
                              'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False},
