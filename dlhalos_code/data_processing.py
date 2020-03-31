@@ -228,7 +228,7 @@ class InputsPreparation:
         if self.scaler_type == "standard":
             norm_scaler = sklearn.preprocessing.StandardScaler()
         elif self.scaler_type == "minmax":
-            norm_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1))
+            norm_scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(0, 1))
         else:
             raise NameError("Choose between 'standard' and 'minmax' scalers")
 
