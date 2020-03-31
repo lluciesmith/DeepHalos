@@ -60,7 +60,7 @@ if __name__ == "__main__":
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
 
     # tensorboard
-    tb = TensorBoard(log_dir=path_model + '/logs', histogram_freq=1, update_freq='epoch',
+    tb = TensorBoard(log_dir=path_model + '/logs', histogram_freq=5, update_freq='epoch',
                      write_grads=True, write_graph=False)
 
     # learning rate scheduler
