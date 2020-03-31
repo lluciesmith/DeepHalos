@@ -42,42 +42,29 @@ if __name__ == "__main__":
 
     # First choose the correct path to the model and the parameters you used during training
 
-    # params_model = {'path_model':"/lfstev/deepskies/luisals/regression/large_CNN/",
-    #                  'num_epoch': "05"}
+    params_model = {'path_model': '/lfstev/deepskies/luisals/regression/large_CNN/selu/',
+                    'num_epoch': "100"}
 
-    # params_model1 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3_75_3_4conv/",
-    #                  'num_epoch': "100"}
-    #
-    # params_model2 = {'path_model':"/lfstev/deepskies/luisals/regression/rolling_val/no_sim3/",
-    #                  'num_epoch': "100"}
+    params_inputs = {'batch_size': 80,
+                     'rescale_mean': 1.005,
+                     'rescale_std': 0.05050,
+                     'dim': (75, 75, 75)
+                     }
 
-    params_model1 = {'path_model': '/lfstev/deepskies/luisals/regression/large_CNN/tanh/',
-                     'num_epoch': "25"}
+    # load validation sets
 
-    for params_model in [params_model1]:
-        params_inputs = {'batch_size': 80,
-                         'rescale_mean': 1.005,
-                         'rescale_std': 0.05050,
-                         'dim': (75, 75, 75)
-                         }
+    validation_sims = ["1", "7"]
+    s = tn.SimulationPreparation(validation_sims)
+    s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
 
-        # load validation sets
+    # load model
 
-        validation_sims = ["1", "7"]
-        s = tn.SimulationPreparation(validation_sims)
-        s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
+    model_epoch = load_model(params_model['path_model'] + "model/weights." + params_model['num_epoch'] + ".hdf5")
 
-        # load model
-
-        if params_model['num_epoch'] == 100:
-            model_epoch = load_model(params_model['path_model'] + "/model_100_epochs_mixed_sims.h5")
-        else:
-            model_epoch = load_model(params_model['path_model'] + "model/weights." + params_model['num_epoch'] + ".hdf5")
-
-        for val_sim in validation_sims:
-            pi, ti = get_sim_predictions_given_model(s, model_epoch, s_output, val_sim=val_sim,
-                                                     **params_model, **params_inputs)
-            print("Correlation coefficient rescaled for sim " + val_sim + " is :\n")
-            print(np.corrcoef(ti, pi))
+    for val_sim in validation_sims:
+        pi, ti = get_sim_predictions_given_model(s, model_epoch, s_output, val_sim=val_sim,
+                                                 **params_model, **params_inputs)
+        print("Correlation coefficient rescaled for sim " + val_sim + " is :\n")
+        print(np.corrcoef(ti, pi))
 
 
