@@ -75,7 +75,7 @@ if __name__ == "__main__":
     relu = True
 
     params_all_conv = {'activation': activation, 'relu': relu,
-                       'strides': 1, 'padding': 'same', 'pool': "max", 'bn': True,
+                       'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False,
                        'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
                        }
     param_conv = {'conv_1': {'num_kernels': 8, 'dim_kernel': (5, 5, 5), **params_all_conv},
@@ -83,7 +83,7 @@ if __name__ == "__main__":
                   'conv_3': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   }
 
-    params_all_fcc = {'bn': True,
+    params_all_fcc = {'bn': False,
                       'dropout': 0.4,
                       'activation': activation, 'relu': relu,
                       'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
