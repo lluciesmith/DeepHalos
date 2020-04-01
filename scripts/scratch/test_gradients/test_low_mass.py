@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     training_set = tn.InputsPreparation(train_sims, load_ids=False, shuffle=True, scaler_type="minmax",
                                         log_high_mass_limit=13,
-                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000,
+                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=1000,
                                         # random_subset_each_sim=1000
                                         )
     generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
