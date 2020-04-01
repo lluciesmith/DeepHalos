@@ -21,7 +21,7 @@ class CNN:
                  validation_generator=None, callbacks=None, metrics=None, num_epochs=5, dim=(51, 51, 51),
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
-                 lr=0.0001, save_summary=False, path_summary=".", validation_freq=1, train=True,
+                 lr=0.0001, loss='mse', save_summary=False, path_summary=".", validation_freq=1, train=True,
                  skip_connector=False):
 
         self.training_generator = training_generator
@@ -46,6 +46,7 @@ class CNN:
         self.callbacks = callbacks
         self.model_type = model_type
         self.skip_connector = skip_connector
+        self.loss = loss
 
         self.save = save_model
         self.model_name = model_name
@@ -128,7 +129,7 @@ class CNN:
 
             optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
-            Model.compile(loss='mean_absolute_percentage_error', optimizer=optimiser, metrics=self.metrics)
+            Model.compile(loss=self.loss, optimizer=optimiser, metrics=self.metrics)
 
         elif self.model_type == "binary_classification":
             print("Initiating binary classification model")
