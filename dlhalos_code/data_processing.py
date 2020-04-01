@@ -77,7 +77,7 @@ class InputsPreparation:
     def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt",
                  random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None, weights=False,
                  path="/lfstev/deepskies/luisals/", scaler_output=None, scaler_type="standard",
-                 return_rescaled_outputs=True, random_style="random",
+                 return_rescaled_outputs=True, random_style="random", num_per_mass_bin=1000,
                  shuffle=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
@@ -104,6 +104,7 @@ class InputsPreparation:
         self.scaler_type = scaler_type
         self.particle_IDs = None
         self.labels_particle_IDS = None
+        self.num_per_mass_bin = num_per_mass_bin
 
         self.generate_particle_IDs_dictionary()
 
@@ -127,7 +128,7 @@ class InputsPreparation:
         flattened_mass = np.concatenate(masses)
 
         if self.random_style == "uniform":
-            num_p = 1000
+            num_p = self.num_per_mass_bin
             bins = np.histogram_bin_edges(flattened_mass, bins=50)
             ind_particles = np.digitize(flattened_mass, bins=bins)
 
