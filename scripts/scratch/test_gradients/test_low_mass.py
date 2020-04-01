@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_data/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_1000_perbin/100batch/"
 
     # First you will have to load the simulation
 
