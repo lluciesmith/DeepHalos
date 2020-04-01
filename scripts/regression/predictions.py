@@ -42,8 +42,8 @@ if __name__ == "__main__":
 
     # First choose the correct path to the model and the parameters you used during training
 
-    params_model = {'path_model': '/lfstev/deepskies/luisals/regression/large_CNN/relu_minmax/',
-                    'num_epoch': "15"}
+    params_model = {'path_model': "/lfstev/deepskies/luisals/regression/large_CNN/weighted/",
+                    'num_epoch': "20"}
 
     params_inputs = {'batch_size': 80,
                      'rescale_mean': 1.005,
