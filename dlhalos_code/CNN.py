@@ -128,7 +128,7 @@ class CNN:
 
             optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
-            Model.compile(loss='mse', optimizer=optimiser, metrics=self.metrics)
+            Model.compile(loss='mean_absolute_percentage_error', optimizer=optimiser, metrics=self.metrics)
 
         elif self.model_type == "binary_classification":
             print("Initiating binary classification model")
