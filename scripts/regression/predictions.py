@@ -42,8 +42,8 @@ if __name__ == "__main__":
 
     # First choose the correct path to the model and the parameters you used during training
 
-    params_model = {'path_model': '/lfstev/deepskies/luisals/regression/large_CNN/selu/',
-                    'num_epoch': "100"}
+    params_model = {'path_model': '/lfstev/deepskies/luisals/regression/large_CNN/relu_minmax/',
+                    'num_epoch': "15"}
 
     params_inputs = {'batch_size': 80,
                      'rescale_mean': 1.005,
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     # load validation sets
 
-    validation_sims = ["1", "7"]
+    validation_sims = ["7", "1"]
     s = tn.SimulationPreparation(validation_sims)
     s_output = load(open(params_model['path_model'] + 'scaler_output.pkl', 'rb'))
 
