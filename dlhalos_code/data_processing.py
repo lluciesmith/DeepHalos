@@ -127,7 +127,7 @@ class InputsPreparation:
         flattened_mass = np.concatenate(masses)
 
         if self.random_style == "uniform":
-            num_p = 100
+            num_p = 1000
             bins = np.histogram_bin_edges(flattened_mass, bins=50)
             ind_particles = np.digitize(flattened_mass, bins=bins)
 
