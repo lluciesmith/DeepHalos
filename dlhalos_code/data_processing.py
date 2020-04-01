@@ -77,7 +77,7 @@ class InputsPreparation:
     def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt",
                  random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None, weights=False,
                  path="/lfstev/deepskies/luisals/", scaler_output=None, scaler_type="standard",
-                 return_rescaled_outputs=True,
+                 return_rescaled_outputs=True, random_style="random",
                  shuffle=True):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
@@ -99,6 +99,7 @@ class InputsPreparation:
         self.shuffle = shuffle
         self.weights = weights
 
+        self.random_style = random_style
         self.scaler_output = scaler_output
         self.scaler_type = scaler_type
         self.particle_IDs = None
@@ -189,7 +190,21 @@ class InputsPreparation:
             ind = np.log10(halo_mass[ids_in_halo]) <= self.log_high_mass_limit
             ids_in_halo = ids_in_halo[ind]
 
-        ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
+        if self.random_style == "random":
+            ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
+        elif self.random_style == "uniform":
+            num_p = int(self.random_subset/50)
+            mass_all = np.log10(halo_mass[ids_in_halo])
+
+            bins = np.histogram_bin_edges(mass_all, bins=50)
+            ind_particles = np.digitize(mass_all, bins=bins)
+
+            ids_n = [np.random.choice(ids_in_halo[ind_particles == i], num_p, replace=False)
+                     for i in np.unique(ind_particles)]
+            ids_i = np.concatenate(ids_n)
+        else:
+            ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
+
         mass_i = np.log10(halo_mass[ids_i])
         return ids_i, mass_i
 
