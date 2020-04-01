@@ -126,6 +126,20 @@ class InputsPreparation:
         flattened_name = np.concatenate(names)
         flattened_mass = np.concatenate(masses)
 
+        if self.random_style == "uniform":
+            num_p = 100
+            bins = np.histogram_bin_edges(flattened_mass, bins=50)
+            ind_particles = np.digitize(flattened_mass, bins=bins)
+
+            ind = [np.random.choice(np.where(ind_particles == i)[0], num_p, replace=False)
+                     for i in np.unique(ind_particles)]
+            ind = np.concatenate(ind)
+
+            flattened_name = flattened_name[ind]
+            flattened_mass = flattened_mass[ind]
+        else:
+            pass
+
         if self.random_subset_all is not None:
             ind = np.random.choice(np.arange(len(flattened_name)), self.random_subset_all, replace=False)
             flattened_name = flattened_name[ind]
@@ -190,21 +204,7 @@ class InputsPreparation:
             ind = np.log10(halo_mass[ids_in_halo]) <= self.log_high_mass_limit
             ids_in_halo = ids_in_halo[ind]
 
-        if self.random_style == "random":
-            ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
-        elif self.random_style == "uniform":
-            num_p = int(self.random_subset/50)
-            mass_all = np.log10(halo_mass[ids_in_halo])
-
-            bins = np.histogram_bin_edges(mass_all, bins=50)
-            ind_particles = np.digitize(mass_all, bins=bins)
-
-            ids_n = [np.random.choice(ids_in_halo[ind_particles == i], num_p, replace=False)
-                     for i in np.unique(ind_particles)]
-            ids_i = np.concatenate(ids_n)
-        else:
-            ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
-
+        ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
         mass_i = np.log10(halo_mass[ids_i])
         return ids_i, mass_i
 
