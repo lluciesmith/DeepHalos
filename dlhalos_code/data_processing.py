@@ -128,7 +128,7 @@ class InputsPreparation:
 
         if self.random_style == "uniform":
             num_p = 100
-            bins = np.histogram_bin_edges(flattened_mass, bins=50)
+            bins = np.linspace(flattened_mass.min(), flattened_mass.max(), 50)
             ind_particles = np.digitize(flattened_mass, bins=bins)
 
             ind = [np.random.choice(np.where(ind_particles == i)[0], num_p, replace=False)
