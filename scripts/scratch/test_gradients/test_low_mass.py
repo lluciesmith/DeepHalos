@@ -9,6 +9,7 @@ import dlhalos_code.data_processing as tn
 import numpy as np
 from pickle import dump, load
 from tensorflow.keras.callbacks import TensorBoard
+import tensorflow.keras.backend as K
 from tensorflow.keras.models import load_model
 from sklearn.metrics import mean_squared_error as mse
 
@@ -98,7 +99,7 @@ if __name__ == "__main__":
 
     def custom_loss(y_true, y_predicted):
         factor = (1 + abs(y_true)) ** 6
-        return factor * mse(y_true, y_predicted)
+        return K.mean(factor * K.square(y_predicted - y_true), axis=-1)
 
     loss = custom_loss
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
