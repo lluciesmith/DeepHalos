@@ -38,13 +38,13 @@ if __name__ == "__main__":
 
     training_set = tn.InputsPreparation(train_sims, load_ids=False, shuffle=True, scaler_type="minmax",
                                         log_high_mass_limit=13,
-                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=1000,
+                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000,
                                         # random_subset_each_sim=1000
                                         )
     generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
 
-    validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=10000,
+    validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=5000,
                                           log_high_mass_limit=13,
                                           scaler_output=training_set.scaler_output, shuffle=True)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                  }
 
     def custom_loss(y_true, y_predicted):
-        factor = (1 + abs(y_true)) ** 6
+        factor = (0.000000001 + y_true)**4
         return K.mean(factor * K.square(y_predicted - y_true), axis=-1)
 
     loss = custom_loss
