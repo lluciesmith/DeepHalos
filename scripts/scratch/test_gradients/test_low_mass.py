@@ -7,16 +7,17 @@ import tensorflow
 from tensorflow.keras import regularizers
 import dlhalos_code.data_processing as tn
 import numpy as np
-from pickle import dump
+from pickle import dump, load
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.models import load_model
+from sklearn.metrics import mean_squared_error as mse
 
 
 if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/custom_loss/"
 
     # First you will have to load the simulation
 
@@ -34,20 +35,22 @@ if __name__ == "__main__":
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
+    s_output = load(open(path_model + 'scaler_output.pkl', 'rb'))
+
     training_set = tn.InputsPreparation(train_sims, load_ids=False, shuffle=True, scaler_type="minmax",
-                                        log_high_mass_limit=13,
-                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000,
+                                        log_high_mass_limit=13, scaler_output=s_output,
+                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=1000,
                                         # random_subset_each_sim=1000
                                         )
     generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
 
-    validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=4000,
+    validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=10000,
                                           log_high_mass_limit=13,
-                                          scaler_output=training_set.scaler_output, shuffle=True)
+                                          scaler_output=s_output, shuffle=True)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
-    dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
+        # dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
 
     ######### TRAINING MODEL ##############
 
@@ -95,11 +98,15 @@ if __name__ == "__main__":
                  }
                  }
 
-    loss = 'mean_squared_error'
+    def custom_loss(y_true, y_predicted):
+        factor = (1 + abs(y_true)) ** 6
+        return factor * mse(y_true, y_predicted)
+
+    loss = custom_loss
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,
                     lr=0.001, callbacks=callbacks_list, metrics=['mae', 'mse'],
-                    num_epochs=200, dim=params_inputs['dim'],
+                    num_epochs=200, dim=params_inputs['dim'], loss=loss,
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True)
 
@@ -127,24 +134,26 @@ if __name__ == "__main__":
     np.save(path_model + "true_val.npy", true)
 
 
-# model= load_model(path_model + "model/weights.10.hdf5")
-#
-# # training set
-#
-# pred = model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
-# truth_rescaled = np.array([val for (key, val) in training_set.labels_particle_IDS.items()])
-# h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-# true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-#
-# np.save(path_model + "predicted_training_10.npy", h_m_pred)
-# np.save(path_model + "true_training_10.npy", true)
-#
-# # validation set
-#
-# pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
-# truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
-# h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-# true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-#
-# np.save(path_model + "predicted_val_10.npy", h_m_pred)
-# np.save(path_model + "true_val_10.npy", true)
+    # model= load_model(path_model + "model/weights.10.hdf5")
+    #
+    # training set
+    #
+    # pred = model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
+    # truth_rescaled = np.array([val for (key, val) in training_set.labels_particle_IDS.items()])
+    # h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+    # true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    #
+    # np.save(path_model + "predicted_training_45.npy", h_m_pred)
+    # np.save(path_model + "true_training_45.npy", true)
+    #
+    # # validation set
+    #
+    # pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
+    # truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
+    # # h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+    # # true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+    # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    #
+    # np.save(path_model + "predicted_val_45.npy", h_m_pred)
+    # np.save(path_model + "true_val_45.npy", true)
