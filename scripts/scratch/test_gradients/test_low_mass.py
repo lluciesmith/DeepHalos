@@ -33,6 +33,8 @@ if __name__ == "__main__":
 
     # define a common scaler for the output
 
+    # s_output = load(open(path_model + 'scaler_output.pkl', "rb"))
+
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
@@ -98,7 +100,7 @@ if __name__ == "__main__":
                  }
 
     def custom_loss(y_true, y_predicted):
-        factor = (0.000000001 + y_true)**4
+        factor = 0.5 + abs(y_true) ** 4
         return K.mean(factor * K.square(y_predicted - y_true), axis=-1)
 
     loss = custom_loss
@@ -133,17 +135,18 @@ if __name__ == "__main__":
     np.save(path_model + "true_val.npy", true)
 
 
-    # model= load_model(path_model + "model/weights.10.hdf5")
+    # model = load_model(path_model + "model/weights.25.hdf5", custom_objects={'custom_loss': custom_loss})
+    # #model= load_model(path_model + "model/weights.10.hdf5")
     #
-    # training set
+    # # training set
     #
     # pred = model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
     # truth_rescaled = np.array([val for (key, val) in training_set.labels_particle_IDS.items()])
-    # h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    # true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+    # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
     #
-    # np.save(path_model + "predicted_training_45.npy", h_m_pred)
-    # np.save(path_model + "true_training_45.npy", true)
+    # np.save(path_model + "predicted_training_25.npy", h_m_pred)
+    # np.save(path_model + "true_training_25.npy", true)
     #
     # # validation set
     #
@@ -154,5 +157,5 @@ if __name__ == "__main__":
     # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
     # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
     #
-    # np.save(path_model + "predicted_val_45.npy", h_m_pred)
-    # np.save(path_model + "true_val_45.npy", true)
+    # np.save(path_model + "predicted_val_25.npy", h_m_pred)
+    # np.save(path_model + "true_val_25.npy", true)
