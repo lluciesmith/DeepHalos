@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/custom_loss/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/custom_loss/"
 
     # First you will have to load the simulation
 
@@ -33,14 +33,14 @@ if __name__ == "__main__":
 
     # define a common scaler for the output
 
-    # s_output = load(open(path_model + 'scaler_output.pkl', "rb"))
+    s_output = load(open(path_model + 'scaler_output.pkl', "rb"))
 
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
     training_set = tn.InputsPreparation(train_sims, load_ids=False, shuffle=True, scaler_type="minmax",
-                                        log_high_mass_limit=13,
-                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000,
+                                        log_high_mass_limit=13, scaler_output=s_output,
+                                        random_style="uniform", random_subset_each_sim=100000, num_per_mass_bin=10000,
                                         # random_subset_each_sim=1000
                                         )
     generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=5000,
                                           log_high_mass_limit=13,
-                                          scaler_output=training_set.scaler_output, shuffle=True)
+                                          scaler_output=s_output, shuffle=True)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
     dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     # checkpoint
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
     checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5)
-
+    
     # save histories
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
 
@@ -82,9 +82,12 @@ if __name__ == "__main__":
                        'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False,
                        'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
                        }
-    param_conv = {'conv_1': {'num_kernels': 8, 'dim_kernel': (5, 5, 5), **params_all_conv},
-                  'conv_2': {'num_kernels': 16, 'dim_kernel': (3, 3, 3), **params_all_conv},
-                  'conv_3': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), **params_all_conv},
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
+                       'strides': 1, 'padding': 'same', 'pool': None, 'bn': False,
+                       'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
+                  'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), **params_all_conv},
+                  'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv},
+                  'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   }
 
     params_all_fcc = {'bn': False,
@@ -96,7 +99,7 @@ if __name__ == "__main__":
                  'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {
                      # 'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
-                 }
+                     }
                  }
 
     def custom_loss(y_true, y_predicted):
