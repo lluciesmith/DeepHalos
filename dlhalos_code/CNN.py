@@ -66,6 +66,8 @@ class CNN:
     def compile_and_fit_model(self):
         Model = self.compile_model()
 
+        tf.global_variables_initializer()
+
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
