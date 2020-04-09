@@ -170,7 +170,7 @@ class CNN:
 
         def cauchy_loss(layer):
             def loss(y_true, y_pred):
-                logl = K.log(K.square(y_true - y_pred) + K.square(layer.kernel))
+                logl = K.log(K.square(y_true - y_pred) + K.square(layer.gamma))
                 return K.mean(logl, axis=-1)
             return loss
 
