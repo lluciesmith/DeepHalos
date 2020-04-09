@@ -168,9 +168,16 @@ class CNN:
 
         model = keras.Model(inputs=input_data, outputs=predictions)
 
+        def cauchy_loss(layer):
+            def loss(y_true, y_pred):
+                logl = K.log(K.square(y_true - y_pred) + K.square(layer.kernel))
+                return K.mean(logl, axis=-1)
+
+            return loss
+
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                           amsgrad=True)
-        model.compile(loss=self.loss, optimizer=optimiser, metrics=self.metrics)
+        model.compile(loss=cauchy_loss(predictions), optimizer=optimiser, metrics=self.metrics)
 
         t0 = time.time()
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
