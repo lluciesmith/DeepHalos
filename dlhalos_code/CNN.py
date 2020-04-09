@@ -11,7 +11,7 @@ from tensorflow.keras.layers import Input, Dense, Flatten, Add
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras import regularizers
 import inspect
-from tf.keras.layers import Layer
+from tensorflow.keras.layers import Layer
 import os
 
 from dlhalos_code import evaluation as eval
