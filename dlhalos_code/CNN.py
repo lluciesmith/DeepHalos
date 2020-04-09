@@ -66,29 +66,29 @@ class CNN:
     def compile_and_fit_model(self):
         Model = self.compile_model()
 
-        # Add an Op to initialize global variables.
-        init_op = tf.compat.v1.global_variables_initializer()
-
-        # Launch the graph in a session.
-        with tf.compat.v1.Session() as sess:
-            # Run the Op that initializes global variables.
-            sess.run(init_op)
-            t0 = time.time()
-            history = sess.run(Model.fit_generator(generator=self.training_generator,
-                                                    validation_data=self.validation_generator,
-                                      use_multiprocessing=self.use_multiprocessing, workers=self.workers,
-                                      max_queue_size=self.max_queue_size,
-                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
-                                      callbacks=self.callbacks, validation_freq=self.val_freq))
-            t1 = time.time()
-
-        # t0 = time.time()
-        # history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
+        # # Add an Op to initialize global variables.
+        # init_op = tf.compat.v1.global_variables_initializer()
+        #
+        # # Launch the graph in a session.
+        # with tf.compat.v1.Session() as sess:
+        #     # Run the Op that initializes global variables.
+        #     sess.run(init_op)
+        #     t0 = time.time()
+        #     history = sess.run(Model.fit_generator(generator=self.training_generator,
+        #                                             validation_data=self.validation_generator,
         #                               use_multiprocessing=self.use_multiprocessing, workers=self.workers,
         #                               max_queue_size=self.max_queue_size,
         #                               verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
-        #                               callbacks=self.callbacks, validation_freq=self.val_freq)
-        # t1 = time.time()
+        #                               callbacks=self.callbacks, validation_freq=self.val_freq))
+        #     t1 = time.time()
+
+        t0 = time.time()
+        history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
+                                      use_multiprocessing=self.use_multiprocessing, workers=self.workers,
+                                      max_queue_size=self.max_queue_size,
+                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
+                                      callbacks=self.callbacks, validation_freq=self.val_freq)
+        t1 = time.time()
         print("This model took " + str((t1 - t0)/60) + " minutes to train.")
 
         if self.save is True:
