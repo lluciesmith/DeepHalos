@@ -22,7 +22,7 @@ class CNN:
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
                  lr=0.0001, loss='mse', save_summary=False, path_summary=".", validation_freq=1, train=True,
-                 skip_connector=False):
+                 skip_connector=False, compile=True):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
