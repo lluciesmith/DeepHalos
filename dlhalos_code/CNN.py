@@ -380,7 +380,7 @@ class CauchyLoss(Layer):
   def __init__(self):
     super(CauchyLoss, self).__init__()
     # w_init = keras.random_normal_initializer()
-    self.w = keras.Variable(shape=(1,), dtype='float32', initializer='uniform', trainable=True)
+    self.w = K.Variable(shape=(1,), dtype='float32', initializer='uniform', trainable=True)
 
   def __call__(self, inputs):
       self.add_loss(self.custom_loss)
