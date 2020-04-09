@@ -13,7 +13,7 @@ from tensorflow.keras import regularizers
 import inspect
 from tensorflow.keras.layers import Layer
 import os
-
+import tensorflow as tf
 from dlhalos_code import evaluation as eval
 
 
@@ -380,7 +380,7 @@ class CauchyLoss(Layer):
   def __init__(self):
     super(CauchyLoss, self).__init__()
     # w_init = keras.random_normal_initializer()
-    self.w = K.Variable(shape=(1,), dtype='float32', initializer='uniform', trainable=True)
+    self.w = tf.Variable(shape=(1,), dtype='float32', initializer='uniform', trainable=True)
 
   def __call__(self, inputs):
       self.add_loss(self.custom_loss)
