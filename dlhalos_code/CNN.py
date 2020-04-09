@@ -56,7 +56,11 @@ class CNN:
         self.path_summary = path_summary
 
         if train is True:
-            self.model, self.history = self.compile_and_fit_model()
+            if self.add_cauchy is True:
+                self.model, self.history = self.model_with_cauchy(self.input_shape, self.conv_params,
+                                                                  self.fcc_params, data_format=self.data_format)
+            else:
+                self.model, self.history = self.compile_and_fit_model()
         else:
             if compile is True:
                 self.model = self.compile_model()
@@ -65,22 +69,6 @@ class CNN:
 
     def compile_and_fit_model(self):
         Model = self.compile_model()
-
-        # # Add an Op to initialize global variables.
-        # init_op = tf.compat.v1.global_variables_initializer()
-        #
-        # # Launch the graph in a session.
-        # with tf.compat.v1.Session() as sess:
-        #     # Run the Op that initializes global variables.
-        #     sess.run(init_op)
-        #     t0 = time.time()
-        #     history = sess.run(Model.fit_generator(generator=self.training_generator,
-        #                                             validation_data=self.validation_generator,
-        #                               use_multiprocessing=self.use_multiprocessing, workers=self.workers,
-        #                               max_queue_size=self.max_queue_size,
-        #                               verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
-        #                               callbacks=self.callbacks, validation_freq=self.val_freq))
-        #     t1 = time.time()
 
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
@@ -167,6 +155,37 @@ class CNN:
         print(Model.summary())
         return Model
 
+    def model_with_cauchy(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
+        input_data = Input(shape=(*input_shape_box, 1))
+
+        if self.skip_connector is True:
+            x = self._model_skip_connection(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+        else:
+            x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+
+        x = Dense(1, activation='linear', **fcc_params['last'])(x)
+        predictions = CauchyLayer()(x)
+
+        model = keras.Model(inputs=input_data, outputs=predictions)
+
+        optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
+                                          amsgrad=True)
+        model.compile(loss=self.loss, optimizer=optimiser, metrics=self.metrics)
+
+        t0 = time.time()
+        history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
+                                      use_multiprocessing=self.use_multiprocessing, workers=self.workers,
+                                      max_queue_size=self.max_queue_size,
+                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
+                                      callbacks=self.callbacks, validation_freq=self.val_freq)
+        t1 = time.time()
+        print("This model took " + str((t1 - t0)/60) + " minutes to train.")
+
+        if self.save is True:
+            model.save(self.model_name)
+
+        return model, history
+
     def uncompiled_model(self):
         if self.model_type == "regression":
             print("Initiating regression model")
@@ -195,9 +214,6 @@ class CNN:
             x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
 
         predictions = Dense(1, activation='linear', **fcc_params['last'])(x)
-
-        if self.add_cauchy is True:
-            predictions = CauchyLayer()(predictions)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
