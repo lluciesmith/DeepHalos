@@ -56,7 +56,10 @@ class CNN:
         if train is True:
             self.model, self.history = self.compile_and_fit_model()
         else:
-            self.model = self.compile_model()
+            if compile is True:
+                self.model = self.compile_model()
+            else:
+                self.model = self.uncompiled_model()
 
     def compile_and_fit_model(self):
         Model = self.compile_model()
@@ -139,6 +142,25 @@ class CNN:
             optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
             Model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
+
+        else:
+            raise NameError("Choose either regression or binary classification as model type")
+
+        print(Model.summary())
+        return Model
+
+    def uncompiled_model(self):
+        if self.model_type == "regression":
+            print("Initiating regression model")
+
+            Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                   data_format=self.data_format)
+
+        elif self.model_type == "binary_classification":
+            print("Initiating binary classification model")
+
+            Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                              data_format=self.data_format)
 
         else:
             raise NameError("Choose either regression or binary classification as model type")
