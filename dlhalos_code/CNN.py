@@ -197,7 +197,7 @@ class CNN:
         predictions = Dense(1, activation='linear', **fcc_params['last'])(x)
 
         if self.add_cauchy is True:
-            predictions = CauchyLayer(1)(predictions)
+            predictions = CauchyLayer()(predictions)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
