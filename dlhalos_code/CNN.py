@@ -23,7 +23,7 @@ class CNN:
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
                  lr=0.0001, loss='mse', save_summary=False, path_summary=".", validation_freq=1, train=True,
-                 skip_connector=False, compile=True, add_loss="cauchy"):
+                 skip_connector=False, compile=True, add_cauchy=False):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -48,7 +48,7 @@ class CNN:
         self.model_type = model_type
         self.skip_connector = skip_connector
         self.loss = loss
-        # self.add_loss = add_loss
+        self.add_cauchy = add_cauchy
 
         self.save = save_model
         self.model_name = model_name
@@ -195,6 +195,9 @@ class CNN:
             x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
 
         predictions = Dense(1, activation='linear', **fcc_params['last'])(x)
+
+        if self.add_cauchy is True:
+            predictions = CauchyLayer(1)(predictions)
 
         # if self.add_loss is True:
         #     L = CauchyLoss()
@@ -392,34 +395,26 @@ class CNN:
     #     return K.variable(val=l, dtype=dtype)
 
 
-def custom_loss():
-    w = tf.Variable(initial_value=1, dtype='float32', trainable=True)
+class CauchyLayer(Layer):
 
-    def loss(y_true, y_pred):
-        logl = K.log(K.square(y_true - y_pred) + K.square(w))
-        return K.mean(logl, axis=-1)
+    def __init__(self, output_dim, **kwargs):
+        self.output_dim = output_dim
+        super(CauchyLayer, self).__init__(name="cauchy", **kwargs)
 
-    return loss
+    def build(self, input_shape):
+        # Create a trainable weight variable for this layer.
+        init = keras.initializers.RandomNormal(mean=0.0, stddev=1)
+        self.gamma = self.add_weight(name='gamma',
+                                      shape=(input_shape[1], self.output_dim),
+                                      initializer=init,
+                                      trainable=True)
+        super(CauchyLayer, self).build(input_shape)  # Be sure to call this at the end
 
-class CauchyLoss(Layer):
+    def call(self, x):
+        return x
 
-  def __init__(self):
-    super(CauchyLoss, self).__init__()
-    # w_init = keras.random_normal_initializer()
-    self.w = tf.Variable(initial_value=1, dtype='float32', trainable=True)
-
-  def __call__(self, inputs):
-      self.add_loss(self.custom_loss)
-      return inputs
-
-  def custom_loss(self):
-      w = self.w
-
-      def loss(y_true, y_pred):
-          logl = K.log(K.square(y_true - y_pred) + K.square(w))
-          return K.mean(logl, axis=-1)
-
-      return loss
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.output_dim)
 
 
 # This function keeps the learning rate at 0.001 for the first ten epochs
@@ -527,7 +522,6 @@ class LossCallback(Callback):
 
     def on_batch_end(self, batch, logs={}):
         return
-
 
 
 
