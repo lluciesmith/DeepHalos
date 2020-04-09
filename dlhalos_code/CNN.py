@@ -48,7 +48,7 @@ class CNN:
         self.model_type = model_type
         self.skip_connector = skip_connector
         self.loss = loss
-        self.add_loss = add_loss
+        # self.add_loss = add_loss
 
         self.save = save_model
         self.model_name = model_name
@@ -180,11 +180,12 @@ class CNN:
 
         predictions = Dense(1, activation='linear', **fcc_params['last'])(x)
 
-        if self.add_loss is True:
-            L = CauchyLoss()
-            predictions = L(predictions)
+        # if self.add_loss is True:
+        #     L = CauchyLoss()
+        #     predictions = L(predictions)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
+        # print(model.losses)
         return model
 
     def binary_classification_model_w_layers(self, input_shape_box, conv_params, fcc_params,
@@ -374,6 +375,15 @@ class CNN:
     #     l = K.random_normal(shape, dtype=dtype) * weight_matrix
     #     return K.variable(val=l, dtype=dtype)
 
+
+def custom_loss():
+    w = tf.Variable(initial_value=1, dtype='float32', trainable=True)
+
+    def loss(y_true, y_pred):
+        logl = K.log(K.square(y_true - y_pred) + K.square(w))
+        return K.mean(logl, axis=-1)
+
+    return loss
 
 class CauchyLoss(Layer):
 
