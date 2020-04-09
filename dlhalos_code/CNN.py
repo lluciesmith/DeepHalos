@@ -199,12 +199,7 @@ class CNN:
         if self.add_cauchy is True:
             predictions = CauchyLayer(1)(predictions)
 
-        # if self.add_loss is True:
-        #     L = CauchyLoss()
-        #     predictions = L(predictions)
-
         model = keras.Model(inputs=input_data, outputs=predictions)
-        # print(model.losses)
         return model
 
     def binary_classification_model_w_layers(self, input_shape_box, conv_params, fcc_params,
@@ -397,24 +392,21 @@ class CNN:
 
 class CauchyLayer(Layer):
 
-    def __init__(self, output_dim, **kwargs):
-        self.output_dim = output_dim
+    def __init__(self, **kwargs):
+        # self.output_dim = output_dim
         super(CauchyLayer, self).__init__(name="cauchy", **kwargs)
 
     def build(self, input_shape):
         # Create a trainable weight variable for this layer.
         init = keras.initializers.RandomNormal(mean=0.0, stddev=1)
-        self.gamma = self.add_weight(name='gamma',
-                                      shape=(input_shape[1], self.output_dim),
-                                      initializer=init,
-                                      trainable=True)
+        self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init, trainable=True)
         super(CauchyLayer, self).build(input_shape)  # Be sure to call this at the end
 
     def call(self, x):
         return x
 
-    def compute_output_shape(self, input_shape):
-        return (input_shape[0], self.output_dim)
+    # def compute_output_shape(self, input_shape):
+    #     return (input_shape[0], self.output_dim)
 
 
 # This function keeps the learning rate at 0.001 for the first ten epochs
