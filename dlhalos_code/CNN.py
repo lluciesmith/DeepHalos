@@ -11,6 +11,7 @@ from tensorflow.keras.layers import Input, Dense, Flatten, Add
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras import regularizers
 import inspect
+from tf.keras.layers import Layer
 import os
 
 from dlhalos_code import evaluation as eval
@@ -22,7 +23,7 @@ class CNN:
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
                  lr=0.0001, loss='mse', save_summary=False, path_summary=".", validation_freq=1, train=True,
-                 skip_connector=False, compile=True):
+                 skip_connector=False, compile=True, add_loss="cauchy"):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -47,6 +48,7 @@ class CNN:
         self.model_type = model_type
         self.skip_connector = skip_connector
         self.loss = loss
+        self.add_loss = add_loss
 
         self.save = save_model
         self.model_name = model_name
@@ -177,6 +179,10 @@ class CNN:
             x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
 
         predictions = Dense(1, activation='linear', **fcc_params['last'])(x)
+
+        if self.add_loss is True:
+            L = CauchyLoss()
+            predictions = L(predictions)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
@@ -367,6 +373,27 @@ class CNN:
     #     weight_matrix[1, 1, 1] = 1
     #     l = K.random_normal(shape, dtype=dtype) * weight_matrix
     #     return K.variable(val=l, dtype=dtype)
+
+
+class CauchyLoss(Layer):
+
+  def __init__(self):
+    super(CauchyLoss, self).__init__()
+    w_init = keras.random_normal_initializer()
+    self.w = keras.Variable(initial_value=w_init(shape=(1,), dtype='float32'), trainable=True)
+
+  def __call__(self, inputs):
+      self.add_loss(self.custom_loss)
+      return inputs
+
+  def custom_loss(self):
+      w = self.w
+
+      def loss(y_true, y_pred):
+          logl = K.log(K.square(y_true - y_pred) + K.square(w))
+          return K.mean(logl, axis=-1)
+
+      return loss
 
 
 # This function keeps the learning rate at 0.001 for the first ten epochs
