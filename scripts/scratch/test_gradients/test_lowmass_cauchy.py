@@ -81,17 +81,17 @@ if __name__ == "__main__":
                        'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False,
                        'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
                        }
-    param_conv = {'conv_1': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
                              'strides': 1, 'padding': 'same', 'pool': None, 'bn': False,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
-                  'conv_2': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), **params_all_conv},
-                  'conv_3': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), **params_all_conv},
-                  'conv_4': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), **params_all_conv},
+                  'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), **params_all_conv},
+                  'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv},
+                  'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   }
 
     params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu}
-    param_fcc = {'dense_1': {'neurons': 10, **params_all_fcc},
-                 'dense_2': {'neurons': 10, **params_all_fcc},
+    param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc},
+                 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}
                  }
 

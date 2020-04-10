@@ -177,6 +177,11 @@ class CNN:
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                           amsgrad=True)
         model.compile(loss=cauchy_loss(model.layers[-1]), optimizer=optimiser, metrics=self.metrics)
+        print(model.summary())
+        if self.save_summary is True:
+            with open(self.path_summary + 'model_summary.txt', 'w') as fh:
+                model.summary(print_fn=lambda x: fh.write(x + '\n'))
+            model.save_weights(self.path_summary + 'model/initial_weights.h5')
 
         t0 = time.time()
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
