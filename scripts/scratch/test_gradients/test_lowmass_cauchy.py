@@ -50,7 +50,8 @@ if __name__ == "__main__":
         training_labels_particle_IDS = training_set.labels_particle_IDS
         s_output = training_set.scaler_output
 
-    generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic, **params_inputs)
+    generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
+                                          shuffle=True, **params_inputs)
 
     # validation set
 
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
                                             **params_inputs)
 
-    ######### TRAINING MODEL ##############
+            ######### TRAINING MODEL ##############
 
     # checkpoint
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
@@ -100,8 +101,8 @@ if __name__ == "__main__":
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,
                     lr=lr, callbacks=callbacks_list, metrics=['mae', 'mse'],
-                    num_epochs=50, dim=params_inputs['dim'], add_cauchy=True,
-                    max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
+                    num_epochs=100, dim=params_inputs['dim'], add_cauchy=True,
+                    max_queue_size=1, use_multiprocessing=False, workers=1, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True,
                     compile=True)
 
