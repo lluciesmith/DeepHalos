@@ -5,18 +5,8 @@ import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 import tensorflow
 from tensorflow.keras import regularizers
-import tensorflow.keras as keras
 import dlhalos_code.data_processing as tn
-import numpy as np
 from pickle import dump, load
-import tensorflow as tf
-from tf.keras.layers import Layer
-from keras import initializers
-from tensorflow.keras.callbacks import TensorBoard
-import tensorflow.keras.backend as K
-from tensorflow.keras.models import load_model
-from collections import OrderedDict
-from sklearn.metrics import mean_squared_error as mse
 
 
 if __name__ == "__main__":
@@ -25,7 +15,7 @@ if __name__ == "__main__":
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/cauchy/"
     path_training_set = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/mse2/"
-    t
+
     # First you will have to load the simulation
 
     all_sims = ["0", "1", "2", "4", "5", "6"]
