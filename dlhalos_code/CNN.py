@@ -253,10 +253,10 @@ class CNN:
         if relu is True:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
         if pool == "average":
-            x = keras.layers.AveragePooling3D(pool_size=pool_size, strides=None, padding="valid",
+            x = keras.layers.AveragePooling3D(pool_size=pool_size, strides=None, padding="same",
                                               data_format=data_format)(x)
         elif pool == "max":
-            x = keras.layers.MaxPooling3D(pool_size=pool_size, strides=None, padding="valid",
+            x = keras.layers.MaxPooling3D(pool_size=pool_size, strides=None, padding="same",
                                           data_format=data_format)(x)
         else:
             pass
@@ -278,10 +278,10 @@ class CNN:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
 
         if pool == "average":
-            x = keras.layers.AveragePooling3D(pool_size=pool_size, strides=None, padding="valid",
+            x = keras.layers.AveragePooling3D(pool_size=pool_size, strides=None, padding="same",
                                               data_format=data_format)(x)
         elif pool == "max":
-            x = keras.layers.MaxPooling3D(pool_size=pool_size, strides=None, padding="valid",
+            x = keras.layers.MaxPooling3D(pool_size=pool_size, strides=None, padding="same",
                                           data_format=data_format)(x)
         else:
             pass
