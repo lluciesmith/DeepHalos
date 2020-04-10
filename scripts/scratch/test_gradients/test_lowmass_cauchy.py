@@ -87,6 +87,7 @@ if __name__ == "__main__":
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   'conv_4': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv},
+                  'conv_5': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv}
                   }
 
     params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu}
