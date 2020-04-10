@@ -420,7 +420,7 @@ class CauchyLayer(Layer):
 
     def build(self, input_shape):
         # Create a trainable weight variable for this layer.
-        init = keras.initializers.RandomNormal(mean=0.0, stddev=1)
+        init = tf.compat.v1.keras.initializers.RandomNormal(mean=1.0, stddev=0.2)
         self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init, trainable=True)
         super(CauchyLayer, self).build(input_shape)  # Be sure to call this at the end
 

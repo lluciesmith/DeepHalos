@@ -5,9 +5,13 @@ import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 import tensorflow
 from tensorflow.keras import regularizers
+import tensorflow.keras as keras
 import dlhalos_code.data_processing as tn
 import numpy as np
 from pickle import dump, load
+import tensorflow as tf
+from tf.keras.layers import Layer
+from keras import initializers
 from tensorflow.keras.callbacks import TensorBoard
 import tensorflow.keras.backend as K
 from tensorflow.keras.models import load_model
@@ -21,7 +25,7 @@ if __name__ == "__main__":
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/cauchy/"
     path_training_set = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/mse2/"
-
+    t
     # First you will have to load the simulation
 
     all_sims = ["0", "1", "2", "4", "5", "6"]
@@ -47,7 +51,8 @@ if __name__ == "__main__":
     except OSError:
         training_set = tn.InputsPreparation(train_sims, scaler_type="minmax",
                                             load_ids=False, shuffle=True, log_high_mass_limit=13,
-                                            random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000)
+                                            random_style="uniform", random_subset_each_sim=1000000,
+                                            num_per_mass_bin=10000)
         dump(training_set.particle_IDs, open(path_model + 'training_set.pkl', 'wb'))
         dump(training_set.labels_particle_IDS, open(path_model + 'labels_training_set.pkl', 'wb'))
         dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
@@ -86,32 +91,28 @@ if __name__ == "__main__":
                        'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False,
                        'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
                        }
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
+    param_conv = {'conv_1': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
                              'strides': 1, 'padding': 'same', 'pool': None, 'bn': False,
                              'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
-                  'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), **params_all_conv},
-                  'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv},
-                  'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), **params_all_conv},
+                  'conv_2': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), **params_all_conv},
+                  'conv_3': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), **params_all_conv},
+                  'conv_4': {'num_kernels': 1, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   }
 
     params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu}
-    param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc},
-                 'dense_2': {'neurons': 128, **params_all_fcc},
+    param_fcc = {'dense_1': {'neurons': 10, **params_all_fcc},
+                 'dense_2': {'neurons': 10, **params_all_fcc},
                  'last': {}
                  }
 
-    def cauchy_loss(y_true, y_predicted):
-        gamma = 1.5
-        logl = K.log(K.square(y_true - y_predicted) + K.square(gamma))
-        return K.mean(logl, axis=-1)
-
-    loss = 'mse'
+    lr = 0.0001
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,
-                    lr=0.001, callbacks=callbacks_list, metrics=['mae', 'mse'],
-                    num_epochs=50, dim=params_inputs['dim'], loss=cauchy_loss,
+                    lr=lr, callbacks=callbacks_list, metrics=['mae', 'mse'],
+                    num_epochs=50, dim=params_inputs['dim'], add_cauchy=True,
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
-                    num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True)
+                    num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True,
+                    compile=True)
 
     # model = Model.model
     # epochs = Model.num_epochs
@@ -155,27 +156,71 @@ if __name__ == "__main__":
     # np.save(path_model + "true_val.npy", true)
 
 
-    # model = load_model(path_model + "model/weights.10.hdf5", custom_objects={'custom_loss': custom_loss})
-    # #model= load_model(path_model + "model/weights.10.hdf5")
-    #
-    # # # training set
-    # #
-    # pred = model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
-    # truth_rescaled = np.array([val for (key, val) in training_set.labels_particle_IDS.items()])
-    # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    #
-    # np.save(path_model + "predicted_training_30.npy", h_m_pred)
-    # np.save(path_model + "true_training_30.npy", true)
-    #
-    # # validation set
-    #
-    # pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
-    # truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
-    # # h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    # # true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    #
-    # np.save(path_model + "predicted_val_30.npy", h_m_pred)
-    # np.save(path_model + "true_val_30.npy", true)
+# model = load_model(path_model + "model/weights.50.hdf5", custom_objects={'cauchy_loss': cauchy_loss})
+# #model= load_model(path_model + "model/weights.10.hdf5")
+#
+# # # training set
+# #
+# pred = model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
+# truth_rescaled = np.array([training_labels_particle_IDS[ID] for ID in training_particle_IDs])
+# h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+# true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+#
+# np.save(path_model + "predicted_training_50.npy", h_m_pred)
+# np.save(path_model + "true_training_50.npy", true)
+#
+# # validation set
+#
+# pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
+# truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
+# # h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+# # true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+# h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+# true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+#
+# np.save(path_model + "predicted_val_50.npy", h_m_pred)
+# np.save(path_model + "true_val_50.npy", true)
+
+
+# class MyLayer(Layer):
+#
+#     def __init__(self, output_dim, **kwargs):
+#         self.output_dim = output_dim
+#         super(MyLayer, self).__init__(**kwargs)
+#
+#     def build(self, input_shape):
+#         # Create a trainable weight variable for this layer.
+#         init = keras.initializers.RandomNormal(mean=0.0, stddev=1)
+#         self.gamma = self.add_weight(name='gamma',
+#                                       shape=(input_shape[1], self.output_dim),
+#                                       initializer=init,
+#                                       trainable=True)
+#         super(MyLayer, self).build(input_shape)  # Be sure to call this at the end
+#
+#     def call(self, x):
+#         return x
+#
+#     def compute_output_shape(self, input_shape):
+#         return (input_shape[0], self.output_dim)
+#
+#
+# def custom_loss(layer):
+#     # Create a loss function that adds the MSE loss to the mean of all squared activations of a specific layer
+#     def loss(y_true, y_pred):
+#         return K.mean(K.square(y_pred - y_true) + K.square(layer), axis=-1)
+#
+#     # Return a function
+#     return loss
+#
+#
+# M = MyLayer(1)
+# g = M.gamma
+#
+# def cauchy_loss(layer):
+#     # w = MyLayer().gamma
+#     # # init = keras.initializers.RandomNormal(mean=0.0, stddev=1)
+#     # # w = K.variable(init(shape=(1,)), dtype='float32', name="gamma")
+#     def loss(y_true, y_pred):
+#         logl = K.log(K.square(y_true - y_pred) + K.square(layer.kernel))
+#         return K.mean(logl, axis=-1)
+#     return loss
