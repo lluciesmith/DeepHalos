@@ -1,6 +1,7 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 from dlhalos_code import CNN
+from dlhalos_code import loss_functions as lf
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 import tensorflow
@@ -14,7 +15,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/custom/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/cauchy_selec/"
     path_training_set = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/mse2/"
 
     # First you will have to load the simulation
@@ -98,28 +99,20 @@ if __name__ == "__main__":
                  'last': {}
                  }
 
-    def custom_loss(y_true, y_predicted):
-        epsilon = 10**-6
-        # r = K.maximum(K.abs(y_true - y_predicted), epsilon)
-        r = abs(y_true - y_predicted)
-        factor = - K.log((1 - K.exp(-(r**2 + epsilon) / 2)) / (r**2 + epsilon))
-        # norm = K.log(2)
-        return K.mean(factor, axis=-1)
-
     lr = 0.0001
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,
                     lr=lr, callbacks=callbacks_list, metrics=['mae', 'mse'],
-                    num_epochs=100, dim=params_inputs['dim'], loss=custom_loss,
+                    num_epochs=100, dim=params_inputs['dim'], loss=lf.cauchy_selection_loss,
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True,
                     compile=True)
 
 
-    def custom_loss(y_true, y_predicted):
-        epsilon = 10 ** -6
-        r = max(abs(y_true - y_predicted), epsilon)
-        return - np.log((1 - np.exp(-r ** 2 / 2)) / r ** 2)
+    # def custom_loss(y_true, y_predicted):
+    #     epsilon = 10 ** -6
+    #     r = max(abs(y_true - y_predicted), epsilon)
+    #     return - np.log((1 - np.exp(-r ** 2 / 2)) / r ** 2)
 
 
     # model = Model.model

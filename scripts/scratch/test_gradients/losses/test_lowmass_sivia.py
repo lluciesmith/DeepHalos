@@ -1,19 +1,21 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 from dlhalos_code import CNN
+from dlhalos_code import loss_functions as lf
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 import tensorflow
 from tensorflow.keras import regularizers
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
+import tensorflow.keras.backend as K
 
 
 if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/cauchy/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/sivia/"
     path_training_set = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/mse2/"
 
     # First you will have to load the simulation
@@ -55,12 +57,12 @@ if __name__ == "__main__":
 
     # validation set
 
-    validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=100000, num_per_mass_bin=100,
-                                          log_high_mass_limit=13, scaler_output=s_output, shuffle=True)
+    validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=100000,
+                                          num_per_mass_bin=100, log_high_mass_limit=13, scaler_output=s_output)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
                                             **params_inputs)
 
-            ######### TRAINING MODEL ##############
+    ######### TRAINING MODEL ##############
 
     # checkpoint
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
@@ -73,8 +75,8 @@ if __name__ == "__main__":
 
     tensorflow.compat.v1.set_random_seed(7)
 
-    kernel_reg = regularizers.l2(0.0005)
-    bias_reg = regularizers.l2(0.0005)
+    kernel_reg = regularizers.l2(0.00001)
+    bias_reg = regularizers.l2(0.00001)
     activation = "linear"
     relu = True
 
@@ -88,7 +90,7 @@ if __name__ == "__main__":
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   'conv_4': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv},
-                  'conv_5': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv}
+                  # 'conv_5': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv}
                   }
 
     params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu}
@@ -101,10 +103,17 @@ if __name__ == "__main__":
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,
                     lr=lr, callbacks=callbacks_list, metrics=['mae', 'mse'],
-                    num_epochs=100, dim=params_inputs['dim'], add_cauchy=True,
-                    max_queue_size=1, use_multiprocessing=False, workers=1, verbose=1,
+                    num_epochs=100, dim=params_inputs['dim'], loss=lf.sivia_skilling_loss,
+                    max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True,
                     compile=True)
+
+
+    # def custom_loss(y_true, y_predicted):
+    #     epsilon = 10 ** -6
+    #     r = max(abs(y_true - y_predicted), epsilon)
+    #     return - np.log((1 - np.exp(-r ** 2 / 2)) / r ** 2)
+
 
     # model = Model.model
     # epochs = Model.num_epochs
