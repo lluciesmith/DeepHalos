@@ -99,7 +99,7 @@ if __name__ == "__main__":
                  }
 
     def custom_loss(y_true, y_predicted):
-        epsilon = 10**-6
+        epsilon = 10**-2
         r = abs(y_true - y_predicted) + epsilon
         factor = K.log((1 - K.exp(-r**2 / 2)) / r**2 )
         # norm = K.log(2)
