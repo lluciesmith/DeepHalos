@@ -99,17 +99,9 @@ if __name__ == "__main__":
                  }
 
     def custom_loss(y_true, y_predicted):
-        epsilon = 10**-8
-        r = y_true - y_predicted
-        print("Minimum r:")
-        print(K.min(r))
-        print("Maximum r:")
-        print(K.max(r))
-        factor = K.log((1 - K.exp((-r**2 + epsilon) / 2))/(r**2+ epsilon))
-        print("Minimum loss:")
-        print(K.min(factor))
-        print("Maximum loss:")
-        print(K.max(factor))
+        epsilon = 10**-6
+        r = abs(y_true - y_predicted) + epsilon
+        factor = K.log((1 - K.exp(-r**2 / 2)) / r**2 )
         # norm = K.log(2)
         return - K.mean(factor, axis=-1)
 
