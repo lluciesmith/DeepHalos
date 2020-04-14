@@ -99,11 +99,12 @@ if __name__ == "__main__":
                  }
 
     def custom_loss(y_true, y_predicted):
-        epsilon = 10**-2
-        r = abs(y_true - y_predicted) + epsilon
-        factor = K.log((1 - K.exp(-r**2 / 2)) / r**2 )
+        epsilon = 10**-6
+        r = K.max(K.abs(y_true - y_predicted), epsilon)
+        # r = abs(y_true - y_predicted) + epsilon
+        factor = - K.log((1 - K.exp(-r**2 / 2)) / r**2 )
         # norm = K.log(2)
-        return - K.mean(factor, axis=-1)
+        return K.mean(factor, axis=-1)
 
     lr = 0.0001
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
