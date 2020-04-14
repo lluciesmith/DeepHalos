@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     def custom_loss(y_true, y_predicted):
         epsilon = 10**-6
-        r = K.max(K.abs(y_true - y_predicted), epsilon)
+        r = K.maximum(K.abs(y_true - y_predicted), epsilon)
         # r = abs(y_true - y_predicted) + epsilon
         factor = - K.log((1 - K.exp(-r**2 / 2)) / r**2 )
         # norm = K.log(2)
@@ -114,6 +114,7 @@ if __name__ == "__main__":
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True,
                     compile=True)
+
 
     # model = Model.model
     # epochs = Model.num_epochs
