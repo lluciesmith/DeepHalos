@@ -15,10 +15,11 @@ def cauchy_selection_loss(y_true, y_predicted):
     y_max = 1
     y_min = -1
     gamma = 0.2
+    epsilon = 10**-6
     r = (y_true - y_predicted)/gamma
 
     tail_term = K.log(1 + K.square(r))
-    selection_term = K.log(math.atan((y_max - y_predicted)/gamma) - math.atan((y_min - y_predicted)/gamma))
+    selection_term = K.log(math.atan((y_max - y_predicted)/gamma) - math.atan((y_min - y_predicted)/gamma) + epsilon)
 
     loss = tail_term + selection_term
     return K.mean(loss, axis=-1)
