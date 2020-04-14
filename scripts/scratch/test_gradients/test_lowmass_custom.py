@@ -100,9 +100,9 @@ if __name__ == "__main__":
 
     def custom_loss(y_true, y_predicted):
         epsilon = 10**-6
-        r = K.maximum(K.abs(y_true - y_predicted), epsilon)
-        # r = abs(y_true - y_predicted) + epsilon
-        factor = - K.log((1 - K.exp(-r**2 / 2)) / r**2 )
+        # r = K.maximum(K.abs(y_true - y_predicted), epsilon)
+        r = abs(y_true - y_predicted)
+        factor = - K.log((1 - K.exp(-(r**2 + epsilon) / 2)) / (r**2 + epsilon))
         # norm = K.log(2)
         return K.mean(factor, axis=-1)
 
@@ -114,6 +114,12 @@ if __name__ == "__main__":
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True,
                     compile=True)
+
+
+    def custom_loss(y_true, y_predicted):
+        epsilon = 10 ** -6
+        r = max(abs(y_true - y_predicted), epsilon)
+        return - np.log((1 - np.exp(-r ** 2 / 2)) / r ** 2)
 
 
     # model = Model.model
