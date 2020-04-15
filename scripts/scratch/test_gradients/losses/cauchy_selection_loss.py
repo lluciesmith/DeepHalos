@@ -10,6 +10,7 @@ import dlhalos_code.data_processing as tn
 from pickle import dump, load
 import tensorflow.keras.backend as K
 import numpy as np
+from tensorflow.keras.models import load_model
 
 
 if __name__ == "__main__":
@@ -36,22 +37,24 @@ if __name__ == "__main__":
 
     # training set
 
-    try:
-        training_particle_IDs = load(open(path_training_set + 'training_set.pkl', 'rb'))
-        training_labels_particle_IDS = load(open(path_training_set + 'labels_training_set.pkl', 'rb'))
-        s_output = load(open(path_training_set + 'scaler_output.pkl', "rb"))
-        print("loaded training set")
-    except OSError:
-        training_set = tn.InputsPreparation(train_sims, scaler_type="minmax",
-                                            load_ids=False, shuffle=True, log_high_mass_limit=13,
-                                            random_style="uniform", random_subset_each_sim=100000,
-                                            num_per_mass_bin=10000)
-        dump(training_set.particle_IDs, open(path_model + 'training_set.pkl', 'wb'))
-        dump(training_set.labels_particle_IDS, open(path_model + 'labels_training_set.pkl', 'wb'))
-        dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
-        training_particle_IDs = training_set.particle_IDs
-        training_labels_particle_IDS = training_set.labels_particle_IDS
-        s_output = training_set.scaler_output
+    # try:
+    #     training_particle_IDs = load(open(path_training_set + 'training_set.pkl', 'rb'))
+    #     training_labels_particle_IDS = load(open(path_training_set + 'labels_training_set.pkl', 'rb'))
+    #     s_output = load(open(path_training_set + 'scaler_output.pkl', "rb"))
+    #     print("loaded training set")
+    # except OSError:
+
+    training_set = tn.InputsPreparation(train_sims, scaler_type="minmax", output_range=(-0.9, 0.9),
+                                        load_ids=False, shuffle=True, log_high_mass_limit=13,
+                                        random_style="uniform", random_subset_each_sim=100000,
+                                        num_per_mass_bin=10000)
+    dump(training_set.particle_IDs, open(path_model + 'training_set.pkl', 'wb'))
+    dump(training_set.labels_particle_IDS, open(path_model + 'labels_training_set.pkl', 'wb'))
+    dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
+
+    training_particle_IDs = training_set.particle_IDs
+    training_labels_particle_IDS = training_set.labels_particle_IDS
+    s_output = training_set.scaler_output
 
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_inputs)
@@ -97,16 +100,18 @@ if __name__ == "__main__":
     params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc},
                  'dense_2': {'neurons': 128, **params_all_fcc},
-                 'last': {}
+                 'last': {'activation':'tanh', }
                  }
 
     lr = 0.0001
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,
-                    lr=lr, callbacks=callbacks_list, metrics=['mae', 'mse'],
+                    lr=lr,
+                    callbacks=callbacks_list,
+                    metrics=['mae', 'mse'],
                     num_epochs=100, dim=params_inputs['dim'],
                     loss=lf.cauchy_selection_loss,
-                    max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
+                    max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True,
                     compile=True)
 
@@ -131,25 +136,29 @@ if __name__ == "__main__":
 
     ############# PREDICTIONS #############
 
-    # training set
-
-    pred = Model.model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
-    truth_rescaled = np.array([training_labels_particle_IDS[ID] for ID in training_particle_IDs])
-    h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-
-    np.save(path_model + "predicted_training_100.npy", h_m_pred)
-    np.save(path_model + "true_training_100.npy", true)
-
-    # validation set
-
-    pred = Model.model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
-    truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
-    h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-
-    np.save(path_model + "predicted_val_100.npy", h_m_pred)
-    np.save(path_model + "true_val_100.npy", true)
+    # # training set
+    #
+    # epoch = "05"
+    # model = load_model(path_model + "model/weights." + epoch + ".hdf5",
+    #                    custom_objects={'cauchy_selection_loss':lf.cauchy_selection_loss})
+    #
+    # pred = model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
+    # truth_rescaled = np.array([training_labels_particle_IDS[ID] for ID in training_particle_IDs])
+    # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+    # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    #
+    # np.save(path_model + "predicted_training_" + epoch + ".npy", h_m_pred)
+    # np.save(path_model + "true_training_" + epoch + ".npy", true)
+    #
+    # # validation set
+    #
+    # pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
+    # truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
+    # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+    # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    #
+    # np.save(path_model + "predicted_val_" + epoch + ".npy", h_m_pred)
+    # np.save(path_model + "true_val_" + epoch + ".npy", true)
 
 
 # model = load_model(path_model + "model/weights.50.hdf5", custom_objects={'cauchy_loss': cauchy_loss})

@@ -224,7 +224,7 @@ class CNN:
         else:
             x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
 
-        predictions = Dense(1, activation='linear', **fcc_params['last'])(x)
+        predictions = Dense(1, **fcc_params['last'])(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
