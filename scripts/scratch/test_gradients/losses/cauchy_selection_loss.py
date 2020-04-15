@@ -18,7 +18,8 @@ if __name__ == "__main__":
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/cauchy_selec/"
-    path_training_set = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/mse2/"
+    # path_training_set = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net
+    # /mse2/"
 
     # First you will have to load the simulation
 
@@ -46,7 +47,7 @@ if __name__ == "__main__":
 
     training_set = tn.InputsPreparation(train_sims, scaler_type="minmax", output_range=(-0.9, 0.9),
                                         load_ids=False, shuffle=True, log_high_mass_limit=13,
-                                        random_style="uniform", random_subset_each_sim=100000,
+                                        random_style="uniform", random_subset_each_sim=1000000,
                                         num_per_mass_bin=10000)
     dump(training_set.particle_IDs, open(path_model + 'training_set.pkl', 'wb'))
     dump(training_set.labels_particle_IDS, open(path_model + 'labels_training_set.pkl', 'wb'))
