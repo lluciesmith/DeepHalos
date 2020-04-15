@@ -16,7 +16,8 @@ if __name__ == "__main__":
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/cauchy_selec/"
-    path_training_set = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/mse2/"
+    # path_training_set = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net
+    # /mse2/"
 
     # First you will have to load the simulation
 
@@ -34,23 +35,23 @@ if __name__ == "__main__":
                      }
 
     # training set
-
-    try:
-        training_particle_IDs = load(open(path_training_set + 'training_set.pkl', 'rb'))
-        training_labels_particle_IDS = load(open(path_training_set + 'labels_training_set.pkl', 'rb'))
-        s_output = load(open(path_training_set + 'scaler_output.pkl', "rb"))
-        print("loaded training set")
-    except OSError:
-        training_set = tn.InputsPreparation(train_sims, scaler_type="minmax",
-                                            load_ids=False, shuffle=True, log_high_mass_limit=13,
-                                            random_style="uniform", random_subset_each_sim=1000000,
-                                            num_per_mass_bin=10000)
-        dump(training_set.particle_IDs, open(path_model + 'training_set.pkl', 'wb'))
-        dump(training_set.labels_particle_IDS, open(path_model + 'labels_training_set.pkl', 'wb'))
-        dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
-        training_particle_IDs = training_set.particle_IDs
-        training_labels_particle_IDS = training_set.labels_particle_IDS
-        s_output = training_set.scaler_output
+    #
+    # try:
+    #     training_particle_IDs = load(open(path_training_set + 'training_set.pkl', 'rb'))
+    #     training_labels_particle_IDS = load(open(path_training_set + 'labels_training_set.pkl', 'rb'))
+    #     s_output = load(open(path_training_set + 'scaler_output.pkl', "rb"))
+    #     print("loaded training set")
+    # except OSError:
+    training_set = tn.InputsPreparation(train_sims, scaler_type="minmax",
+                                        load_ids=False, shuffle=True, log_high_mass_limit=13,
+                                        random_style="uniform", random_subset_each_sim=100000,
+                                        num_per_mass_bin=1000)
+    dump(training_set.particle_IDs, open(path_model + 'training_set.pkl', 'wb'))
+    dump(training_set.labels_particle_IDS, open(path_model + 'labels_training_set.pkl', 'wb'))
+    dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
+    training_particle_IDs = training_set.particle_IDs
+    training_labels_particle_IDS = training_set.labels_particle_IDS
+    s_output = training_set.scaler_output
 
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_inputs)
@@ -104,7 +105,7 @@ if __name__ == "__main__":
                     training_generator=generator_training, validation_generator=generator_validation,
                     lr=lr, callbacks=callbacks_list, metrics=['mae', 'mse'],
                     num_epochs=100, dim=params_inputs['dim'], loss=lf.cauchy_selection_loss,
-                    max_queue_size=10, use_multiprocessing=True, workers=4, verbose=1,
+                    max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True,
                     compile=True)
 
