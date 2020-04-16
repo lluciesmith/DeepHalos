@@ -46,7 +46,9 @@ if __name__ == "__main__":
     # except OSError:
 
     training_set = tn.InputsPreparation(train_sims, scaler_type="minmax", output_range=(-0.9, 0.9),
-                                        load_ids=False, shuffle=True, log_high_mass_limit=13,
+                                        load_ids=False,
+                                        # shuffle=True,
+                                        log_high_mass_limit=13,
                                         random_style="uniform", random_subset_each_sim=1000000,
                                         num_per_mass_bin=10000)
     dump(training_set.particle_IDs, open(path_model + 'training_set.pkl', 'wb'))
@@ -63,7 +65,9 @@ if __name__ == "__main__":
     # validation set
 
     validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=100000,
+                                          random_style="uniform",
                                           num_per_mass_bin=100, log_high_mass_limit=13, scaler_output=s_output)
+    print(len(validation_set.particle_IDs))
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
                                             **params_inputs)
 
@@ -87,7 +91,8 @@ if __name__ == "__main__":
 
     params_all_conv = {'activation': activation, 'relu': relu,
                        'strides': 1, 'padding': 'same', 'pool': "max", 'bn': False,
-                       'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
+                       'kernel_regularizer': kernel_reg,
+                       'bias_regularizer': bias_reg
                        }
     param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
                              'strides': 1, 'padding': 'same', 'pool': None, 'bn': False,
@@ -98,7 +103,8 @@ if __name__ == "__main__":
                   'conv_5': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv}
                   }
 
-    params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu}
+    params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu,
+                      'kernel_regularizer': kernel_reg}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc},
                  'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {'activation':'tanh', }
