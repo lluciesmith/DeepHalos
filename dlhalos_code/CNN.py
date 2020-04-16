@@ -23,7 +23,8 @@ class CNN:
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
                  lr=0.0001, loss='mse', save_summary=False, path_summary=".", validation_freq=1, train=True,
-                 skip_connector=False, compile=True, add_cauchy=False, initial_epoch=1, pretrained_model=None):
+                 skip_connector=False, compile=True, add_cauchy=False, initial_epoch=1, pretrained_model=None,
+                 validation_steps=50):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -35,6 +36,7 @@ class CNN:
         self.val_freq = validation_freq
         self.initialiser = initialiser
         self.pool_size = pool_size
+        self.validation_steps = validation_steps
 
         self.num_gpu = num_gpu
         self.num_epochs = num_epochs
@@ -78,7 +80,8 @@ class CNN:
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
                                       verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
-                                      callbacks=self.callbacks, validation_freq=self.val_freq)
+                                      callbacks=self.callbacks, validation_freq=self.val_freq,
+                                      validation_steps=self.validation_steps)
         t1 = time.time()
         print("This model took " + str((t1 - t0)/60) + " minutes to train.")
 

@@ -43,7 +43,7 @@ if __name__ == "__main__":
                                         load_ids=False, shuffle=True,
                                         log_high_mass_limit=13,
                                         random_style="uniform", random_subset_each_sim=1000000,
-                                        num_per_mass_bin=10000, scaler_output=scaler_training_set)
+                                        num_per_mass_bin=1000, scaler_output=scaler_training_set)
 
     dump(training_set.particle_IDs, open(path_model + 'training_set.pkl', 'wb'))
     dump(training_set.labels_particle_IDS, open(path_model + 'labels_training_set.pkl', 'wb'))
@@ -79,6 +79,6 @@ if __name__ == "__main__":
                     training_generator=generator_training, validation_generator=generator_validation,
                     lr=0.0001, callbacks=callbacks_list, metrics=['mae', 'mse'],
                     num_epochs=100, dim=params_inputs['dim'],
-                    loss=lf.cauchy_selection_loss,
-                    max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1,
+                    loss=lf.cauchy_selection_loss, validation_steps=50,
+                    max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
