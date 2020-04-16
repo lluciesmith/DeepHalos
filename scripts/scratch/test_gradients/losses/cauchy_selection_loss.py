@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     ######### TRAINING MODEL ##############
 
-    trained_model = load(path_transfer + "model/weights.10.hdf5")
+    trained_model = load_model(path_transfer + "model/weights.10.hdf5")
 
     # callbacks
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
