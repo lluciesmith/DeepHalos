@@ -23,7 +23,7 @@ class CNN:
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
                  lr=0.0001, loss='mse', save_summary=False, path_summary=".", validation_freq=1, train=True,
-                 skip_connector=False, compile=True, add_cauchy=False):
+                 skip_connector=False, compile=True, add_cauchy=False, initial_epoch=1, pretrained_model=None):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -50,6 +50,9 @@ class CNN:
         self.loss = loss
         self.add_cauchy = add_cauchy
 
+        self.initial_epoch = initial_epoch
+        self.pretrained_model = pretrained_model
+
         self.save = save_model
         self.model_name = model_name
         self.save_summary = save_summary
@@ -73,7 +76,7 @@ class CNN:
         t0 = time.time()
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
-                                      max_queue_size=self.max_queue_size,
+                                      max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
                                       verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
                                       callbacks=self.callbacks, validation_freq=self.val_freq)
         t1 = time.time()
@@ -132,9 +135,11 @@ class CNN:
     def compile_model_single_gpu(self):
         if self.model_type == "regression":
             print("Initiating regression model")
-
-            Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                   data_format=self.data_format)
+            if self.pretrained_model is not None:
+                Model = self.pretrained_model
+            else:
+                Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                       data_format=self.data_format)
 
             optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)

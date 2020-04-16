@@ -28,11 +28,12 @@ def cauchy_selection_loss(y_true, y_predicted):
 def cauchy_selection_loss_numpy(y_true, y_predicted):
     y_max = 1
     y_min = -1
-    gamma = 1
+    gamma = 0.2
     r = (y_true - y_predicted)/gamma
+    epsilon = 10**-6
 
     tail_term = np.log(1 + np.square(r))
-    selection_term = np.log(np.arctan((y_max - y_predicted)/gamma) - np.arctan((y_min - y_predicted)/gamma))
+    selection_term = np.log(np.arctan((y_max - y_predicted)/gamma) - np.arctan((y_min - y_predicted)/gamma) + epsilon)
 
     loss = tail_term + selection_term
     return loss
@@ -40,7 +41,7 @@ def cauchy_selection_loss_numpy(y_true, y_predicted):
 
 def sivia_skilling_loss_numpy(y_true, y_predicted):
     epsilon = 10 ** -6
-    gamma = 1
+    gamma = 0.2
     r = abs(y_true - y_predicted)/gamma
     factor = - np.log((1 - np.exp(-(r ** 2 + epsilon) / 2)) / (r ** 2 + epsilon))
     return factor
