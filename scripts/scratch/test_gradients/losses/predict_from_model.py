@@ -101,7 +101,7 @@ if __name__ == "__main__":
                        validation_particle_IDs, validation_labels_particle_IDS,
                        scaler_training_set, path_model)
 
-    for epoch in ["20", "35", "50", "100"]:
+    for epoch in ["35", "50"]:
         model_epoch = load_model(path_model + "model/weights." + epoch + ".hdf5",
                            custom_objects={'cauchy_selection_loss':lf.cauchy_selection_loss})
 
