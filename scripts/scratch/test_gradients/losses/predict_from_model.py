@@ -14,22 +14,21 @@ import gc
 
 
 def predict_from_model(model, epoch,
-                       gen_train, gen_val, training_IDs, training_labels_IDS, val_set, scaler, path_model):
-    pred = model.predict_generator(gen_train, use_multiprocessing=False, workers=1, verbose=1)
+                       gen_train, gen_val, training_IDs, training_labels_IDS, val_IDs, val_labels_IDs, scaler,
+                       path_model):
+    pred = model.predict_generator(gen_train, use_multiprocessing=False, workers=1, verbose=1, max_queue_size=10)
     truth_rescaled = np.array([training_labels_IDS[ID] for ID in training_IDs])
 
     h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
     true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-
     np.save(path_model + "predicted_training_"+ epoch + ".npy", h_m_pred)
     np.save(path_model + "true_training_"+ epoch + ".npy", true)
 
-    pred = model.predict_generator(gen_val, use_multiprocessing=False, workers=1, verbose=1)
-    truth_rescaled = np.array([val for (key, val) in val_set.labels_particle_IDS.items()])
+    pred = model.predict_generator(gen_val, use_multiprocessing=False, workers=1, verbose=1, max_queue_size=10)
+    truth_rescaled = np.array([val_labels_IDs[ID] for ID in val_IDs])
 
     h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
     true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-
     np.save(path_model + "predicted_val_"+ epoch + ".npy", h_m_pred)
     np.save(path_model + "true_val_"+ epoch + ".npy", true)
 
@@ -80,18 +79,27 @@ if __name__ == "__main__":
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=False, **params_inputs)
 
-    validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=20000,
-                                          log_high_mass_limit=13, scaler_output=scaler_training_set)
-    generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS, s.sims_dic,
+    try:
+        validation_particle_IDs = load(open(path_model + 'validation_set.pkl', 'rb'))
+        validation_labels_particle_IDS = load(open(path_model + 'labels_validation_set.pkl', 'rb'))
+        print("loaded validation set")
+    except OSError:
+        validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=20000,
+                                              log_high_mass_limit=13, scaler_output=scaler_training_set)
+        dump(validation_set.particle_IDs, open(path_model + 'validation_set.pkl', 'wb'))
+        dump(validation_set.labels_particle_IDS, open(path_model + 'labels_validation_set.pkl', 'wb'))
+        validation_particle_IDs = validation_set.particle_IDs
+        validation_labels_particle_IDS = validation_set.labels_particle_IDS
+
+    generator_validation = tn.DataGenerator(validation_particle_IDs, validation_labels_particle_IDS, s.sims_dic,
                                             **params_inputs)
-    dump(validation_set.particle_IDs, open(path_model + 'validation_set.pkl', 'wb'))
-    dump(validation_set.labels_particle_IDS, open(path_model + 'labels_validation_set.pkl', 'wb'))
 
     model_mse = load_model(path_transfer + "model/weights.10.hdf5")
     predict_from_model(model_mse, "10",
                        generator_training, generator_validation,
-                       training_particle_IDs, training_labels_particle_IDS, validation_set, scaler_training_set,
-                       path_model)
+                       training_particle_IDs, training_labels_particle_IDS,
+                       validation_particle_IDs, validation_labels_particle_IDS,
+                       scaler_training_set, path_model)
 
     for epoch in ["20", "35", "50", "100"]:
         model_epoch = load_model(path_model + "model/weights." + epoch + ".hdf5",
@@ -99,8 +107,9 @@ if __name__ == "__main__":
 
         predict_from_model(model_epoch, epoch,
                            generator_training, generator_validation,
-                           training_particle_IDs, training_labels_particle_IDS, validation_set, scaler_training_set,
-                           path_model)
+                           training_particle_IDs, training_labels_particle_IDS,
+                       validation_particle_IDs, validation_labels_particle_IDS,
+                       scaler_training_set, path_model)
         del model_epoch
         gc.collect()
 
