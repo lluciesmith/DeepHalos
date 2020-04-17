@@ -94,12 +94,12 @@ if __name__ == "__main__":
     generator_validation = tn.DataGenerator(validation_particle_IDs, validation_labels_particle_IDS, s.sims_dic,
                                             **params_inputs)
 
-    model_mse = load_model(path_transfer + "model/weights.10.hdf5")
-    predict_from_model(model_mse, "10",
-                       generator_training, generator_validation,
-                       training_particle_IDs, training_labels_particle_IDS,
-                       validation_particle_IDs, validation_labels_particle_IDS,
-                       scaler_training_set, path_model)
+    # model_mse = load_model(path_transfer + "model/weights.10.hdf5")
+    # predict_from_model(model_mse, "10",
+    #                    generator_training, generator_validation,
+    #                    training_particle_IDs, training_labels_particle_IDS,
+    #                    validation_particle_IDs, validation_labels_particle_IDS,
+    #                    scaler_training_set, path_model)
 
     for epoch in ["35", "50"]:
         model_epoch = load_model(path_model + "model/weights." + epoch + ".hdf5",
