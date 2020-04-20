@@ -16,16 +16,16 @@ def conditional_loss(y_true, y_predicted):
     # the function K.less(x, y) returns True when x < y
 
     negative_term = K.square(y_true - y_predicted)
-    # mask_neg = K.less(y_predicted, K.ones_like(y_predicted)) # this means that is is 1 when predictions < -1
+    mask_neg = K.less(y_predicted, K.ones_like(y_predicted)) # this means that is is 1 when predictions < -1
 
     range_term = K.square(y_true - y_predicted)
-    # mask_range = K.less_equal(K.abs(y_predicted), -1 * K.ones_like(y_predicted))
+    mask_range = K.less_equal(K.abs(y_predicted), -1 * K.ones_like(y_predicted))
 
     positive_term = K.pow(y_true - y_predicted, 4)
-    # mask_pos = K.less(K.ones_like(y_predicted), y_predicted)
+    mask_pos = K.less(K.ones_like(y_predicted), y_predicted)
 
-    # loss = mask_neg * negative_term + mask_range * range_term + positive_term * mask_pos
-    loss = negative_term + range_term + positive_term
+    loss = mask_neg * negative_term + mask_range * range_term + positive_term * mask_pos
+    # loss = negative_term + range_term + positive_term
     return K.mean(loss, axis=-1)
 
 # def cauchy_selection_boundaries():
