@@ -24,7 +24,7 @@ def conditional_loss(y_true, y_predicted):
     positive_term = K.pow(y_true - y_predicted, 4)
     mask_pos = K.less(K.ones_like(y_predicted), y_predicted)
 
-    loss = mask_neg * negative_term + mask_range * range_term + positive_term * mask_pos
+    loss = K.multiply(mask_neg, negative_term) + K.multiply(mask_range, range_term) + K.multiply(positive_term, mask_pos)
     # loss = negative_term + range_term + positive_term
     return K.mean(loss, axis=-1)
 
