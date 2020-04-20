@@ -24,8 +24,8 @@ def conditional_loss(y_true, y_predicted):
     positive_term = K.pow(y_true - y_predicted, 4)
     mask_pos = K.less(K.ones_like(y_predicted), y_predicted)
 
-    loss = tf.multiply(mask_neg, negative_term) + tf.multiply(mask_range, range_term) \
-           + tf.multiply(positive_term, mask_pos)
+    loss = tf.cond(mask_neg, negative_term, 0) + tf.cond(mask_range, range_term, 0) \
+           + tf.cond(mask_pos, positive_term, 0)
     # loss = negative_term + range_term + positive_term
     return K.mean(loss, axis=-1)
 
