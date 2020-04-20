@@ -14,31 +14,32 @@ def sivia_skilling_loss(y_true, y_predicted):
 
 def conditional_loss(y_true, y_predicted):
     # the function K.less(x, y) returns True when x < y
-
-    def true_neg():
-        return K.abs(y_true - y_predicted)
-
-    def true_range():
-        return K.square(y_true - y_predicted)
-
-    def true_pos():
-        return K.pow(y_true - y_predicted, 4)
-
-    def false_fn():
-        return K.zeros_like(y_predicted)
-
-    #negative_term = K.square(y_true - y_predicted)
+    #
+    # def true_neg():
+    #     return K.abs(y_true - y_predicted)
+    #
+    # def true_range():
+    #     return K.square(y_true - y_predicted)
+    #
+    # def true_pos():
+    #     return K.pow(y_true - y_predicted, 4)
+    #
+    # def false_fn():
+    #     return K.zeros_like(y_predicted)
+    #
+    # #negative_term = K.square(y_true - y_predicted)
     mask_neg = K.less(y_predicted, K.ones_like(y_predicted)) # this means that is is 1 when predictions < -1
+    #
+    # #range_term = K.square(y_true - y_predicted)
+    # mask_range = K.less_equal(K.abs(y_predicted), -1 * K.ones_like(y_predicted))
+    #
+    # #positive_term = K.pow(y_true - y_predicted, 4)
+    # mask_pos = K.less(K.ones_like(y_predicted), y_predicted)
 
-    #range_term = K.square(y_true - y_predicted)
-    mask_range = K.less_equal(K.abs(y_predicted), -1 * K.ones_like(y_predicted))
+    mse = lambda: K.square(K.subtract(y_true, y_predicted))
+    absval = lambda: K.abs(K.subtract(y_true, y_predicted))
 
-    #positive_term = K.pow(y_true - y_predicted, 4)
-    mask_pos = K.less(K.ones_like(y_predicted), y_predicted)
-
-    loss = tf.cond(mask_neg, true_neg, false_fn) \
-           + tf.cond(mask_range, true_range, false_fn) \
-           + tf.cond(mask_pos, true_pos, false_fn)
+    loss = tf.cond(mask_neg, mse, absval)
     # loss = negative_term + range_term + positive_term
     return K.mean(loss, axis=-1)
 
