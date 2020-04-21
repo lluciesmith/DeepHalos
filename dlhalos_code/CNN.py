@@ -23,8 +23,7 @@ class CNN:
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
                  lr=0.0001, loss='mse', save_summary=False, path_summary=".", validation_freq=1, train=True,
-                 skip_connector=False, compile=True, add_cauchy=False, initial_epoch=1, pretrained_model=None,
-                 validation_steps=50):
+                 skip_connector=False, compile=True, initial_epoch=1, pretrained_model=None, validation_steps=50):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -50,7 +49,6 @@ class CNN:
         self.model_type = model_type
         self.skip_connector = skip_connector
         self.loss = loss
-        self.add_cauchy = add_cauchy
 
         self.initial_epoch = initial_epoch
         self.pretrained_model = pretrained_model
@@ -61,11 +59,7 @@ class CNN:
         self.path_summary = path_summary
 
         if train is True:
-            if self.add_cauchy is True:
-                self.model, self.history = self.model_with_cauchy(self.input_shape, self.conv_params,
-                                                                  self.fcc_params, data_format=self.data_format)
-            else:
-                self.model, self.history = self.compile_and_fit_model()
+            self.model, self.history = self.compile_and_fit_model()
         else:
             if compile is True:
                 self.model = self.compile_model()
@@ -162,48 +156,6 @@ class CNN:
 
         print(Model.summary())
         return Model
-
-    def model_with_cauchy(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
-        input_data = Input(shape=(*input_shape_box, 1))
-
-        if self.skip_connector is True:
-            x = self._model_skip_connection(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
-        else:
-            x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
-
-        x = Dense(1, activation='linear', **fcc_params['last'])(x)
-        predictions = CauchyLayer()(x)
-
-        model = keras.Model(inputs=input_data, outputs=predictions)
-
-        def cauchy_loss(layer):
-            def loss(y_true, y_pred):
-                logl = K.log(K.square(y_true - y_pred) + K.square(layer.gamma))
-                return K.mean(logl, axis=-1)
-            return loss
-
-        optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
-                                          amsgrad=True)
-        model.compile(loss=cauchy_loss(model.layers[-1]), optimizer=optimiser, metrics=self.metrics)
-        print(model.summary())
-        if self.save_summary is True:
-            with open(self.path_summary + 'model_summary.txt', 'w') as fh:
-                model.summary(print_fn=lambda x: fh.write(x + '\n'))
-            model.save_weights(self.path_summary + 'model/initial_weights.h5')
-
-        t0 = time.time()
-        history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
-                                      use_multiprocessing=self.use_multiprocessing, workers=self.workers,
-                                      max_queue_size=self.max_queue_size,
-                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
-                                      callbacks=self.callbacks, validation_freq=self.val_freq)
-        t1 = time.time()
-        print("This model took " + str((t1 - t0)/60) + " minutes to train.")
-
-        if self.save is True:
-            model.save(self.model_name)
-
-        return model, history
 
     def uncompiled_model(self):
         if self.model_type == "regression":
@@ -433,7 +385,8 @@ class CauchyLayer(Layer):
 
     def build(self, input_shape):
         # Create a trainable weight variable for this layer.
-        init = tf.compat.v1.keras.initializers.RandomNormal(mean=1.0, stddev=0.2)
+        init = K.constant([0.2], dtype="float32")
+        # init = tf.compat.v1.keras.initializers.RandomNormal(mean=1.0, stddev=0.2)
         self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init, trainable=True)
         super(CauchyLayer, self).build(input_shape)  # Be sure to call this at the end
 
