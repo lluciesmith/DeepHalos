@@ -381,7 +381,7 @@ class CauchyLayer(Layer):
 
     def __init__(self, **kwargs):
         # self.output_dim = output_dim
-        super(CauchyLayer, self).__init__(name="cauchy", **kwargs)
+        super(CauchyLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
         # Create a trainable weight variable for this layer.
