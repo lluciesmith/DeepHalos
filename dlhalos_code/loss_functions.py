@@ -17,29 +17,28 @@ def cauchy_selection_loss_fixed_boundary(gamma=0.2, y_max=1, y_min=-1):
 
     def loss(y_true, y_predicted):
         return L.loss(y_true, y_predicted)
+    return loss
 
 
 def cauchy_selection_loss_trainable_gamma(layer, y_max=1, y_min=-1):
     def loss(y_true, y_pred):
-        gamma = layer.gamma
+        gamma = layer.variables[-1]
         r = (y_true - y_pred)/gamma
-
         tail_term = K.log(1 + K.square(r))
-        selection_term = K.log(K.atan((y_max - y_pred)/gamma) - K.atan((y_min - y_pred)/gamma))
-
+        selection_term = K.log(tf.atan((y_max - y_pred)/gamma) - tf.atan((y_min - y_pred)/gamma))
         loss = tail_term + selection_term + K.log(gamma)
         return K.mean(loss, axis=-1)
+    return loss
 
 
 def cauchy_selection_loss(gamma=0.2, y_max=1, y_min=-1):
     def loss(y_true, y_predicted):
         r = (y_true - y_predicted) / gamma
-
         tail_term = K.log(1 + K.square(r))
-        selection_term = K.log(K.atan((y_max - y_predicted) / gamma) - K.atan((y_min - y_predicted) / gamma))
-
+        selection_term = K.log(tf.atan((y_max - y_predicted) / gamma) - tf.atan((y_min - y_predicted) / gamma))
         loss = tail_term + selection_term
         return K.mean(loss, axis=-1)
+    return loss
 
 
 # Numpy equivalents
