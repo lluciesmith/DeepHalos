@@ -42,7 +42,9 @@ if __name__ == "__main__":
         training_labels_particle_IDS = load(open(path_model + 'labels_training_set.pkl', 'rb'))
         s_output = load(open(path_model + 'scaler_output.pkl', "rb"))
         print("loaded training set")
+
     except OSError:
+
         training_set = tn.InputsPreparation(train_sims, scaler_type="minmax", output_range=(-1, 1),
                                             load_ids=False, shuffle=True,
                                             log_high_mass_limit=13,
