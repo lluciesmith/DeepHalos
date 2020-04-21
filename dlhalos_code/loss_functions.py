@@ -113,22 +113,22 @@ class ConditionalCauchySelectionLoss:
 
     def function_inside_boundary(self, y_true, y_pred, gamma, y_max, y_min):
         r = (y_true - y_pred) / gamma
-        f = K.log(gamma) + K.log(1 + K.square(r)) + K.log(
-            K.atan((y_max - y_pred) / gamma) - K.atan((y_min - y_pred) / gamma))
+        f = K.log(gamma) + K.log(1 + K.square(r)) + \
+            K.log(tf.atan((y_max - y_pred) / gamma) - tf.atan((y_min - y_pred) / gamma))
         return f
 
     def alpha(self, y_boundary, y_true, e_const, gamma):
         term1 = - K.exp(1 + e_const) / 2
         term2 = - y_boundary * (y_true - y_boundary) / (K.pow(-y_boundary + y_true, 2) + K.pow(gamma, 2))
-        term3 = - 2 / ((4 * gamma + K.pow(gamma, 3)) * K.atan(2 / gamma))
+        term3 = - 2 / ((4 * gamma + K.pow(gamma, 3)) * tf.atan(2 / gamma))
         return term1 + term2 + term3
 
     def beta(self, y_boundary, y_true, e_const, gamma):
         term1 = 0.5 * (-2 + e_const) * K.exp(e_const)
         term2 = y_boundary * (y_true - y_boundary) / (K.pow(-y_boundary + y_true, 2) + K.pow(gamma, 2))
-        term3 = 2 / ((4 * gamma + K.pow(gamma, 3)) * K.atan(2 / gamma))
+        term3 = 2 / ((4 * gamma + K.pow(gamma, 3)) * tf.atan(2 / gamma))
         term4 = K.log(1 + (K.pow(- y_boundary + y_true, 2) / K.pow(gamma, 2)))
         term5 = K.log(gamma)
-        term6 = K.log(K.atan(2 / gamma))
+        term6 = K.log(tf.atan(2 / gamma))
         return term1 + term2 + term3 + term4 + term5 + term6
 
