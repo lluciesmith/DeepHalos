@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 sys.path.append("/home/luisals/DeepHalos")
 from dlhalos_code import CNN
 from dlhalos_code import loss_functions as lf
@@ -9,6 +10,7 @@ from tensorflow.keras import regularizers
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
 import tensorflow.keras.backend as K
+from tensorflow.keras.models import load_model
 
 
 if __name__ == "__main__":
@@ -53,7 +55,8 @@ if __name__ == "__main__":
         s_output = training_set.scaler_output
 
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=True, **params_inputs)
+                                          #shuffle=True,
+                                          **params_inputs)
 
     # validation set
 
@@ -107,6 +110,30 @@ if __name__ == "__main__":
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True,
                     compile=True)
+
+    #### PREDICTIONS ###
+
+    epoch = "50"
+    model = load_model(path_model + "model/weights." + epoch + ".hdf5",
+                       custom_objects={'sivia_skilling_loss':lf.sivia_skilling_loss})
+
+    pred = model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
+    truth_rescaled = np.array([training_labels_particle_IDS[ID] for ID in training_particle_IDs])
+    h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+    true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+
+    np.save(path_model + "predicted_training_" + epoch + ".npy", h_m_pred)
+    np.save(path_model + "true_training_" + epoch + ".npy", true)
+
+    # validation set
+
+    pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
+    truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
+    h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+    true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+
+    np.save(path_model + "predicted_val_" + epoch + ".npy", h_m_pred)
+    np.save(path_model + "true_val_" + epoch + ".npy", true)
 
 
     # def custom_loss(y_true, y_predicted):
