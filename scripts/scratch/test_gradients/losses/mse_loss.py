@@ -6,12 +6,7 @@ from tensorflow.keras.callbacks import CSVLogger
 import tensorflow
 from tensorflow.keras import regularizers
 import dlhalos_code.data_processing as tn
-import numpy as np
 from pickle import dump, load
-from tensorflow.keras.callbacks import TensorBoard
-import tensorflow.keras.backend as K
-from tensorflow.keras.models import load_model
-from sklearn.metrics import mean_squared_error as mse
 
 
 if __name__ == "__main__":
