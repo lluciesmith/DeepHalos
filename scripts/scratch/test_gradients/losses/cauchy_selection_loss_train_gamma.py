@@ -65,7 +65,7 @@ if __name__ == "__main__":
     history = trained_model.fit_generator(generator=generator_training,
                                           validation_data=generator_validation,
                                           validation_steps=len(generator_validation),
-                                          use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1,
+                                          use_multiprocessing=False, workers=2, max_queue_size=10, verbose=1,
                                           epochs=100, shuffle=True, callbacks=callbacks_list, initial_epoch=10)
 
     #### RESUME MODEL
