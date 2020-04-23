@@ -45,7 +45,7 @@ if __name__ == "__main__":
                                           s.sims_dic, **params_inputs)
 
     validation_set = tn.InputsPreparation([val_sim], load_ids=True, random_subset_all=4000,
-                                            scaler_output=training_set.scaler_output, shuffle=True)
+                                          scaler_output=training_set.scaler_output, shuffle=True)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs_val)
     dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
@@ -60,7 +60,6 @@ if __name__ == "__main__":
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
 
     # learning rate scheduler
-
     lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1)
 
     # tensorboard

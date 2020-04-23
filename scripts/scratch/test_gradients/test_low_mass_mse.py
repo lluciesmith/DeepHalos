@@ -16,7 +16,7 @@ from sklearn.metrics import mean_squared_error as mse
 
 if __name__ == "__main__":
 
-########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
+    ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/custom_loss/"
 
@@ -31,24 +31,23 @@ if __name__ == "__main__":
                      'dim': (31, 31, 31)
                      }
 
-    # define a common scaler for the output
+        # define a common scaler for the output
 
-    # s_output = load(open(path_model + 'scaler_output.pkl', "rb"))
+    s_output = load(open(path_model + 'scaler_output.pkl', "rb"))
 
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
     training_set = tn.InputsPreparation(train_sims, load_ids=False, shuffle=True, scaler_type="minmax",
-                                        log_high_mass_limit=13,
-                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000,
+                                        log_high_mass_limit=13, scaler_output=s_output,
+                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=1000,
                                         # random_subset_each_sim=1000
                                         )
     generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
 
     validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=5000,
-                                          log_high_mass_limit=13,
-                                          scaler_output=training_set.scaler_output, shuffle=True)
+                                          log_high_mass_limit=13, scaler_output=s_output, shuffle=True)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
     dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
@@ -93,7 +92,7 @@ if __name__ == "__main__":
     params_all_fcc = {'bn': False,
                       'dropout': 0.4,
                       'activation': activation, 'relu': relu,
-                      'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
+                      # 'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
                       }
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc},
                  'dense_2': {'neurons': 128, **params_all_fcc},
@@ -102,11 +101,15 @@ if __name__ == "__main__":
                      }
                  }
 
-    def custom_loss(y_true, y_predicted):
-        factor = 0.5 + abs(y_true) ** 4
-        return K.mean(factor * K.square(y_predicted - y_true), axis=-1)
+# def custom_loss(y_true, y_predicted):
+#     factor = 0.5 + abs(y_true) ** 4
+#     return K.mean(factor * K.square(y_predicted - y_true), axis=-1)
+#
+# def custom_loss2(y_true, y_predicted):
+#     error = np.maximum(K.square(y_true - y_predicted), 0.5)
+#     return K.mean(error, axis=-1)
 
-    loss = custom_loss
+    loss = 'mse'
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,
                     lr=0.001, callbacks=callbacks_list, metrics=['mae', 'mse'],
@@ -138,7 +141,7 @@ if __name__ == "__main__":
     np.save(path_model + "true_val.npy", true)
 
 
-    # model = load_model(path_model + "model/weights.25.hdf5", custom_objects={'custom_loss': custom_loss})
+    # model = load_model(path_model + "model/weights.10.hdf5", custom_objects={'custom_loss': custom_loss})
     # #model= load_model(path_model + "model/weights.10.hdf5")
     #
     # # training set
@@ -148,8 +151,8 @@ if __name__ == "__main__":
     # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
     # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
     #
-    # np.save(path_model + "predicted_training_25.npy", h_m_pred)
-    # np.save(path_model + "true_training_25.npy", true)
+    # np.save(path_model + "predicted_training_30.npy", h_m_pred)
+    # np.save(path_model + "true_training_30.npy", true)
     #
     # # validation set
     #
@@ -160,5 +163,5 @@ if __name__ == "__main__":
     # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
     # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
     #
-    # np.save(path_model + "predicted_val_25.npy", h_m_pred)
-    # np.save(path_model + "true_val_25.npy", true)
+    # np.save(path_model + "predicted_val_30.npy", h_m_pred)
+    # np.save(path_model + "true_val_30.npy", true)

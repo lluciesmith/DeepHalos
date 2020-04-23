@@ -2,63 +2,55 @@ import sys
 sys.path.append("/home/luisals/DeepHalos")
 from dlhalos_code import CNN
 from dlhalos_code import loss_functions as lf
-import tensorflow.keras as keras
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras import regularizers
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
+import tensorflow.keras as keras
 import tensorflow.keras.backend as K
 import numpy as np
 from tensorflow.keras.models import load_model
-
 
 if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_transfer = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/mse/"
-    scaler_training_set = load(open(path_transfer + 'scaler_output.pkl', 'rb'))
+    # Load data
 
-    # Create new model
+    path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/"
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net" \
-                 "/cauchy_selec/train_gamma/"
+    scaler_output = load(open(path_data + 'scaler_output.pkl', "rb"))
+    training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
+    training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
+    val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
+    val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 
-    # First you will have to load the simulation
+    # Create the generators for training
 
     all_sims = ["0", "1", "2", "4", "5", "6"]
     s = tn.SimulationPreparation(all_sims)
 
-    train_sims = all_sims[:-1]
-    val_sim = all_sims[-1]
-
-    # Use the same training set/validation set as for cauchy+selection loss function
-
-    params_inputs = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
-    tr_set = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/cauchy_selec/"
-
-    training_particle_IDs = load(open(tr_set + 'training_set.pkl', 'rb'))
-    training_labels_particle_IDS = load(open(tr_set + 'labels_training_set.pkl', 'rb'))
+    params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=False, **params_inputs)
+                                          shuffle=True, **params_tr)
 
-    # validation set
+    params_val = {'batch_size': 1, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (5, 5, 5)}
+    generator_validation = tn.DataGenerator(val_particle_IDs, val_particle_IDs, s.sims_dic,
+                                            shuffle=False, **params_val)
 
-    validation_particle_IDs = load(open(tr_set + 'validation_set.pkl', 'rb'))
-    validation_labels_particle_IDS = load(open(tr_set + 'labels_validation_set.pkl', 'rb'))
-    generator_validation = tn.DataGenerator(validation_particle_IDs, validation_labels_particle_IDS, s.sims_dic,
-                                            **params_inputs)
 
     ######### TRAINING MODEL FROM MSE TRAINED ONE ##############
 
-    lr = 0.0001
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
+                 "/cauchy_selec_gamma/"
 
-    model_mse = load_model(path_transfer + "model/weights.10.hdf5")
+    model_mse = load_model("/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin"
+                               "/larger_net/mse/model/weights.10.hdf5")
     predictions = CNN.CauchyLayer()(model_mse.layers[-1].output)
     trained_model = keras.Model(inputs=model_mse.input, outputs=predictions)
 
-    optimiser = keras.optimizers.Adam(lr=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
+    optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
     loss_c = lf.cauchy_selection_loss_trainable_gamma(trained_model.layers[-1])
     trained_model.compile(loss=loss_c, optimizer=optimiser, metrics=['mae', 'mse'])
     trained_model.save_weights(path_model + 'model/initial_weights.h5')
@@ -67,17 +59,24 @@ if __name__ == "__main__":
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
     checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5)
     csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=True)
-    callbacks_list = [checkpoint_call, csv_logger]
+    lrate = callbacks.LearningRateScheduler(CNN.lr_scheduler)
+    callbacks_list = [checkpoint_call, csv_logger, lrate]
 
     history = trained_model.fit_generator(generator=generator_training,
-                                          # validation_data=generator_validation,
-                                          use_multiprocessing=False, workers=1, max_queue_size=10, verbose=1,
+                                          validation_data=generator_validation,
+                                          validation_steps=len(generator_validation),
+                                          use_multiprocessing=True, workers=2, max_queue_size=10, verbose=1,
                                           epochs=100, shuffle=True, callbacks=callbacks_list, initial_epoch=10)
 
     #### RESUME MODEL
 
+    # x = tf.constant(value=3)
+    # L = CNN.CauchyLayer()
+    # y = L(x)
+    #
     # model = load_model(path_model + "model/weights.20.hdf5",
-    #                    custom_objects={'cauchy_selection_loss':lf.cauchy_selection_loss})
+    #                    custom_objects={'loss':lf.cauchy_selection_loss_trainable_gamma(CNN.CauchyLayer),
+    #                                    'CauchyLayer': L})
 
     # # callbacks
     # filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
