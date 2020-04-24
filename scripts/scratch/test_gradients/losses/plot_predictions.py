@@ -83,3 +83,25 @@ plt.subplots_adjust(left=0.08, top=0.94, bottom=0.12, wspace=0, hspace=0)
 axes[3,1].set_ylim(9.5, 14.8)
 f.text(0.5, 0.01,r"$\log(M_{\mathrm{truth}}/M_\odot)$")
 f.text(0.01, 0.4,r"$\log(M_{\mathrm{predicted}}/M_\odot)$", rotation=90)
+
+
+
+
+# f, axes = plt.subplots(1, 3, figsize=(10, 5), sharey=True)
+# plt.subplots_adjust(wspace=0, top=0.92, left=0.1)
+# truth_values = [-1, 0, 1]
+# xs = [np.linspace(-1.5, -0.5, 10000), np.linspace(-0.5, 0.5, 100000), np.linspace(0.5, 1.5, 100000)]
+# for i in range(3):
+#     axes[i].plot(xs[i], squared_error_numpy(truth_values[i], xs[i]) -
+#                  squared_error_numpy(truth_values[i], truth_values[i]), label=r"$\mathcal{L}_\mathrm{MSE}$")
+#     axes[i].plot(xs[i], L.loss_range(truth_values[i], xs[i]) -
+#                  L.loss_range(truth_values[i], truth_values[i]), label=r"$\mathcal{L}_C$")
+#     axes[i].plot(xs[i], L.loss(truth_values[i], xs[i]) -
+#                  L.loss(truth_values[i], truth_values[i]), label=r"$\mathcal{L}_B$")
+#     axes[i].axvline(x=truth_values[i], ls="--", color="grey")
+#     axes[i].set_xlabel("x")
+#
+# axes[1].legend(loc="best")
+# plt.ylim(-0.1, 5)
+# axes[0].set_ylabel("Loss")
+

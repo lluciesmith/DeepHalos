@@ -45,8 +45,9 @@ if __name__ == "__main__":
 
     # Load weights
 
-    trained_weights = load_model("/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin"
-                               "/larger_net/lr_decay/mse/model/weights.10.hdf5")
+
+    trained_weights = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin" \
+                      "/larger_net/lr_decay/mse/model/weights.10.hdf5"
 
     kernel_reg = regularizers.l2(0.0005)
     bias_reg = regularizers.l2(0.0005)

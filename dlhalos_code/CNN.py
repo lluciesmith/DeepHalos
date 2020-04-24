@@ -144,7 +144,7 @@ class CNN:
 
             if self.weights is not None:
                 print("Loading given weights onto model")
-                Model.load_weights("model.h5")
+                Model.load_weights(self.weights)
 
             optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
