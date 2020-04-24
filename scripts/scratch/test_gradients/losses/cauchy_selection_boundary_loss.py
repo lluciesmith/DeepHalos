@@ -31,7 +31,7 @@ if __name__ == "__main__":
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
 
-    params_val = {'batch_size': 1, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, **params_val)
 
@@ -88,6 +88,7 @@ if __name__ == "__main__":
     m.load_weights(trained_weights)
     m.fit_generator(generator=generator_training, use_multiprocessing=True, workers=2, verbose=1, max_queue_size=10,
                     callbacks=callbacks_list, epochs=100,
-                    validation_data=generator_validation, validation_steps=len(generator_validation))
+                    validation_data=generator_validation, validation_steps=20
+                    )
 
 
