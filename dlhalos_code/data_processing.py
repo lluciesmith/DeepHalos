@@ -11,7 +11,32 @@ import sklearn.preprocessing
 from numba import njit, prange
 from tensorflow.keras.utils import Sequence
 from collections import OrderedDict
+import threading
 import warnings
+
+
+class threadsafe_iter:
+    """Takes an iterator/generator and makes it thread-safe by
+    serializing call to the `next` method of given iterator/generator.
+    """
+    def __init__(self, it):
+        self.it = it
+        self.lock = threading.Lock()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        with self.lock:
+            return next(self.it)
+
+
+def threadsafe_generator(f):
+    """A decorator that takes a generator function and makes it thread-safe.
+    """
+    def g(*a, **kw):
+        return threadsafe_iter(f(*a, **kw))
+    return g
 
 
 class SimulationPreparation:
@@ -274,6 +299,7 @@ class InputsPreparation:
         return weights_samples
 
 
+@threadsafe_generator
 class DataGenerator(Sequence):
     def __init__(self, list_IDs, labels, sims, weights=None,
                  batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False,

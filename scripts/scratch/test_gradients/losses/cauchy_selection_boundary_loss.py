@@ -35,7 +35,7 @@ if __name__ == "__main__":
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, **params_val)
 
-        ######### TRAINING MODEL FROM MSE TRAINED ONE ##############
+    ######### TRAINING MODEL FROM MSE TRAINED ONE ##############
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
                  "/cauchy_selec_bound/"
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     m = Model.model
     m.load_weights(trained_weights)
-    m.fit_generator(generator=generator_training, use_multiprocessing=False, workers=0, verbose=1, max_queue_size=2,
+    m.fit_generator(generator=generator_training, use_multiprocessing=True, workers=2, verbose=1, max_queue_size=10,
                     callbacks=callbacks_list, epochs=100,
                     validation_data=generator_validation, validation_steps=len(generator_validation))
 
