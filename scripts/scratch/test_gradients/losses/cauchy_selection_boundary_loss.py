@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     m = Model.model
     m.load_weights(trained_weights)
-    m.fit_generator(generator=generator_training, use_multiprocessing=False, workers=1, verbose=1,
+    m.fit_generator(generator=generator_training, use_multiprocessing=False, workers=0, verbose=1, max_queue_size=2,
                     callbacks=callbacks_list, epochs=100,
                     validation_data=generator_validation, validation_steps=len(generator_validation))
 
