@@ -31,7 +31,7 @@ if __name__ == "__main__":
     s = tn.SimulationPreparation(all_sims)
 
     params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
-    generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
+    generator_training = tn.DataGenerator(training_particle_IDs[:1000], training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
 
     params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     callbacks_list = [checkpoint_call, csv_logger, lrate]
 
     lr = 0.0001
-    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=True, compile=True,
+    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
                     weights=trained_weights,
                     initial_epoch=10,
                     training_generator=generator_training,
@@ -85,6 +85,6 @@ if __name__ == "__main__":
                     lr=0.0001, callbacks=callbacks_list, metrics=['mae', 'mse'],
                     num_epochs=100, dim=generator_validation.dim,
                     loss=lf.cauchy_selection_loss_fixed_boundary(), validation_steps=len(generator_validation),
-                    max_queue_size=10, use_multiprocessing=False, workers=2, verbose=1,
+                    max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
 
