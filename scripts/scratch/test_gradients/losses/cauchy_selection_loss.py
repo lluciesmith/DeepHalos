@@ -85,7 +85,7 @@ if __name__ == "__main__":
                     lr=0.0001, callbacks=callbacks_list, metrics=['mae', 'mse'],
                     num_epochs=100, dim=generator_validation.dim,
                     loss=lf.cauchy_selection_loss(),
-                    max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
+                    max_queue_size=10, use_multiprocessing=False, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
 
     # #### RESUME MODEL

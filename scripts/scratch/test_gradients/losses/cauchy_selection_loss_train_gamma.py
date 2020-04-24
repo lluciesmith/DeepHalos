@@ -67,7 +67,32 @@ if __name__ == "__main__":
                  'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}
                  }
-    M = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True, weights=trained_weights)
+
+    params_all_conv = {'activation': activation, 'relu': relu, 'strides': 1, 'padding': 'same',
+                       'bn': False, 'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg}
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
+                  'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+                  'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+                  'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+                  'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv}
+                  }
+
+    params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu,
+                      'kernel_regularizer': kernel_reg}
+    param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc},
+                 'dense_2': {'neurons': 128, **params_all_fcc},
+                 'last': {}
+                 }
+
+    M = CNN.CNN(param_conv, param_fcc, model_type="regression", train=True, compile=True, weights=trained_weights,
+                initial_epoch=10,  training_generator=generator_training, validation_generator=generator_validation,
+                lr=0.0001,
+                # callbacks=callbacks_list,
+                # metrics=['mae', 'mse'],
+                num_epochs=100, dim=generator_validation.dim,
+                loss=lf.cauchy_selection_loss_fixed_boundary(), validation_steps=len(generator_validation),
+                max_queue_size=10, use_multiprocessing=False, workers=2, verbose=1,
+                num_gpu=1, save_summary=False, validation_freq=1)
 
     # Compute new model
 
