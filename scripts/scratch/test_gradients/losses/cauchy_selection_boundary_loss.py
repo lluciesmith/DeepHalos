@@ -25,20 +25,20 @@ if __name__ == "__main__":
     val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
     val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 
-    # Create the generators for training
+        # Create the generators for training
 
     all_sims = ["0", "1", "2", "4", "5", "6"]
     s = tn.SimulationPreparation(all_sims)
 
     params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
-    generator_training = tn.DataGenerator(training_particle_IDs[:1000], training_labels_particle_IDS, s.sims_dic,
+    generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
 
     params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, **params_val)
 
-    ######### TRAINING MODEL FROM MSE TRAINED ONE ##############
+        ######### TRAINING MODEL FROM MSE TRAINED ONE ##############
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
                  "/cauchy_selec_bound/"
@@ -77,14 +77,20 @@ if __name__ == "__main__":
     callbacks_list = [checkpoint_call, csv_logger, lrate]
 
     lr = 0.0001
-    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=True, compile=True,
-                    weights=trained_weights,
+    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
                     initial_epoch=10,
                     training_generator=generator_training,
                     validation_generator=generator_validation,
                     lr=0.0001, callbacks=callbacks_list, metrics=['mae', 'mse'],
-                    num_epochs=100, dim=generator_validation.dim,
+                    num_epochs=11, dim=generator_validation.dim,
                     loss=lf.cauchy_selection_loss_fixed_boundary(), validation_steps=len(generator_validation),
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
+
+    m = Model.model
+    m.load_weights(trained_weights)
+    m.fit_generator(generator=generator_training, use_multiprocessing=False, workers=1, verbose=1,
+                    callbacks=callbacks_list, epochs=100,
+                    validation_data=generator_validation, validation_steps=len(generator_validation))
+
 
