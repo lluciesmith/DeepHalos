@@ -7,9 +7,6 @@ from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras import regularizers
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
-import tensorflow.keras.backend as K
-import numpy as np
-from tensorflow.keras.models import load_model
 
 if __name__ == "__main__":
 
@@ -34,7 +31,7 @@ if __name__ == "__main__":
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
 
-    params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    params_val = {'batch_size': 1, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, **params_val)
 
