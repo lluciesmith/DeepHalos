@@ -77,7 +77,7 @@ if __name__ == "__main__":
     callbacks_list = [checkpoint_call, csv_logger, lrate]
 
     lr = 0.0001
-    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
+    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=True, compile=True,
                     weights=trained_weights,
                     initial_epoch=10,
                     training_generator=generator_training,
