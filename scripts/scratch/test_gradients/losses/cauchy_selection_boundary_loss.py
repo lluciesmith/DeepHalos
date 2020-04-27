@@ -7,33 +7,42 @@ from tensorflow.keras.callbacks import CSVLogger
 from tensorflow.keras import regularizers
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
+import numpy as np
 
 if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
+
+
+    all_sims = ["0", "1", "2", "4", "5", "6"]
+    s = tn.SimulationPreparation(all_sims)
 
     # Load data
 
     path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/"
 
     scaler_output = load(open(path_data + 'scaler_output.pkl', "rb"))
+
     training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
     training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
-    val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
-    val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 
-        # Create the generators for training
+    # Create the generators for training
 
-    all_sims = ["0", "1", "2", "4", "5", "6"]
-    s = tn.SimulationPreparation(all_sims)
-
-    params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    # training_steps = 10
+    # rt = int(params_tr['batch_size'] * training_steps)
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=True, **params_tr)
+                                          shuffle=False, **params_tr)
 
-    params_val = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
-    generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, **params_val)
+
+    # val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
+    # val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
+
+    # params_val = {'batch_size': 1, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    # val_steps = 10
+    # rv = int(params_val['batch_size'] * val_steps)
+    # generator_validation = tn.DataGenerator(val_particle_IDs[:rv], val_labels_particle_IDS, s.sims_dic,
+    #                                         shuffle=False, **params_val)
 
     ######### TRAINING MODEL FROM MSE TRAINED ONE ##############
 
@@ -76,20 +85,73 @@ if __name__ == "__main__":
     lr = 0.0001
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
                     initial_epoch=10,
-                    training_generator=generator_training,
-                    validation_generator=generator_validation,
-                    lr=0.0001, callbacks=callbacks_list, metrics=['mae', 'mse'],
-                    num_epochs=11, dim=generator_validation.dim,
-                    loss=lf.cauchy_selection_loss_fixed_boundary(), validation_steps=len(generator_validation),
-                    max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
+                    training_generator=generator_training, dim=generator_training.dim,
+                    # validation_generator=generator_validation, validation_steps=len(generator_validation),
+                    lr=0.0001,
+                    callbacks=callbacks_list,
+                    metrics=['mae', 'mse'],
+                    num_epochs=11,
+                    loss=lf.cauchy_selection_loss_fixed_boundary(),
+                    max_queue_size=1, use_multiprocessing=False, workers=0, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
 
     m = Model.model
     m.load_weights(trained_weights)
     m.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
-                    use_multiprocessing=False, workers=1, verbose=1, max_queue_size=10,
-                    callbacks=callbacks_list, epochs=100,
-                    validation_data=generator_validation, validation_steps=len(generator_validation)
-                    )
+                    use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
+                    callbacks=callbacks_list,
+                    epochs=100, initial_epoch=10
+                    # validation_data=generator_validation, validation_steps=val_steps
+    )
 
+# import time
+# import gc
+#
+# epochs = 2
+#
+#
+# t00 = time.time()
+# for epoch in range(epochs):
+#     t0 = time.time()
+#     epoch_init = epoch
+#     h = m.fit_generator(generator=generator_training, steps_per_epoch=training_steps,
+#                     use_multiprocessing=False, workers=1, verbose=1, max_queue_size=1,
+#                     # callbacks=callbacks_list,
+#                     initial_epoch=epoch_init, epochs=epoch_init+1)
+#     t1 = time.time()
+#     print("Epoch " + str(epoch) + " took " + str((t1 - t0) / 60) + " minutes.")
+#     print("Evaluate generator for epoch " + str(epoch))
+#     batches = len(generator_validation)
+#     for i in range(batches):
+#         x, y = generator_validation[i]
+#         h1 = m.evaluate(x, y, reset_metrics=False)
+#         print("Done evaluation on batch " + str(i) + " of epoch " + str(epoch))
+# t11 = time.time()
+# print("Training two epochs took " + str((t11 - t00) / 60) + " minutes.")
+#
+# l = m.evaluate_generator(generator=generator_validation, verbose=1, use_multiprocessing=False, max_queue_size=1,
+#                          workers=1, steps=val_steps)
+#     print("Done evaluation")
+# t11 = time.time()
+# print("Training two epochs took " + str((t11 - t00) / 60) + " minutes.")
+#
+#
+# t00 = time.time()
+# for epoch in range(epochs):
+#     t0 = time.time()
+#     batches = len(generator_training)
+#     for i in range(batches):
+#         x, y = generator_training[i]
+#         h1 = m.train_on_batch(x, y, reset_metrics=False)
+#         print("Done batch " + str(i) + " of epoch " + str(epoch))
+#     gc.collect()
+#     t1 = time.time()
+#     print("Epoch " + str(epoch) + " took " + str((t1 - t0) / 60) + " minutes.")
+#     print("Evaluate generator for epoch " + str(epoch))
+#     l1 = m.evaluate_generator(generator=generator_validation, verbose=1, use_multiprocessing=False)
+#     print("Done evaluation")
+# t11 = time.time()
+# print("Training two epochs took " + str((t11 - t00) / 60) + " minutes.")
+#
+#
 

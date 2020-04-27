@@ -13,6 +13,7 @@ from tensorflow.keras.utils import Sequence
 from collections import OrderedDict
 import threading
 import warnings
+import gc
 
 
 # class threadsafe_iter:
@@ -95,6 +96,9 @@ class SimulationPreparation:
         shape_sim = int(round((snapshot["iord"].shape[0]) ** (1 / 3)))
         i, j, k = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
         snapshot['coords'] = np.column_stack((i, j, k))
+
+        del snapshot['rho'], snapshot['iord']
+        gc.collect()
         return snapshot
 
 
