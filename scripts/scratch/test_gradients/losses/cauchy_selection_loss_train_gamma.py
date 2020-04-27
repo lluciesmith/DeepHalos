@@ -35,9 +35,9 @@ if __name__ == "__main__":
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
 
-    params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
-    generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, **params_val)
+    # params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    # generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
+    #                                         shuffle=False, **params_val)
 
 
     ######### TRAINING MODEL FROM MSE TRAINED ONE ##############
@@ -85,12 +85,13 @@ if __name__ == "__main__":
                  }
 
     M = CNN.CNN(param_conv, param_fcc, model_type="regression", train=True, compile=True, weights=trained_weights,
-                initial_epoch=10,  training_generator=generator_training, validation_generator=generator_validation,
+                initial_epoch=10,  training_generator=generator_training,
                 lr=0.0001,
+                # validation_generator=generator_validation, validation_steps=len(generator_validation),
                 # callbacks=callbacks_list,
                 # metrics=['mae', 'mse'],
-                num_epochs=100, dim=generator_validation.dim,
-                loss=lf.cauchy_selection_loss_fixed_boundary(), validation_steps=len(generator_validation),
+                num_epochs=100, dim=generator_training.dim,
+                loss=lf.cauchy_selection_loss_fixed_boundary(),
                 max_queue_size=10, use_multiprocessing=False, workers=2, verbose=1,
                 num_gpu=1, save_summary=False, validation_freq=1)
 
