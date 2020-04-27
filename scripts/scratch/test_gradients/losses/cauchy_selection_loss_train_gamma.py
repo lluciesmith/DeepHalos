@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
     # callbacks
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
-    checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5)
+    checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5, save_weights_only=True)
     csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=True)
     lrate = callbacks.LearningRateScheduler(CNN.lr_scheduler)
     callbacks_list = [checkpoint_call, csv_logger, lrate]

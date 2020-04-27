@@ -22,8 +22,8 @@ if __name__ == "__main__":
     scaler_output = load(open(path_data + 'scaler_output.pkl', "rb"))
     training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
     training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
-    val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
-    val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
+    # val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
+    # val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 
     # Create the generators for training
 
@@ -34,9 +34,9 @@ if __name__ == "__main__":
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
 
-    params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
-    generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, **params_val)
+    # params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    # generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
+    #                                         shuffle=False, **params_val)
 
     ######### TRAIN THE MODEL ################
 
@@ -72,21 +72,30 @@ if __name__ == "__main__":
     # callbacks
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
     checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5)
-    csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=True)
+    csv_logger = CSVLogger(path_model + "/training.log", separator=',')
     lrate = callbacks.LearningRateScheduler(CNN.lr_scheduler)
     callbacks_list = [checkpoint_call, csv_logger, lrate]
 
     lr = 0.0001
-    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=True, compile=True,
-                    weights=trained_weights,
+    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
                     initial_epoch=10,
                     training_generator=generator_training,
-                    validation_generator=generator_validation, validation_steps=len(generator_validation),
+                    # validation_generator=generator_validation, validation_steps=len(generator_validation),
                     lr=0.0001, callbacks=callbacks_list, metrics=['mae', 'mse'],
-                    num_epochs=100, dim=generator_validation.dim,
+                    num_epochs=11, dim=generator_training.dim,
                     loss=lf.cauchy_selection_loss(),
-                    max_queue_size=10, use_multiprocessing=False, workers=2, verbose=1,
+                    max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
+
+    m = Model.model
+    m.load_weights(trained_weights)
+    m.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
+                    use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
+                    callbacks=callbacks_list, shuffle=True,
+                    epochs=100, initial_epoch=10
+                    # validation_data=generator_validation, validation_steps=val_steps
+    )
+
 
     # #### RESUME MODEL
     #
