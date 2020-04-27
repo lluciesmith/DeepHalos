@@ -84,16 +84,15 @@ if __name__ == "__main__":
                  'last': {}
                  }
 
-    M = CNN.CNN(param_conv, param_fcc, model_type="regression", train=True, compile=True, weights=trained_weights,
-                initial_epoch=10,  training_generator=generator_training,
-                lr=0.0001,
-                # validation_generator=generator_validation, validation_steps=len(generator_validation),
-                # callbacks=callbacks_list,
-                # metrics=['mae', 'mse'],
-                num_epochs=100, dim=generator_training.dim,
-                loss=lf.cauchy_selection_loss_fixed_boundary(),
-                max_queue_size=10, use_multiprocessing=False, workers=2, verbose=1,
-                num_gpu=1, save_summary=False, validation_freq=1)
+    M = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
+                    initial_epoch=10,
+                    training_generator=generator_training, dim=generator_training.dim,
+                    lr=0.0001,
+                    metrics=['mae', 'mse'],
+                    num_epochs=11,
+                    loss='mse',
+                    max_queue_size=1, use_multiprocessing=False, workers=0, verbose=1,
+                    num_gpu=1, save_summary=False, validation_freq=1)
 
     # Compute new model
 
@@ -101,6 +100,7 @@ if __name__ == "__main__":
                  "/cauchy_selec_gamma/"
 
     model_mse = M.model
+    model_mse.load_weights(trained_weights)
     predictions = CNN.CauchyLayer()(model_mse.layers[-1].output)
     trained_model = keras.Model(inputs=model_mse.input, outputs=predictions)
 
