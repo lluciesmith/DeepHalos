@@ -27,11 +27,11 @@ if __name__ == "__main__":
     all_sims = ["0", "1", "2", "4", "5", "6"]
     s = tn.SimulationPreparation(all_sims)
 
-    params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
 
-    params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    params_val = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, **params_val)
 
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     # callbacks
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
     checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5)
-    csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=True)
+    csv_logger = CSVLogger(path_model + "/training.log", separator=',')
     lrate = callbacks.LearningRateScheduler(CNN.lr_scheduler)
     callbacks_list = [checkpoint_call, csv_logger, lrate]
 
@@ -86,10 +86,10 @@ if __name__ == "__main__":
 
     m = Model.model
     m.load_weights(trained_weights)
-    m.fit_generator(generator=generator_training, steps_per_epoch=500,
+    m.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
                     use_multiprocessing=False, workers=1, verbose=1, max_queue_size=10,
                     callbacks=callbacks_list, epochs=100,
-                    validation_data=generator_validation, validation_steps=20
+                    validation_data=generator_validation, validation_steps=len(generator_validation)
                     )
 
 
