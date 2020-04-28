@@ -413,7 +413,7 @@ def lr_scheduler(epoch):
     if epoch < n:
         return 0.0001
     else:
-        return 0.0001 * np.math.exp(0.05 * (n - epoch))
+        return 0.0001 * tf.math.exp(0.05 * (n - epoch))
 
 
 class AucCallback(Callback):

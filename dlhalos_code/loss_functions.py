@@ -1,7 +1,11 @@
 import tensorflow.keras.backend as K
-import tensorflow.math as math
 import tensorflow as tf
 import numpy as np
+
+
+def mean_squared_error(y_true, y_predicted):
+    err = K.square(y_true - y_predicted)
+    return K.mean(err, axis=-1)
 
 
 def sivia_skilling_loss(y_true, y_predicted):
@@ -10,6 +14,14 @@ def sivia_skilling_loss(y_true, y_predicted):
     r = abs(y_true - y_predicted)/gamma
     factor = - K.log((1 - K.exp(-(r ** 2 + epsilon) / 2)) / (r ** 2 + epsilon))
     return K.mean(factor, axis=-1)
+
+
+def cauchy_selection_loss_fixed_boundary_trainable_gamma(layer, y_max=1, y_min=-1):
+    L = ConditionalCauchySelectionLoss(gamma=layer.gamma, y_max=y_max, y_min=y_min)
+
+    def loss(y_true, y_predicted):
+        return L.loss(y_true, y_predicted)
+    return loss
 
 
 def cauchy_selection_loss_fixed_boundary(gamma=0.2, y_max=1, y_min=-1):
@@ -43,14 +55,23 @@ def cauchy_selection_loss(gamma=0.2, y_max=1, y_min=-1):
 
 # Numpy equivalents
 
-def cauchy_selection_loss_numpy(y_true, y_predicted, y_max=1, y_min=-1, gamma=1):
+def cauchy_selection_loss_numpy(y_true, y_predicted, y_max=1, y_min=-1, gamma=0.2):
     r = (y_true - y_predicted)/gamma
 
     tail_term = np.log(1 + np.square(r))
     selection_term = np.log(np.arctan((y_max - y_predicted)/gamma) - np.arctan((y_min - y_predicted)/gamma))
 
     loss = tail_term + selection_term
-    return loss
+    return np.mean(loss, axis=-1)
+
+
+def dc_dx(y_true, y_predicted, y_max=1, y_min=-1, gamma=0.2):
+    d1 = - 2 * (y_true - y_predicted)/(gamma**2 + (y_true - y_predicted)**2)
+
+    term1 = 1/(np.arctan((y_max - y_predicted)/gamma) - np.arctan((y_min - y_predicted)/gamma))
+    term2 = (- gamma / (gamma**2 + (y_max - y_predicted)**2)) - (- gamma / (gamma**2 + (y_min - y_predicted)**2))
+    d2 = term1 * term2
+    return np.mean(d1 + d2, axis=-1)
 
 
 def sivia_skilling_loss_numpy(y_true, y_predicted, gamma=1):
@@ -60,14 +81,15 @@ def sivia_skilling_loss_numpy(y_true, y_predicted, gamma=1):
     return factor + norm
 
 
-def squared_error_numpy(y_true, y_predicted):
-    return (y_true - y_predicted)**2
-
-
-# Class for loss Cauchy + selection loss function with fixed boundary
+def squared_error_numpy(y_true, y_predicted, derivative=False):
+    if derivative is True:
+        return np.mean(- 2 * (y_true - y_predicted), axis=-1)
+    else:
+        return np.mean((y_true - y_predicted)**2, axis=-1)
 
 
 class ConditionalCauchySelectionLoss:
+    # Class for loss Cauchy + selection loss function with fixed boundary
     def __init__(self, gamma=0.2, y_max=1, y_min=-1):
         self.g = gamma
         self.y_maximum = y_max
@@ -81,14 +103,29 @@ class ConditionalCauchySelectionLoss:
     def _loss(self, y_true, y_pred):
         zeros = K.zeros_like(y_pred)
 
-        mask_range = K.less(K.abs(y_pred), K.ones_like(y_pred))
+        mask_range = K.less_equal(K.abs(y_pred), K.ones_like(y_pred))
         range_term = tf.where(mask_range, self.loss_range(y_true, y_pred), zeros)
 
-        mask_neg = K.less_equal(y_pred, -1 * K.ones_like(y_pred))
+        mask_neg = K.less(y_pred, -1 * K.ones_like(y_pred))
         negative_term = tf.where(mask_neg, self.loss_neg(y_true, y_pred), zeros)
 
-        mask_pos = K.less_equal(K.ones_like(y_pred), y_pred)
+        mask_pos = K.less(K.ones_like(y_pred), y_pred)
         positive_term = tf.where(mask_pos, self.loss_pos(y_true, y_pred), zeros)
+
+        loss = negative_term + range_term + positive_term
+        return K.mean(loss, axis=-1)
+
+    def dloss(self, y_true, y_pred):
+        zeros = K.zeros_like(y_pred)
+
+        mask_range = K.less_equal(K.abs(y_pred), K.ones_like(y_pred))
+        range_term = tf.where(mask_range, self.deriv_loss_range(y_true, y_pred), zeros)
+
+        mask_neg = K.less(y_pred, -1 * K.ones_like(y_pred))
+        negative_term = tf.where(mask_neg, self.deriv_loss_neg(y_true, y_pred), zeros)
+
+        mask_pos = K.less(K.ones_like(y_pred), y_pred)
+        positive_term = tf.where(mask_pos, self.deriv_loss_pos(y_true, y_pred), zeros)
 
         loss = negative_term + range_term + positive_term
         return K.mean(loss, axis=-1)
@@ -99,14 +136,35 @@ class ConditionalCauchySelectionLoss:
         beta_pos = self.beta(y_maximum, y_true, e, g)
         return self.function_outside_boundary(y_pred, y_maximum, alpha_pos, beta_pos)
 
+    def deriv_loss_pos(self, y_true, y_pred):
+        g, y_maximum, e = self.g, self.y_maximum, self.e
+        alpha_pos = self.alpha(y_maximum, y_true, e, g)
+        return K.exp(K.exp(y_pred) + y_pred) + 2 * alpha_pos * y_pred
+
     def loss_neg(self, y_true, y_pred):
         g, y_minimum, e = self.g, self.y_minimum, self.e
         alpha_neg = self.alpha(y_minimum, y_true, e, g)
         beta_neg = self.beta(y_minimum, y_true, e, g)
         return self.function_outside_boundary(y_pred, y_minimum, alpha_neg, beta_neg)
 
+    def deriv_loss_neg(self, y_true, y_pred):
+        g, y_minimum, e = self.g, self.y_minimum, self.e
+        alpha_neg = self.alpha(y_minimum, y_true, e, g)
+        return - K.exp(K.exp(- y_pred) - y_pred) + 2 * alpha_neg * y_pred
+
     def loss_range(self, y_true, y_pred):
         return self.function_inside_boundary(y_true, y_pred, self.g, self.y_maximum, self.y_minimum)
+
+    def deriv_loss_range(self, y_true, y_pred):
+        y_max = self.y_maximum
+        y_min = self.y_minimum
+
+        d1 = - 2 * (y_true - y_pred) / (self.g ** 2 + (y_true - y_pred) ** 2)
+
+        term1 = 1 / (np.arctan((y_max - y_pred) / self.g) - np.arctan((y_min - y_pred) / self.g))
+        term2 = (- self.g / (self.g ** 2 + (y_max - y_pred) ** 2)) + ( self.g / (self.g ** 2 + (y_min - y_pred) ** 2))
+        d2 = term1 * term2
+        return d1 + d2
 
     def function_outside_boundary(self, y_pred, y_boundary, alpha, beta):
         return K.exp(K.exp(y_boundary * y_pred)) + alpha * K.square(y_pred) + beta
