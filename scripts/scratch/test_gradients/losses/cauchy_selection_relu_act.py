@@ -13,7 +13,8 @@ import tensorflow.keras.backend as K
 
 def custom_activation(inputs):
     theta = K.cast_to_floatx(1)
-    return inputs * K.cast(K.less_equal(inputs, theta), K.floatx())
+    abs_inputs = K.abs(inputs)
+    return inputs * K.cast(K.less_equal(abs_inputs, theta), K.floatx())
 
 
 if __name__ == "__main__":
