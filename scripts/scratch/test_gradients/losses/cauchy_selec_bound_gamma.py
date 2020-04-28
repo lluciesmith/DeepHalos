@@ -94,6 +94,9 @@ if __name__ == "__main__":
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
 
     m = Model.model
+    trained_weights = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin" \
+                      "/larger_net/lr_decay/mse/model/weights.10.hdf5"
+    m.load_weights(trained_weights)
     predictions = CNN.CauchyLayer()(m.layers[-1].output)
     new_model = keras.Model(inputs=m.input, outputs=predictions)
 
