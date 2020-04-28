@@ -72,9 +72,9 @@ class SimulationPreparation:
             snap_sim = pynbody.load(path1 + "ICs_z99_256_L50_gadget3.dat")
 
         else:
-            # path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
+            path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
             # path1 = "/Users/lls/Documents/mlhalos_files/reseed50/"
-            path1 = "/Users/lls/Documents/mlhalos_files/reseed6/"
+            # path1 = "/Users/lls/Documents/mlhalos_files/reseed6/"
 
             if sim_id == "2":
                 snap_sim = pynbody.load(path1 + "IC_doub_z99_256.gadget3")
