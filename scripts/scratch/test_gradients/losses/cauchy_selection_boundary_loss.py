@@ -94,7 +94,7 @@ if __name__ == "__main__":
     m.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
                     use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
                     callbacks=callbacks_list, shuffle=True,
-                    epochs=20, initial_epoch=11,
+                    epochs=100, initial_epoch=10,
                     validation_data=generator_validation, validation_steps=50)
 
 # import time
