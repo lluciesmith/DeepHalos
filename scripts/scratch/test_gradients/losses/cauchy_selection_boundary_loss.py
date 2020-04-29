@@ -13,7 +13,6 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-
     all_sims = ["0", "1", "2", "4", "5", "6"]
     s = tn.SimulationPreparation(all_sims)
 
@@ -29,25 +28,20 @@ if __name__ == "__main__":
     # Create the generators for training
 
     params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
-    # training_steps = 10
-    # rt = int(params_tr['batch_size'] * training_steps)
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=False, **params_tr)
 
+    val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
+    val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 
-    # val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
-    # val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
-
-    # params_val = {'batch_size': 1, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
-    # val_steps = 10
-    # rv = int(params_val['batch_size'] * val_steps)
-    # generator_validation = tn.DataGenerator(val_particle_IDs[:rv], val_labels_particle_IDS, s.sims_dic,
-    #                                         shuffle=False, **params_val)
+    params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
+    generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
+                                            shuffle=False, **params_val)
 
     ######### TRAINING MODEL FROM MSE TRAINED ONE ##############
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-                 "/cauchy_selec_bound/"
+                 "/cauchy_selec_bound_test/"
 
     # Load weights
 
@@ -99,10 +93,9 @@ if __name__ == "__main__":
     m.load_weights(trained_weights)
     m.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
                     use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
-                    callbacks=callbacks_list,
-                    epochs=100, initial_epoch=10
-                    # validation_data=generator_validation, validation_steps=val_steps
-    )
+                    callbacks=callbacks_list, shuffle=True,
+                    epochs=20, initial_epoch=11,
+                    validation_data=generator_validation, validation_steps=50)
 
 # import time
 # import gc
