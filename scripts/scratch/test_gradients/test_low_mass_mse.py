@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/custom_loss/"
+    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/mse/"
 
     # First you will have to load the simulation
 
@@ -33,21 +33,22 @@ if __name__ == "__main__":
 
         # define a common scaler for the output
 
-    s_output = load(open(path_model + 'scaler_output.pkl', "rb"))
+    # s_output = load(open(path_model + 'scaler_output.pkl', "rb"))
 
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
     training_set = tn.InputsPreparation(train_sims, load_ids=False, shuffle=True, scaler_type="minmax",
-                                        log_high_mass_limit=13, scaler_output=s_output,
-                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=1000,
+                                        log_high_mass_limit=13,
+                                        random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000,
                                         # random_subset_each_sim=1000
                                         )
     generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
 
     validation_set = tn.InputsPreparation([val_sim], load_ids=False, random_subset_each_sim=5000,
-                                          log_high_mass_limit=13, scaler_output=s_output, shuffle=True)
+                                          log_high_mass_limit=13, scaler_output=training_set.scaler_output,
+                                          shuffle=True)
     generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
                                               s.sims_dic, **params_inputs)
     dump(training_set.scaler_output, open(path_model + 'scaler_output.pkl', 'wb'))
@@ -82,8 +83,8 @@ if __name__ == "__main__":
                        'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg
                        }
     param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'activation': activation, 'relu': relu,
-                       'strides': 1, 'padding': 'same', 'pool': None, 'bn': False,
-                       'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
+                             'strides': 1, 'padding': 'same', 'pool': None, 'bn': False,
+                             'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg},
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), **params_all_conv},
                   'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), **params_all_conv},
@@ -101,14 +102,6 @@ if __name__ == "__main__":
                      }
                  }
 
-# def custom_loss(y_true, y_predicted):
-#     factor = 0.5 + abs(y_true) ** 4
-#     return K.mean(factor * K.square(y_predicted - y_true), axis=-1)
-#
-# def custom_loss2(y_true, y_predicted):
-#     error = np.maximum(K.square(y_true - y_predicted), 0.5)
-#     return K.mean(error, axis=-1)
-
     loss = 'mse'
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training, validation_generator=generator_validation,
@@ -117,51 +110,3 @@ if __name__ == "__main__":
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True)
 
-
-    ############# PREDICTIONS #############
-
-    # training set
-
-    pred = Model.model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
-    truth_rescaled = np.array([val for (key, val) in training_set.labels_particle_IDS.items()])
-    h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-
-    np.save(path_model + "predicted_training.npy", h_m_pred)
-    np.save(path_model + "true_training.npy", true)
-
-    # validation set
-
-    pred = Model.model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
-    truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
-    h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-
-    np.save(path_model + "predicted_val.npy", h_m_pred)
-    np.save(path_model + "true_val.npy", true)
-
-
-    # model = load_model(path_model + "model/weights.10.hdf5", custom_objects={'custom_loss': custom_loss})
-    # #model= load_model(path_model + "model/weights.10.hdf5")
-    #
-    # # training set
-    #
-    # pred = model.predict_generator(generator_training, use_multiprocessing=False, workers=1, verbose=1)
-    # truth_rescaled = np.array([val for (key, val) in training_set.labels_particle_IDS.items()])
-    # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    #
-    # np.save(path_model + "predicted_training_30.npy", h_m_pred)
-    # np.save(path_model + "true_training_30.npy", true)
-    #
-    # # validation set
-    #
-    # pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
-    # truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
-    # # h_m_pred = training_set.scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    # # true = training_set.scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    # h_m_pred = s_output.inverse_transform(pred.reshape(-1, 1)).flatten()
-    # true = s_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    #
-    # np.save(path_model + "predicted_val_30.npy", h_m_pred)
-    # np.save(path_model + "true_val_30.npy", true)
