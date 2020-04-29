@@ -8,9 +8,7 @@ from tensorflow.keras import regularizers
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
 import tensorflow.keras as keras
-import tensorflow.keras.backend as K
 import numpy as np
-from tensorflow.keras.models import load_model
 
 
 def get_lr_metric(optimizer):
@@ -19,10 +17,23 @@ def get_lr_metric(optimizer):
     return lr
 
 
-def get_gamma_metric(layer_index):
-    def gamma(y_true, y_pred):
-        return self.model.layer.get_weights()[0][0]
-    return gamma
+def lr_scheduler(epoch):
+    init_lr = 0.0001
+    n = 10
+    if epoch < n:
+        return init_lr
+    else:
+        return init_lr * np.math.exp(0.05 * (n - epoch))
+
+
+def lr_schefuler_half(epoch):
+    init_lr = 0.0001
+    if epoch < 10:
+        return init_lr
+    else:
+        drop_rate = 0.5
+        epoch_drop = 10
+        return init_lr * drop_rate**np.floor(epoch / epoch_drop)
 
 
 if __name__ == "__main__":
@@ -84,7 +95,7 @@ if __name__ == "__main__":
     # callbacks
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
     checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5, save_weights_only=True)
-    lrate = callbacks.LearningRateScheduler(CNN.lr_scheduler)
+    lrate = callbacks.LearningRateScheduler(lr_schefuler_half)
     cbk = CNN.CollectWeightCallback(layer_index=-1)
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
     callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
@@ -108,8 +119,9 @@ if __name__ == "__main__":
 
     optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
     loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
+    lr_metric = get_lr_metric(optimiser)
 
-    new_model.compile(loss=loss_c, optimizer=optimiser, metrics=['mae', 'mse'])
+    new_model.compile(loss=loss_c, optimizer=optimiser, metrics=['mae', 'mse', lr_metric])
     new_model.save_weights(path_model + 'model/initial_weights.h5')
 
     new_model.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),

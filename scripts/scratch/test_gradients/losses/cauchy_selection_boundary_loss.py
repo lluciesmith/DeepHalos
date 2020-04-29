@@ -9,6 +9,17 @@ import dlhalos_code.data_processing as tn
 from pickle import dump, load
 import numpy as np
 
+
+def lr_scheduler_half(epoch):
+    init_lr = 0.0001
+    if epoch < 10:
+        return init_lr
+    else:
+        drop_rate = 0.5
+        epoch_drop = 10
+        return init_lr * drop_rate**np.floor(epoch / epoch_drop)
+
+
 if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
@@ -73,7 +84,7 @@ if __name__ == "__main__":
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
     checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5)
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
-    lrate = callbacks.LearningRateScheduler(CNN.lr_scheduler)
+    lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
     callbacks_list = [checkpoint_call, csv_logger, lrate]
 
     lr = 0.0001
