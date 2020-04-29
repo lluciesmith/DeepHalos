@@ -94,8 +94,8 @@ class ConditionalCauchySelectionLoss:
         self.g = gamma
         self.y_maximum = y_max
         self.y_minimum = y_min
-        # e = K.constant(np.e, dtype="float32")
-        self.e = np.e
+        self.e = K.constant(np.e, dtype="float32")
+        # self.e = np.e
 
     def loss(self, y_true, y_pred):
         return self._loss(y_true, y_pred)
