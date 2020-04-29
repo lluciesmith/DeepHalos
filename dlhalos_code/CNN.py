@@ -422,7 +422,7 @@ class CollectWeightCallback(Callback):
         self.layer_index = layer_index
         self.weights = []
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch, logs):
         layer = self.model.layers[self.layer_index]
         w = layer.get_weights()[0][0]
         self.weights.append(w)

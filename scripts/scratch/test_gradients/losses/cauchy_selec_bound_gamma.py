@@ -112,7 +112,7 @@ if __name__ == "__main__":
     new_model.compile(loss=loss_c, optimizer=optimiser, metrics=['mae', 'mse'])
     new_model.save_weights(path_model + 'model/initial_weights.h5')
 
-    new_model.fit_generator(generator=generator_training, steps_per_epoch=1000,
+    new_model.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
                             use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
                             callbacks=callbacks_list, shuffle=True, epochs=100, initial_epoch=10,
                             validation_data=generator_validation,
