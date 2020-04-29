@@ -16,8 +16,13 @@ from tensorflow.keras.models import load_model
 def get_lr_metric(optimizer):
     def lr(y_true, y_pred):
         return optimizer.lr
-
     return lr
+
+
+def get_gamma_metric(layer_index):
+    def gamma(y_true, y_pred):
+        return self.model.layer.get_weights()[0][0]
+    return gamma
 
 
 if __name__ == "__main__":
@@ -79,9 +84,10 @@ if __name__ == "__main__":
     # callbacks
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
     checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5, save_weights_only=True)
-    csv_logger = CSVLogger(path_model + "/training.log", separator=',')
     lrate = callbacks.LearningRateScheduler(CNN.lr_scheduler)
-    callbacks_list = [checkpoint_call, csv_logger, lrate]
+    cbk = CNN.CollectWeightCallback(layer_index=-1)
+    csv_logger = CSVLogger(path_model + "/training.log", separator=',')
+    callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
 
     lr = 0.0001
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=False,
@@ -102,14 +108,13 @@ if __name__ == "__main__":
 
     optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
     loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
-    lr_metric = get_lr_metric(optimiser)
 
-    new_model.compile(loss=loss_c, optimizer=optimiser, metrics=['mae', 'mse', lr_metric])
+    new_model.compile(loss=loss_c, optimizer=optimiser, metrics=['mae', 'mse'])
     new_model.save_weights(path_model + 'model/initial_weights.h5')
 
-    new_model.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
+    new_model.fit_generator(generator=generator_training, steps_per_epoch=1000,
                             use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
-                            callbacks=callbacks_list, shuffle=True, epochs=100,
+                            callbacks=callbacks_list, shuffle=True, epochs=100, initial_epoch=10,
                             validation_data=generator_validation,
                             validation_steps=len(generator_validation)
                             )

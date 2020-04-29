@@ -416,6 +416,19 @@ def lr_scheduler(epoch):
         return 0.0001 * np.math.exp(0.05 * (n - epoch))
 
 
+class CollectWeightCallback(Callback):
+    def __init__(self, layer_index):
+        super(CollectWeightCallback, self).__init__()
+        self.layer_index = layer_index
+        self.weights = []
+
+    def on_epoch_end(self, epoch, logs=None):
+        layer = self.model.layers[self.layer_index]
+        w = layer.get_weights()[0][0]
+        self.weights.append(w)
+        logs['gamma'] = w
+
+
 class AucCallback(Callback):
     def __init__(self, training_data, validation_data, name_training="0", names_val="1"):
         self.training_generator = training_data[0]
