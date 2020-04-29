@@ -5,7 +5,7 @@ from dlhalos_code import CNN
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import CSVLogger
-from utils.old import generators_training as gbc
+from utilss.old import generators_training as gbc
 import time
 import tensorflow
 
@@ -102,12 +102,9 @@ param_fcc = {'dense_1': {'neurons': 1024, 'bn': True, 'dropout': 0.4},
              'dense_2': {'neurons': 256, 'bn': True, 'dropout': 0.4},
              #'dense_3': {'neurons': 128, 'bn': True, 'dropout': 0.2}
              }
-Model = CNN.CNN(param_conv, param_fcc, training_generator=generator_training,
-                validation_generator=None, validation_freq=8,
-                # metrics=["mae"],
-                # callbacks=callbacks_list,
-                use_multiprocessing=True, num_epochs=5,
-                workers=12, verbose=1, model_type="regression", lr=0.0001, train=False, skip_connector=False)
+Model = CNN.CNN(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                validation_generator=None, num_epochs=5, use_multiprocessing=True, workers=12, verbose=1, lr=0.0001,
+                validation_freq=8, train=False, skip_connector=False)
 
 history = Model.model.fit(X, y, batch_size=80, verbose=1, epochs=100, validation_data=(X_val1, y_val1),
                           shuffle=True, callbacks=callbacks_list)

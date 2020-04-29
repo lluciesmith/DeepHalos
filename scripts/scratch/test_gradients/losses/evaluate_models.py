@@ -44,25 +44,25 @@ if __name__ == "__main__":
     epochs = ["%.2s" % i for i in np.arange(15, 75, 5)]
 
     # MODEL CAUCHY + SELEC + BOUNDARY
-    #
-    # model = path + "cauchy_selec_bound/"
-    # eval = open(model + "val_callback.txt", "w")
-    # eval.write("Epoch, val_loss, val_mae, val_mse \n")
-    #
-    # with tf.device("/cpu:0"):
-    #     for epoch in epochs:
-    #             model_epoch = load_model(model + "model/weights." + epoch + ".hdf5",
-    #                                custom_objects={'loss':lf.cauchy_selection_loss_fixed_boundary()})
-    #
-    #             l = model_epoch.evaluate(x=generator_validation, verbose=1, workers=0, steps=50)
-    # 
-    #             eval.write(epoch + ", ")
-    #             for item in l:
-    #                 eval.write("%s, " % item)
-    #             eval.write(" \n")
-    #
-    #             del model_epoch
-    #             gc.collect()
+
+    model = path + "cauchy_selec_bound/"
+    eval = open(model + "val_callback.txt", "w")
+    eval.write("Epoch, val_loss, val_mae, val_mse \n")
+
+    with tf.device("/cpu:0"):
+        for epoch in epochs:
+                model_epoch = load_model(model + "model/weights." + epoch + ".hdf5",
+                                   custom_objects={'loss':lf.cauchy_selection_loss_fixed_boundary()})
+
+                l = model_epoch.evaluate(x=generator_validation, verbose=1, workers=0, steps=50)
+
+                eval.write(epoch + ", ")
+                for item in l:
+                    eval.write("%s, " % item)
+                eval.write(" \n")
+
+                del model_epoch
+                gc.collect()
 
     # MODEL CAUCHY + SELEC
 

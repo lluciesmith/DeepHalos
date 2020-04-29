@@ -1,7 +1,7 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 import dlhalos_code.data_processing as tn
-from utils.old import generators_training as gbc
+from utilss.old import generators_training as gbc
 import time
 import numpy as np
 

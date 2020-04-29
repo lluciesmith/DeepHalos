@@ -114,7 +114,6 @@ if __name__ == "__main__":
         g = ses.run(grads)
 
 
-
     # On local machine, run:
 
     import matplotlib.pyplot as plt

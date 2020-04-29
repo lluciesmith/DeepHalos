@@ -1,6 +1,6 @@
 import sys
 sys.path.append('/Users/lls/Documents/Projects/DeepHalos')
-from utils import radius_functions_deep as rf
+from utilss import radius_functions_deep as rf
 sys.path.append('/Users/lls/Documents/mlhalos_code/')
 from mlhalos import parameters
 from mlhalos import distinct_colours

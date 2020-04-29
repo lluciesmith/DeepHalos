@@ -76,7 +76,7 @@ if __name__ == "__main__":
                     lr=0.001, callbacks=callbacks_list, metrics=['mae', 'mse'],
                     num_epochs=100, dim=generator_validation.dim, loss=loss,
                     max_queue_size=10, use_multiprocessing=True, workers=2, verbose=1,
-                    num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1, train=True)
+                    num_gpu=1, save_summary=True, path_summary=path_model, validation_freq=1, train=True)
 
 
 

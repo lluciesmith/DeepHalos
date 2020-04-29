@@ -78,13 +78,11 @@ if __name__ == "__main__":
 
     lr = 0.0001
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
-                    initial_epoch=10,
+                    initial_epoch=10, num_epochs=11,
                     training_generator=generator_training, dim=generator_training.dim,
-                    # validation_generator=generator_validation, validation_steps=len(generator_validation),
                     lr=0.0001,
                     callbacks=callbacks_list,
                     metrics=['mae', 'mse'],
-                    num_epochs=11,
                     loss=lf.cauchy_selection_loss_fixed_boundary(),
                     max_queue_size=1, use_multiprocessing=False, workers=0, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
@@ -95,7 +93,7 @@ if __name__ == "__main__":
                     use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
                     callbacks=callbacks_list, shuffle=True,
                     epochs=100, initial_epoch=10,
-                    validation_data=generator_validation, validation_steps=50)
+                    validation_data=generator_validation, validation_steps=len(generator_validation))
 
 # import time
 # import gc

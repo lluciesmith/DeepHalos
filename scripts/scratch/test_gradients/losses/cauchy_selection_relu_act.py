@@ -34,6 +34,12 @@ def double_relu_activation(inputs):
     return inputs * K.cast(K.less_equal(abs_inputs, theta), K.floatx())
 
 
+def clip_activation(inputs):
+    upper_bound = K.cast_to_floatx(1)
+    lower_bound = K.cast_to_floatx(-1)
+    return K.maximum(lower_bound, K.minimum(inputs, upper_bound))
+
+
 if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
@@ -106,7 +112,9 @@ if __name__ == "__main__":
         Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
                         training_generator=generator_training, steps_per_epoch=1000,
                         validation_generator=generator_validation, validation_steps=len(generator_validation),
-                        lr=0.0001, callbacks=callbacks_list, metrics=['mae', 'mse'],
+                        lr=0.0001,
+                        # callbacks=callbacks_list,
+                        metrics=['mae', 'mse'],
                         num_epochs=10, dim=generator_training.dim,
                         loss=lf.cauchy_selection_loss(),
                         max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1,

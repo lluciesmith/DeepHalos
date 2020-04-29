@@ -70,7 +70,7 @@ if __name__ == "__main__":
     ######### TRAIN THE MODEL ################
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-                 "/cauchy_selec_relu_last_act/"
+                 "/cauchy_selec_clip_output/"
 
     # Define model
 
@@ -108,29 +108,29 @@ if __name__ == "__main__":
         lrate = callbacks.LearningRateScheduler(CNN.lr_scheduler)
         callbacks_list = [checkpoint_call, csv_logger, lrate]
 
-lr = 0.0001
-Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
-                training_generator=generator_training, steps_per_epoch=1000,
-                validation_generator=generator_validation, validation_steps=len(generator_validation),
-                lr=0.0001,
-                # callbacks=callbacks_list,
-                metrics=['mae', 'mse'],
-                num_epochs=10, dim=generator_training.dim,
-                loss=lf.cauchy_selection_loss(),
-                max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1,
-                num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
+        lr = 0.0001
+        Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
+                        training_generator=generator_training, steps_per_epoch=1000,
+                        validation_generator=generator_validation, validation_steps=len(generator_validation),
+                        lr=0.0001,
+                        # callbacks=callbacks_list,
+                        metrics=['mae', 'mse'],
+                        num_epochs=10, dim=generator_training.dim,
+                        loss=lf.cauchy_selection_loss(),
+                        max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1,
+                        num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
 
-m = Model.model
+        m = Model.model
 
-trained_weights = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin" \
-                  "/larger_net/lr_decay/mse/model/weights.10.hdf5"
-m.load_weights(trained_weights)
+        trained_weights = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin" \
+                          "/larger_net/lr_decay/mse/model/weights.10.hdf5"
+        m.load_weights(trained_weights)
 
-m.fit_generator(generator=generator_training, steps_per_epoch=1000,
-                use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
-                callbacks=callbacks_list, shuffle=True,
-                epochs=15, initial_epoch=10,
-                validation_data=generator_validation, validation_steps=len(generator_validation))
+        m.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
+                        use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
+                        callbacks=callbacks_list, shuffle=True,
+                        epochs=100, initial_epoch=10,
+                        validation_data=generator_validation, validation_steps=len(generator_validation))
 
         # m = Model.model
         # m.load_weights(trained_weights)

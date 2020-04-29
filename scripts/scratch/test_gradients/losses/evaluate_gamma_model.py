@@ -13,6 +13,24 @@ import numpy as np
 from tensorflow.keras.models import load_model
 import tensorflow as tf
 
+
+def predict_from_model(model, epoch, gen_train, gen_val, training_IDs, training_labels_IDS, val_IDs, val_labels_IDs,
+                       scaler, path_model):
+    pred = model.predict_generator(gen_train, use_multiprocessing=False, workers=1, verbose=1, max_queue_size=10)
+    truth_rescaled = np.array([training_labels_IDS[ID] for ID in training_IDs])
+    h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
+    true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    np.save(path_model + "predicted_training_"+ epoch + ".npy", h_m_pred)
+    np.save(path_model + "true_training_"+ epoch + ".npy", true)
+    pred = model.predict_generator(gen_val, use_multiprocessing=False, workers=1, verbose=1, max_queue_size=10)
+    truth_rescaled = np.array([val_labels_IDs[ID] for ID in val_IDs])
+    h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
+    true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    np.save(path_model + "predicted_val_"+ epoch + ".npy", h_m_pred)
+    np.save(path_model + "true_val_" + epoch + ".npy", true)
+
+
+
 if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
@@ -34,7 +52,7 @@ if __name__ == "__main__":
 
     params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=True, **params_tr)
+                                          shuffle=False, **params_tr)
 
     params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
@@ -64,7 +82,7 @@ if __name__ == "__main__":
                  }
 
     M = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=True,
-                initial_epoch=10,training_generator=generator_training, dim=generator_training.dim,
+                initial_epoch=10,training_generator={}, dim=(31, 31, 31),
                 lr=0.0001, metrics=['mae', 'mse'], num_epochs=11, loss='mse', max_queue_size=1,
                 use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, save_summary=False, validation_freq=1)
 
@@ -99,3 +117,19 @@ if __name__ == "__main__":
             for item in l:
                 eval.write("%s, " % item)
             eval.write(" \n")
+
+    ############## Predict model #############
+
+    epochs = ["20", "35", "50"]
+    with tf.device("/gpu:0"):
+        for epoch in epochs:
+            trained_model.load_weights(model + "model/weights." + epoch + ".hdf5")
+
+            predict_from_model(trained_model, epoch,
+                               generator_training, generator_validation,
+                               training_particle_IDs, training_labels_particle_IDS,
+                               val_particle_IDs, val_labels_particle_IDS,
+                               scaler_output, model)
+
+
+
