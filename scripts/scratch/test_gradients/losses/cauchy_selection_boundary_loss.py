@@ -94,7 +94,7 @@ if __name__ == "__main__":
                     lr=0.0001,
                     callbacks=callbacks_list,
                     metrics=['mae', 'mse'],
-                    loss=lf.cauchy_selection_loss_fixed_boundary(),
+                    loss=lf.cauchy_selection_loss_fixed_boundary(gamma=1),
                     max_queue_size=1, use_multiprocessing=False, workers=0, verbose=1,
                     num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
 
