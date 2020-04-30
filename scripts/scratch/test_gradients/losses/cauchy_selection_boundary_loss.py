@@ -52,7 +52,7 @@ if __name__ == "__main__":
     ######### TRAINING MODEL FROM MSE TRAINED ONE ##############
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-                 "/cauchy_selec_bound_test/"
+                 "/cauchy_selec_bound_gamma1/"
 
     # Load weights
 
