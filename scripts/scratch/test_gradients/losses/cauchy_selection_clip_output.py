@@ -28,12 +28,6 @@ def predict_from_model(model, epoch, gen_train, gen_val, training_IDs, training_
     np.save(path_model + "true_val_" + epoch + ".npy", true)
 
 
-def double_relu_activation(inputs):
-    theta = K.cast_to_floatx(1)
-    abs_inputs = K.abs(inputs)
-    return inputs * K.cast(K.less_equal(abs_inputs, theta), K.floatx())
-
-
 def clip_activation(inputs):
     upper_bound = K.cast_to_floatx(1)
     lower_bound = K.cast_to_floatx(-1)
@@ -113,7 +107,7 @@ if __name__ == "__main__":
                         training_generator=generator_training, steps_per_epoch=1000,
                         validation_generator=generator_validation, validation_steps=len(generator_validation),
                         lr=0.0001,
-                        # callbacks=callbacks_list,
+                        callbacks=callbacks_list,
                         metrics=['mae', 'mse'],
                         num_epochs=10, dim=generator_training.dim,
                         loss=lf.cauchy_selection_loss(),
@@ -128,8 +122,9 @@ if __name__ == "__main__":
 
         m.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
                         use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
-                        callbacks=callbacks_list, shuffle=True,
-                        epochs=100, initial_epoch=10,
+                        callbacks=callbacks_list,
+                        shuffle=True,
+                        epochs=40, initial_epoch=10,
                         validation_data=generator_validation, validation_steps=len(generator_validation))
 
         # m = Model.model
@@ -152,22 +147,22 @@ if __name__ == "__main__":
         #                         )
 
     if testing:
-        lr = 0.0001
-        Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=False,
-                        initial_epoch=10,
-                        training_generator=generator_training,
-                        lr=0.0001, metrics=['mae', 'mse'],
-                        num_epochs=11, dim=generator_training.dim,
-                        loss=lf.cauchy_selection_loss(),
-                        max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1,
-                        num_gpu=1, save_summary=True, path_summary=path_model, validation_freq=1)
-
-        m = Model.model
-        predictions = CNN.CauchyLayer()(m.layers[-1].output)
-        new_model = keras.Model(inputs=m.input, outputs=predictions)
-
-        optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-        loss_c = lf.cauchy_selection_loss_trainable_gamma(new_model.layers[-1])
+        # lr = 0.0001
+        # Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=False,
+        #                 initial_epoch=10,
+        #                 training_generator=generator_training,
+        #                 lr=0.0001, metrics=['mae', 'mse'],
+        #                 num_epochs=11, dim=generator_training.dim,
+        #                 loss=lf.cauchy_selection_loss(),
+        #                 max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1,
+        #                 num_gpu=1, save_summary=True, path_summary=path_model, validation_freq=1)
+        #
+        # m = Model.model
+        # predictions = CNN.CauchyLayer()(m.layers[-1].output)
+        # new_model = keras.Model(inputs=m.input, outputs=predictions)
+        #
+        # optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
+        # loss_c = lf.cauchy_selection_loss_trainable_gamma(new_model.layers[-1])
 
         epochs = ["20", "30", "50"]
 
