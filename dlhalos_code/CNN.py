@@ -389,13 +389,14 @@ class CNN:
 
 class CauchyLayer(Layer):
 
-    def __init__(self, **kwargs):
+    def __init__(self, init_value=0.2, **kwargs):
         # self.output_dim = output_dim
         super(CauchyLayer, self).__init__(**kwargs)
+        self.init_value = init_value
 
     def build(self, input_shape):
         # Create a trainable weight variable for this layer.
-        init = tf.constant_initializer(value=0.2)
+        init = tf.constant_initializer(value=self.init_value)
         # init = tf.compat.v1.keras.initializers.RandomNormal(mean=1.0, stddev=0.2)
         self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init, trainable=True)
         super(CauchyLayer, self).build(input_shape)  # Be sure to call this at the end
