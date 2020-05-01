@@ -67,7 +67,7 @@ if __name__ == "__main__":
     ######### TRAIN THE MODEL ################
 
     path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-                 "/cauchy_selec_bound_gamma/"
+                 "/cauchy_selec_bound_gamma2/"
 
     # Define model
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     # callbacks
     filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
-    checkpoint_call = callbacks.ModelCheckpoint(filepath, period=5, save_weights_only=True)
+    checkpoint_call = callbacks.ModelCheckpoint(filepath, period=1, save_weights_only=True)
     lrate = callbacks.LearningRateScheduler(lr_schefuler_half)
     cbk = CNN.CollectWeightCallback(layer_index=-1)
     csv_logger = CSVLogger(path_model + "/training.log", separator=',')
@@ -126,7 +126,9 @@ if __name__ == "__main__":
 
     new_model.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
                             use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
-                            callbacks=callbacks_list, shuffle=True, epochs=100, initial_epoch=10,
+                            callbacks=callbacks_list, shuffle=True, epochs=30, initial_epoch=10,
                             validation_data=generator_validation,
                             validation_steps=len(generator_validation)
                             )
+    print(cbk.weights)
+    np.save(path_model + 'gamma.npy', cbk.weights)

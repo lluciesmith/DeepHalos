@@ -428,7 +428,6 @@ class CollectWeightCallback(Callback):
         layer = self.model.layers[self.layer_index]
         w = layer.get_weights()[0][0]
         self.weights.append(w)
-        logs['gamma'] = w
 
 
 class AucCallback(Callback):
