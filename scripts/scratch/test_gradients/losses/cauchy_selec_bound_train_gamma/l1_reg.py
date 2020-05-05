@@ -107,18 +107,18 @@ if __name__ == "__main__":
                  'last': {}
                  }
 
+    # Train for one epoch using MSE loss
+
     lr = 0.0001
-    Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=False,
+    Model = CNN.CNN(param_conv, param_fcc, model_type="regression",
                     training_generator=generator_training,
-                    lr=0.0001, dim=generator_training.dim,
-                    loss=lf.cauchy_selection_loss(),
-                    max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1,
-                    num_gpu=1, save_summary=True,  path_summary=path_model, validation_freq=1)
+                    lr=lr, num_epochs=1, dim=generator_validation.dim, loss='mse',
+                    max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1,
+                    num_gpu=1, save_summary=True, path_summary=path_model, validation_freq=1, train=True)
+
+    # Define new model
 
     m = Model.model
-    trained_weights = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin" \
-                      "/larger_net/lr_decay/mse/model/weights.10.hdf5"
-    m.load_weights(trained_weights)
     predictions = CNN.CauchyLayer()(m.layers[-1].output)
     new_model = keras.Model(inputs=m.input, outputs=predictions)
 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
         new_model.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
                                 use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
-                                callbacks=callbacks_list, shuffle=True, epochs=30, initial_epoch=10,
+                                callbacks=callbacks_list, shuffle=True, epochs=40, initial_epoch=1,
                                 validation_data=generator_validation,
                                 validation_steps=len(generator_validation)
                                 )
