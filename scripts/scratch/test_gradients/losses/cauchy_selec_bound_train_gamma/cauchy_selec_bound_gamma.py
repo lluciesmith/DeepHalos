@@ -11,6 +11,21 @@ import tensorflow.keras as keras
 import numpy as np
 
 
+def predict_from_model(model, epoch, gen_train, gen_val, training_IDs, training_labels_IDS, val_IDs, val_labels_IDs,
+                       scaler, path_model):
+    pred = model.predict_generator(gen_train, use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10)
+    truth_rescaled = np.array([training_labels_IDS[ID] for ID in training_IDs])
+    h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
+    true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    np.save(path_model + "predicted_training_"+ epoch + ".npy", h_m_pred)
+    np.save(path_model + "true_training_"+ epoch + ".npy", true)
+    pred = model.predict_generator(gen_val, use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10)
+    truth_rescaled = np.array([val_labels_IDs[ID] for ID in val_IDs])
+    h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
+    true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    np.save(path_model + "predicted_val_"+ epoch + ".npy", h_m_pred)
+    np.save(path_model + "true_val_" + epoch + ".npy", true)
+
 def get_lr_metric(optimizer):
     def lr(y_true, y_pred):
         return optimizer.lr
@@ -92,19 +107,11 @@ if __name__ == "__main__":
                  'last': {}
                  }
 
-    # callbacks
-    filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
-    checkpoint_call = callbacks.ModelCheckpoint(filepath, period=1, save_weights_only=True)
-    lrate = callbacks.LearningRateScheduler(lr_schefuler_half)
-    cbk = CNN.CollectWeightCallback(layer_index=-1)
-    csv_logger = CSVLogger(path_model + "/training.log", separator=',')
-    callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
-
     lr = 0.0001
     Model = CNN.CNN(param_conv, param_fcc, model_type="regression", train=False, compile=False,
                     initial_epoch=10,
                     training_generator=generator_training,
-                    lr=0.0001, callbacks=callbacks_list, metrics=['mae', 'mse'],
+                    lr=0.0001, metrics=['mae', 'mse'],
                     num_epochs=11, dim=generator_training.dim,
                     loss=lf.cauchy_selection_loss(),
                     max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1,
@@ -122,13 +129,52 @@ if __name__ == "__main__":
     lr_metric = get_lr_metric(optimiser)
 
     new_model.compile(loss=loss_c, optimizer=optimiser, metrics=['mae', 'mse', lr_metric])
-    new_model.save_weights(path_model + 'model/initial_weights.h5')
 
-    new_model.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
-                            use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
-                            callbacks=callbacks_list, shuffle=True, epochs=30, initial_epoch=10,
-                            validation_data=generator_validation,
-                            validation_steps=len(generator_validation)
-                            )
-    print(cbk.weights)
-    np.save(path_model + 'gamma.npy', cbk.weights)
+    ######### training/testing #########
+
+    training = True
+    testing = False
+
+    if training:
+
+        # callbacks
+        filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
+        checkpoint_call = callbacks.ModelCheckpoint(filepath, period=1, save_weights_only=True)
+        lrate = callbacks.LearningRateScheduler(lr_schefuler_half)
+        cbk = CNN.CollectWeightCallback(layer_index=-1)
+        csv_logger = CSVLogger(path_model + "/training.log", separator=',')
+        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
+
+        new_model.save_weights(path_model + 'model/initial_weights.h5')
+
+        new_model.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
+                                use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
+                                callbacks=callbacks_list, shuffle=True, epochs=30, initial_epoch=10,
+                                validation_data=generator_validation,
+                                validation_steps=len(generator_validation)
+                                )
+        print(cbk.weights)
+        np.save(path_model + 'gamma.npy', cbk.weights)
+
+    if testing:
+
+        epoch = '19'
+        new_model.load_weights(path_model + 'model/weights.' + epoch + '.hdf5')
+        predict_from_model(new_model, epoch, generator_training, generator_validation,
+                           training_particle_IDs, training_labels_particle_IDS,
+                           val_particle_IDs,  val_labels_particle_IDS,
+                           scaler_output, path_model)
+
+        # Also make predictions for a larger validation set
+
+        larger_val_particle_IDs = load(open(path_data + 'larger_validation_set.pkl', 'rb'))
+        larger_val_labels_particle_IDS = load(open(path_data + 'larger_labels_validation_set.pkl', 'rb'))
+
+        generator_larger_validation = tn.DataGenerator(larger_val_particle_IDs, larger_val_labels_particle_IDS,
+                                                       s.sims_dic, shuffle=False, **params_val)
+        pred = new_model.predict_generator(generator_larger_validation, use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10)
+        truth_rescaled = np.array([larger_val_labels_particle_IDS[ID] for ID in larger_val_particle_IDs])
+        h_m_pred = scaler_output.inverse_transform(pred.reshape(-1, 1)).flatten()
+        true = scaler_output.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+        np.save(path_model + "predicted_larger_val_"+ epoch + ".npy", h_m_pred)
+        np.save(path_model + "true_larger_val_" + epoch + ".npy", true)
