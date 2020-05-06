@@ -126,14 +126,15 @@ if __name__ == "__main__":
     loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
 
     new_model.compile(loss=loss_c, optimizer=optimiser)
-    new_model.load_weights(path_model + "/model/weights.40.hdf5")
 
     ######### training/testing #########
 
-    training = True
-    testing = False
+    training = False
+    testing = True
 
     if training:
+        
+        new_model.load_weights(path_model + "/model/weights.40.hdf5")
 
         # callbacks
         filepath = path_model + "/model/weights.{epoch:02d}.hdf5"
@@ -157,7 +158,7 @@ if __name__ == "__main__":
 
     if testing:
 
-        epoch = '19'
+        epoch = '40'
         new_model.load_weights(path_model + 'model/weights.' + epoch + '.hdf5')
         predict_from_model(new_model, epoch, generator_training, generator_validation,
                            training_particle_IDs, training_labels_particle_IDS,
