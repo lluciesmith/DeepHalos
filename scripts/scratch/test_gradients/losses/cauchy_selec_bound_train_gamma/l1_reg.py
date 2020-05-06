@@ -92,20 +92,20 @@ if __name__ == "__main__":
     relu = True
 
     params_all_conv = {'activation': activation, 'relu': relu, 'strides': 1, 'padding': 'same',
-                       'bn': False, 'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg}
+                   'bn': False, 'kernel_regularizer': kernel_reg, 'bias_regularizer': bias_reg}
     param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
-                  'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-                  'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-                  'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-                  'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv}
-                  }
+              'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+              'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+              'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+              'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv}
+              }
 
     params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': activation, 'relu': relu,
-                      'kernel_regularizer': kernel_reg}
+                  'kernel_regularizer': kernel_reg}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc},
-                 'dense_2': {'neurons': 128, **params_all_fcc},
-                 'last': {}
-                 }
+             'dense_2': {'neurons': 128, **params_all_fcc},
+             'last': {}
+             }
 
     # Train for one epoch using MSE loss
 
@@ -119,13 +119,14 @@ if __name__ == "__main__":
     # Define new model
 
     m = Model.model
-    predictions = CNN.CauchyLayer()(m.layers[-1].output)
+    predictions = CNN.CauchyLayer(init_value=0.2)(m.layers[-1].output)
     new_model = keras.Model(inputs=m.input, outputs=predictions)
 
     optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
     loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
 
     new_model.compile(loss=loss_c, optimizer=optimiser)
+    new_model.load_weights(path_model + "/model/weights.40.hdf5")
 
     ######### training/testing #########
 
@@ -139,19 +140,20 @@ if __name__ == "__main__":
         checkpoint_call = callbacks.ModelCheckpoint(filepath, period=1, save_weights_only=True)
         lrate = callbacks.LearningRateScheduler(lr_schefuler_half)
         cbk = CNN.CollectWeightCallback(layer_index=-1)
-        csv_logger = CSVLogger(path_model + "/training.log", separator=',')
+        csv_logger = CSVLogger(path_model + "/training.log", separator=',', append=True)
         callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
 
-        new_model.save_weights(path_model + 'model/initial_weights.h5')
+        # new_model.save_weights(path_model + 'model/initial_weights.h5')
 
         new_model.fit_generator(generator=generator_training, steps_per_epoch=len(generator_training),
                                 use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10,
-                                callbacks=callbacks_list, shuffle=True, epochs=40, initial_epoch=1,
+                                callbacks=callbacks_list, shuffle=True, epochs=100, initial_epoch=40,
                                 validation_data=generator_validation,
                                 validation_steps=len(generator_validation)
                                 )
         print(cbk.weights)
-        np.save(path_model + 'gamma.npy', cbk.weights)
+        g1 = np.append(np.load(path_model + 'gamma.npy'), np.array(cbk.weights))
+        np.save(path_model + 'gamma2.npy', g1)
 
     if testing:
 
