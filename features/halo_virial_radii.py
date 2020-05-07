@@ -92,7 +92,7 @@ if __name__ == "__main__":
             print("Number of halos with non-zero virial radius is " + str(len(h_valid)))
 
             for i in np.arange(len(halo_catalogue)):
-                ind = halo_catalogue[i]["iord"]
+                ind = np.asarray(halo_catalogue[i]["iord"])
                 virial_radii_ids[ind] = virial_radii[i]
                 radii_ids[ind] = snapshot[ind]['r']
 
