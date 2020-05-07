@@ -53,6 +53,8 @@ if __name__ == "__main__":
 
 
         def get_virial_radius_halo(halo_id):
+            if halo_id == 200:
+                print("Halo ID 200")
             try:
                 pynbody.analysis.halo.center(h[halo_id], vel=False, wrap=True)
                 rvir = pynbody.analysis.halo.virial_radius(h[halo_id], overden=200)
@@ -83,6 +85,11 @@ if __name__ == "__main__":
         def get_virial_radius_each_particle(virial_radii, snapshot, halo_catalogue):
             virial_radii_ids = np.zeros(len(snapshot), )
             radii_ids = np.zeros(len(snapshot), )
+
+            # Do it only for halos that do not have a virial radius of 0
+
+            h_valid = np.where(virial_radii != 0)[0]
+            print("Number of halos with non-zero virial radius is " + str(len(h_valid)))
 
             for i, hid in enumerate(halo_catalogue):
                 ind = hid["iord"]
