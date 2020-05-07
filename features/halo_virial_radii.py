@@ -91,10 +91,10 @@ if __name__ == "__main__":
             h_valid = np.where(virial_radii != 0)[0]
             print("Number of halos with non-zero virial radius is " + str(len(h_valid)))
 
-            for i, hid in enumerate(halo_catalogue):
-                ind = hid["iord"]
+            for i in np.arange(len(halo_catalogue)):
+                ind = halo_catalogue[i]["iord"]
                 virial_radii_ids[ind] = virial_radii[i]
-                radii_ids[ind] = f[ind]['r']
+                radii_ids[ind] = snapshot[ind]['r']
 
             np.save(saving_path + "reseed" + sim + "_virial_radius_particles.npy", virial_radii_ids)
             np.save(saving_path + "reseed" + sim + "radius_in_halo_particles.npy", radii_ids)
@@ -108,6 +108,7 @@ if __name__ == "__main__":
         h = f.halos()
         assert h._ordered == False
 
-        r_halos = get_halo_virial_radius(h)
+        # r_halos = get_halo_virial_radius(h)
+        r_halos = np.load(saving_path + "virial_radius_each_halo_sim_" + sim + ".npy")
         r_particles = get_virial_radius_each_particle(r_halos, f, h)
 
