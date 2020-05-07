@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
     if testing:
 
-        epoch = '40'
+        epoch = '100'
         new_model.load_weights(path_model + 'model/weights.' + epoch + '.hdf5')
         predict_from_model(new_model, epoch, generator_training, generator_validation,
                            training_particle_IDs, training_labels_particle_IDS,
