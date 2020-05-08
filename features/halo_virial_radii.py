@@ -77,21 +77,11 @@ if __name__ == "__main__":
             return radii
 
 
-        def get_virial_radius_each_particle(virial_radii, snapshot, halo_catalogue):
-            virial_radii_ids = np.zeros(len(snapshot), )
-
-            for i in range(len(halo_catalogue)):
-                ind = np.asarray(halo_catalogue[i]["iord"])
-                virial_radii_ids[ind] = virial_radii[i]
-
-            np.save(saving_path + "reseed" + sim + "_virial_radius_particles.npy", virial_radii_ids)
-            return virial_radii_ids
-
-
         def get_radius_in_halo_each_particle(virial_radii, snapshot, halo_catalogue):
+            # virial_radii_ids = np.zeros(len(snapshot), )
             radii_ids = np.zeros(len(snapshot), )
 
-            all_halos = np.arange(virial_radii)
+            all_halos = np.arange(len(virial_radii))
             halos_ok = all_halos[np.in1d(all_halos, np.where(virial_radii != 0)[0])]
 
             for i, HID in halos_ok:
@@ -99,8 +89,11 @@ if __name__ == "__main__":
                     print("Halo ID " + str(HID))
                 pynbody.analysis.halo.center(h[HID], vel=False, wrap=True)
                 ind = np.asarray(halo_catalogue[HID]["iord"])
+
+                # virial_radii_ids[ind] = virial_radii[i]
                 radii_ids[ind] = halo_catalogue[HID]['r']
 
+            # np.save(saving_path + "reseed" + sim + "_virial_radius_particles.npy", virial_radii_ids)
             np.save(saving_path + "reseed" + sim + "radius_in_halo_particles.npy", radii_ids)
             return radii_ids
 
@@ -115,7 +108,5 @@ if __name__ == "__main__":
         # r_halos = get_halo_virial_radius(h)
 
         r_halos = np.load(saving_path + "virial_radius_each_halo_sim_" + sim + ".npy")
-        # vir_particles = get_virial_radius_each_particle(r_halos, f, h)
-
         r_particles = get_radius_in_halo_each_particle(r_halos, f, h)
 
