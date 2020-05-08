@@ -2,6 +2,7 @@ import numpy as np
 import sys; sys.path.append("/home/lls/mlhalos_code/")
 import pynbody
 import time
+from numba import njit, prange
 from multiprocessing import Pool
 
 
@@ -48,9 +49,6 @@ if __name__ == "__main__":
 
         # Virial radius
 
-        def get_radius_each_particle(halo_id):
-            r = f[halo_id["iord"]]['r']
-
 
         def get_virial_radius_halo(halo_id):
             if halo_id == 200:
@@ -58,13 +56,9 @@ if __name__ == "__main__":
             try:
                 pynbody.analysis.halo.center(h[halo_id], vel=False, wrap=True)
                 rvir = pynbody.analysis.halo.virial_radius(h[halo_id], overden=200)
-                # rvir = (h[halo_id].properties['rcrit_200']**3/h[halo_id].properties['omegaM0'])**(1,3)
-                # rvir = rvir*10**3/h[200].properties['h']
             except:
                 print("Halo " + str(halo_id) + " didn't work.")
                 rvir = 0
-            # rvir = (h[halo_id].properties['rcrit_200']**3/h[halo_id].properties['omegaM0'])**(1,3)
-            # rvir = rvir*10**3/h[200].properties['h']
             return float(rvir)
 
         def get_virial_r_with_pool(num_halos=10):
@@ -82,21 +76,28 @@ if __name__ == "__main__":
             np.save(saving_path + "virial_radius_each_halo_sim_" + sim + ".npy", radii)
             return radii
 
+
+        @njit(parallel=True)
         def get_virial_radius_each_particle(virial_radii, snapshot, halo_catalogue):
             virial_radii_ids = np.zeros(len(snapshot), )
-            radii_ids = np.zeros(len(snapshot), )
 
-            # Do it only for halos that do not have a virial radius of 0
-
-            h_valid = np.where(virial_radii != 0)[0]
-            print("Number of halos with non-zero virial radius is " + str(len(h_valid)))
-
-            for i in np.arange(len(halo_catalogue)):
+            for i in prange(len(halo_catalogue)):
                 ind = np.asarray(halo_catalogue[i]["iord"])
                 virial_radii_ids[ind] = virial_radii[i]
-                radii_ids[ind] = snapshot[ind]['r']
 
             np.save(saving_path + "reseed" + sim + "_virial_radius_particles.npy", virial_radii_ids)
+            return virial_radii_ids
+
+
+        @njit(parallel=True)
+        def get_radius_in_halo_each_particle(snapshot, halo_catalogue):
+            radii_ids = np.zeros(len(snapshot), )
+
+            for i in prange(len(halo_catalogue)):
+                pynbody.analysis.halo.center(h[i], vel=False, wrap=True)
+                ind = np.asarray(halo_catalogue[i]["iord"])
+                radii_ids[ind] = halo_catalogue[i]['r']
+
             np.save(saving_path + "reseed" + sim + "radius_in_halo_particles.npy", radii_ids)
             return radii_ids
 
@@ -109,6 +110,9 @@ if __name__ == "__main__":
         assert h._ordered == False
 
         # r_halos = get_halo_virial_radius(h)
-        r_halos = np.load(saving_path + "virial_radius_each_halo_sim_" + sim + ".npy")
-        r_particles = get_virial_radius_each_particle(r_halos, f, h)
+
+        # r_halos = np.load(saving_path + "virial_radius_each_halo_sim_" + sim + ".npy")
+        # vir_particles = get_virial_radius_each_particle(r_halos, f, h)
+
+        r_particles = get_radius_in_halo_each_particle(f, h)
 
