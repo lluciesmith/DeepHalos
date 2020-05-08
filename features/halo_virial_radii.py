@@ -95,6 +95,8 @@ if __name__ == "__main__":
             halos_ok = all_halos[np.in1d(all_halos, np.where(virial_radii != 0)[0])]
 
             for i, HID in halos_ok:
+                if HID % 1000 == 0:
+                    print("Halo ID " + str(HID))
                 pynbody.analysis.halo.center(h[HID], vel=False, wrap=True)
                 ind = np.asarray(halo_catalogue[HID]["iord"])
                 radii_ids[ind] = halo_catalogue[HID]['r']
