@@ -84,7 +84,7 @@ if __name__ == "__main__":
             all_halos = np.arange(len(virial_radii))
             halos_ok = all_halos[np.in1d(all_halos, np.where(virial_radii != 0)[0])]
 
-            for i, HID in halos_ok:
+            for i, HID in enumerate(halos_ok):
                 if HID % 1000 == 0:
                     print("Halo ID " + str(HID))
                 pynbody.analysis.halo.center(h[HID], vel=False, wrap=True)
