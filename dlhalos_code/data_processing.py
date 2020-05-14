@@ -6,6 +6,7 @@
 
 import numpy as np
 import time
+import pandas
 import pynbody
 import sklearn.preprocessing
 from numba import njit, prange
@@ -106,7 +107,7 @@ class InputsPreparation:
     def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt",
                  random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None, weights=False,
                  path="/lfstev/deepskies/luisals/", scaler_output=None, scaler_type="standard",
-                 return_rescaled_outputs=True, random_style="random", num_per_mass_bin=1000,
+                 return_rescaled_outputs=True, random_style="random", num_per_mass_bin=1000, num_bins=50,
                  shuffle=True, output_range=(-1, 1)):
         """
         This class prepares the inputs in the correct format for the DataGenerator class.
@@ -121,21 +122,27 @@ class InputsPreparation:
         self.load_ids = load_ids
         self.ids_filename = ids_filename
         self.path = path
-        self.random_subset = random_subset_each_sim
-        self.random_subset_all = random_subset_all
-        self.return_rescaled_outputs = return_rescaled_outputs
         self.log_high_mass_limit = log_high_mass_limit
         self.shuffle = shuffle
         self.weights = weights
 
+        # How to sample particles for the training/validation/test set
+
         self.random_style = random_style
+        self.random_subset = random_subset_each_sim
+        self.random_subset_all = random_subset_all
+        self.num_per_mass_bin = num_per_mass_bin
+        self.num_bins = num_bins
+
+        # How to rescale the output
+
+        self.return_rescaled_outputs = return_rescaled_outputs
         self.scaler_output = scaler_output
         self.scaler_type = scaler_type
         self.output_range = output_range
+
         self.particle_IDs = None
         self.labels_particle_IDS = None
-        self.num_per_mass_bin = num_per_mass_bin
-
         self.generate_particle_IDs_dictionary()
 
     def generate_particle_IDs_dictionary(self):
@@ -147,7 +154,7 @@ class InputsPreparation:
             if self.load_ids:
                 ids_i, mass_i = self.load_ids_from_file(sim_ID)
             else:
-                ids_i, mass_i = self.generate_random_set(sim_ID)
+                ids_i, mass_i = self.generate_random_set(sim_ID, self.random_subset)
 
             name = ['sim-' + str(sim_ID) + '-id-' + str(id_i) for id_i in ids_i]
 
@@ -158,23 +165,17 @@ class InputsPreparation:
         flattened_mass = np.concatenate(masses)
 
         if self.random_style == "uniform":
-            num_p = self.num_per_mass_bin
-            bins = np.histogram_bin_edges(flattened_mass, bins=50)
-            ind_particles = np.digitize(flattened_mass, bins=bins)
+            indices = self.get_indices_array_sampled_evenly_in_each_bin(flattened_mass, 50, self.num_per_mass_bin)
+            flattened_name = flattened_name[indices]
+            flattened_mass = flattened_mass[indices]
 
-            ind = [np.random.choice(np.where(ind_particles == i)[0], num_p, replace=False)
-                     for i in np.unique(ind_particles)[:-1]]
-            ind = np.concatenate(ind)
-
-            flattened_name = flattened_name[ind]
-            flattened_mass = flattened_mass[ind]
-        else:
-            pass
-
-        if self.random_subset_all is not None:
+        elif self.random_style == "random":
             ind = np.random.choice(np.arange(len(flattened_name)), self.random_subset_all, replace=False)
             flattened_name = flattened_name[ind]
             flattened_mass = flattened_mass[ind]
+
+        else:
+            pass
 
         if self.return_rescaled_outputs is True:
             if self.scaler_output is None:
@@ -218,7 +219,31 @@ class InputsPreparation:
             self.particle_IDs = list(labels_reordered.keys())
             self.labels_particle_IDS = labels_reordered
 
-    def generate_random_set(self, simulation_ID):
+    def get_indices_array_sampled_evenly_in_each_bin(array, number_bins, number_samples_per_bin):
+        bins = np.histogram_bin_edges(array, bins=number_bins)
+        ind = []
+
+        for i in np.arange(1, len(bins)):
+            if i == len(bins) - 1:
+                ind_bins = np.where((array >= bins[i - 1]) & (array <= bins[i]))[0]
+            else:
+                ind_bins = np.where((array >= bins[i - 1]) & (array < bins[i]))[0]
+            if ind_bins.size != 0:
+                if len(ind_bins) <= number_samples_per_bin:
+                    warnings.warn("The number of particles in bin [%.3f, %.3f) is %i. This is smaller than the "
+                                     "requested %i number of particles. We include all particles in this bin."
+                                     % (bins[i-1], bins[i], len(ind_bins), number_samples_per_bin))
+                    ind.append(ind_bins)
+                else:
+                    ind_i = np.random.choice(ind_bins, number_samples_per_bin, replace=False)
+                    ind.append(ind_i)
+            else:
+                pass
+
+        ind = np.concatenate(ind)
+        return ind
+
+    def generate_random_set(self, simulation_ID, number_samples=None):
         if simulation_ID == "0":
             # halo_mass = np.load("/Users/lls/Documents/mlhalos_files/stored_files/halo_mass_particles.npy")
             halo_mass = np.load(self.path + "training_simulation/halo_mass_particles.npy")
@@ -235,9 +260,12 @@ class InputsPreparation:
             ind = np.log10(halo_mass[ids_in_halo]) <= self.log_high_mass_limit
             ids_in_halo = ids_in_halo[ind]
 
-        ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
-        mass_i = np.log10(halo_mass[ids_i])
-        return ids_i, mass_i
+        if number_samples is None:
+            return ids_in_halo, np.log10(halo_mass[ids_in_halo])
+        else:
+            ids_i = np.random.choice(ids_in_halo, number_samples, replace=False)
+            mass_i = np.log10(halo_mass[ids_i])
+            return ids_i, mass_i
 
     def load_ids_from_file(self, simulation_ID):
         ids_i, mass_i = self.get_ids_and_regression_labels(sim=simulation_ID)
