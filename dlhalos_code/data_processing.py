@@ -219,7 +219,7 @@ class InputsPreparation:
             self.particle_IDs = list(labels_reordered.keys())
             self.labels_particle_IDS = labels_reordered
 
-    def get_indices_array_sampled_evenly_in_each_bin(array, number_bins, number_samples_per_bin):
+    def get_indices_array_sampled_evenly_in_each_bin(self, array, number_bins, number_samples_per_bin):
         bins = np.histogram_bin_edges(array, bins=number_bins)
         ind = []
 
