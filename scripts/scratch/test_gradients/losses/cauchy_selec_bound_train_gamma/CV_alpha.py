@@ -4,6 +4,8 @@ from dlhalos_code import CNN
 from dlhalos_code import regularizers as reg
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
+import numpy as np
+import os
 
 if __name__ == "__main__":
 
@@ -13,9 +15,9 @@ if __name__ == "__main__":
 
     path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/"
 
-    scaler_output = load(open(path_data + 'scaler_output.pkl', "rb"))
-    training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
-    training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
+    scaler_output = load(open(path_data + 'scaler_output_50000.pkl', "rb"))
+    training_particle_IDs = load(open(path_data + 'training_set_50000.pkl', 'rb'))
+    training_labels_particle_IDS = load(open(path_data + 'labels_training_set_50000.pkl', 'rb'))
     val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
     val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 
@@ -26,23 +28,27 @@ if __name__ == "__main__":
 
     params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=False, **params_tr)
+                                          shuffle=True, **params_tr)
 
     params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (31, 31, 31)}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, **params_val)
+                                            shuffle=True, **params_val)
 
 
     ######### TRAIN THE MODEL ################
 
-    path_model = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-                 "/cauchy_selec_bound_gamma_cv_alpha/"
+    path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
+           "/cauchy_selec_bound_gamma_cv_alpha/"
 
     # Define model
 
-    alpha_grid = []
+    alpha_grid = [10**-j for j in np.arange(2, 6)]
 
     for alpha in alpha_grid:
+        path_model = path + "alpha_" + str(alpha) + "/"
+        os.mkdir(path_model)
+        os.mkdir(path_model + "model/")
+
         # Here we do not train alpha but we do a grid search
 
         conv_l2 = reg.l2_norm(alpha)
@@ -59,17 +65,12 @@ if __name__ == "__main__":
 
         params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': "linear", 'relu': True,
                           'kernel_regularizer': dense_l21_l1}
-        param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc}}
+        param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc}, 'last': {}}
 
-        init_gamma = 0.2
-        init_alpha = 0.1
-        last_layer = CNN.LossTrainableParams(init_gamma=init_gamma, init_alpha=init_alpha)
+        # Train for 30 epochs
 
-        # Train for one epoch using MSE loss
-
-        lr = 0.0001
         Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
                               training_generator=generator_training, validation_generator=generator_validation,
-                              num_epochs=2, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
+                              num_epochs=30, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
                               workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model, compile=True,
-                              train=True, load_mse_weights=False)
+                              train=True, load_mse_weights=True)
