@@ -462,6 +462,7 @@ class CNNCauchy(CNN):
 
             if self.train is True:
                 print("Training model")
+                print(self.num_epochs)
                 self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
 
         print(self.trained_loss_params)
