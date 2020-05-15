@@ -1,7 +1,6 @@
 # import os
 # os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import time
-
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -15,6 +14,7 @@ import tensorflow as tf
 from dlhalos_code import evaluation as eval
 from dlhalos_code import loss_functions as lf
 from dlhalos_code import regularizers as reg
+from tensorflow.keras.constraints import Constraint
 
 
 class CNN:
@@ -382,27 +382,34 @@ class CNN:
 
 
 class LossTrainableParams(Layer):
-    def __init__(self, init_gamma=0.2, init_alpha=None, **kwargs):
+    def __init__(self, init_gamma=0.2, init_alpha=None, gamma_constraint=None, alpha_constraint=None, **kwargs):
         # self.output_dim = output_dim
         super(LossTrainableParams, self).__init__(**kwargs)
         self.init_gamma = init_gamma
+        self.constraint_gamma = gamma_constraint
         self.init_alpha = init_alpha
+        self.constraint_alpha = alpha_constraint
 
     def build(self, input_shape):
         if self.init_gamma is not None:
             # Create a trainable parameter for gamma in the Cauchy log-likelihood
             init_g = tf.constant_initializer(value=self.init_gamma)
-            self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init_g, trainable=True)
+            self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init_g, trainable=True,
+                                         constraint=self.constraint_gamma)
 
         if self.init_alpha is not None:
             # Create a trainable parameter for alpha in the weights priors terms (or, regularizers terms)
             init_a = tf.constant_initializer(value=self.init_alpha)
-            self.alpha = self.add_weight(name='gamma', shape=(1,), initializer=init_a, trainable=True)
+            self.alpha = self.add_weight(name='alpha', shape=(1,), initializer=init_a, trainable=True,
+                                         constraint=self.constraint_alpha)
 
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
     def call(self, x):
         return x
+
+    def get_config(self):
+        return {'alpha': self.alpha, 'gamma':self.gamma}
 
 
 class CNNCauchy(CNN):
@@ -416,12 +423,14 @@ class CNNCauchy(CNN):
 
     """
 
-    def __init__(self, conv_params, fcc_params, init_gamma=0.2, init_alpha=None, model_type="regression",
+    def __init__(self, conv_params, fcc_params, model_type="regression", init_gamma=0.2, init_alpha=None,
+                 upper_bound_alpha=2., lower_bound_alpha=0., upper_bound_gamma=2., lower_bound_gamma=0.,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
-                 data_format="channels_last", num_epochs=5, validation_freq=1, period_model_save=1,
+                 data_format="channels_last", validation_freq=1, period_model_save=1,
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
-                 save_summary=False, path_summary=".", compile=True, train=True, load_mse_weights=False):
+                 save_summary=False, path_summary=".", compile=True, train=True,
+                 load_mse_weights=False, num_epochs=5, initial_epoch=1, load_weights=None):
 
         self.path_model = path_summary
 
@@ -443,8 +452,16 @@ class CNNCauchy(CNN):
             self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
 
         self.init_gamma = init_gamma
+        self.LB_gamma = lower_bound_gamma
+        self.UB_gamma = upper_bound_gamma
+
         self.init_alpha = init_alpha
+        self.LB_alpha = lower_bound_alpha
+        self.UB_alpha = upper_bound_alpha
+
         self.num_epochs = num_epochs
+        self.initial_epoch = initial_epoch
+        self.load_weights = load_weights
 
         self.validation_generator = validation_generator
         self.validation_steps = validation_steps
@@ -462,17 +479,28 @@ class CNNCauchy(CNN):
         if self.compile is True:
             self.model = self.compile_cauchy_model(self.model)
 
+            if self.load_weights is not None:
+                self.model.load_weights(self.load_weights)
+
             if self.train is True:
                 print("Training model")
                 print(self.num_epochs)
                 self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
 
-        print(self.trained_loss_params)
-        np.save(self.path_model + 'trained_loss_params.npy', np.array(self.trained_loss_params))
+                if self.init_alpha is None:
+                    g = np.insert(self.trained_loss_params, 0, self.init_gamma)
+                    np.save(self.path_model + 'trained_loss_gamma.npy', g)
+                else:
+                    g, a = self.trained_loss_params
+                    np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
+                    np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
 
     def compile_cauchy_model(self, mse_model):
         # Define Cauchy model
-        last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha)
+        reg_gamma = tf.keras.constraints.MinMaxNorm(min_value=self.LB_gamma, max_value=self.UB_gamma, rate=1.0, axis=0)
+        reg_alpha = tf.keras.constraints.MinMaxNorm(min_value=self.LB_alpha, max_value=self.UB_alpha, rate=1.0, axis=0)
+        last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
+                                         gamma_constraint=reg_gamma, alpha_constraint=reg_alpha)
 
         if self.init_alpha is not None:
             # We have to modify the form of the regularizers to take alpha as a trainable parameter
@@ -502,17 +530,16 @@ class CNNCauchy(CNN):
 
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
-                                      max_queue_size=self.max_queue_size, initial_epoch=1,
+                                      max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
                                       verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
                                       callbacks=callbacks_list, validation_freq=self.val_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
 
         return model, history, cbk.weights
 
-# This function keeps the learning rate at 0.001 for the first ten epochs
-# and decreases it exponentially after that.
 
 def lr_scheduler_half(epoch):
+    # This function halves the learning rate every ten epochs.
     init_lr = 0.0001
     if epoch < 10:
         return init_lr
@@ -521,7 +548,9 @@ def lr_scheduler_half(epoch):
         epoch_drop = 10
         return init_lr * drop_rate**np.floor(epoch / epoch_drop)
 
+
 def lr_scheduler(epoch):
+    # This function decays the learning rate exponentially from the 10th epoch onwards.
     n = 10
     if epoch < n:
         return 0.0001
@@ -535,10 +564,9 @@ class CollectWeightCallback(Callback):
         self.layer_index = layer_index
         self.weights = []
 
-    def on_epoch_end(self, epoch, logs):
+    def on_epoch_end(self, epoch, logs=None):
         layer = self.model.layers[self.layer_index]
-        w = layer.get_weights()[0][0]
-        self.weights.append(w)
+        self.weights.append(layer.get_weights())
 
 
 class AucCallback(Callback):

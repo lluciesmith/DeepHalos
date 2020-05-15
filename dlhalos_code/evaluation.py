@@ -5,7 +5,13 @@ import collections
 from tensorflow.keras.models import load_model
 import dlhalos_code.data_processing as tn
 from pickle import load
+import sys; sys.path.append("/Users/lls/Documents/Projects/LightGBM_halos/")
+import kde_functions as kde
 
+
+def get_KL_divergence(truth, predicted, bandwidth=0.1):
+    KL = kde.get_KL_div(truth, predicted, bandwidth=bandwidth)[0]
+    return KL
 
 def evaluate_model(simulation_id, model_path,
                    params_inputs=None, epochs="all", save=True, save_name="loss.npy",
