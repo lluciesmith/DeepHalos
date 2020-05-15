@@ -1,15 +1,9 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 from dlhalos_code import CNN
-from dlhalos_code import loss_functions as lf
 from dlhalos_code import regularizers as reg
-import tensorflow.keras.callbacks as callbacks
-from tensorflow.keras.callbacks import CSVLogger
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
-import tensorflow.keras as keras
-import numpy as np
-
 
 if __name__ == "__main__":
 
@@ -76,6 +70,6 @@ if __name__ == "__main__":
         lr = 0.0001
         Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
                               training_generator=generator_training, validation_generator=generator_validation,
-                              num_epochs=30, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
+                              num_epochs=2, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
                               workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model, compile=True,
                               train=True, load_mse_weights=False)

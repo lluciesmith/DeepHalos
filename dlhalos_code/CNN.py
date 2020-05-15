@@ -458,7 +458,7 @@ class CNNCauchy(CNN):
             if self.train is True:
                 self.model, self.history, self.trained_loss_params = self.train_cauchy_model()
 
-         print(self.trained_loss_params)
+        print(self.trained_loss_params)
         np.save(self.path_model + 'trained_loss_params.npy', np.array(self.trained_loss_params))
 
     def compile_cauchy_model(self):
