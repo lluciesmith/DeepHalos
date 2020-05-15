@@ -47,7 +47,7 @@ if __name__ == "__main__":
     for alpha in alpha_grid:
         path_model = path + "alpha_" + str(alpha) + "/"
 
-        if alpha > 10**-5:
+        if alpha < 10**-5:
             os.mkdir(path_model)
             os.mkdir(path_model + "model/")
             resume_training = False
