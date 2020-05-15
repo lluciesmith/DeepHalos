@@ -5,10 +5,12 @@ from tensorflow.keras import backend as K
 
 
 def l2_norm(alpha):
+    alpha = K.cast_to_floatx(alpha)
     return regularizers.l2(alpha)
 
 
 def l1_norm(alpha):
+    alpha = K.cast_to_floatx(alpha)
     return regularizers.l1(alpha)
 
 
