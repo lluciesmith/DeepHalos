@@ -423,6 +423,25 @@ class CNNCauchy(CNN):
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                  save_summary=False, path_summary=".", compile=True, train=True, load_mse_weights=False):
 
+        self.path_model = path_summary
+
+        # initialize CNN to load/train weights for one epoch on MSE
+        train_bool = not load_mse_weights
+        super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
+                                        steps_per_epoch=steps_per_epoch,
+                                        training_generator=training_generator, dim=training_generator.dim,
+                                        loss='mse', num_epochs=1, lr=lr, verbose=verbose, data_format=data_format,
+                                        use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
+                                        pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
+                                        path_summary=path_summary, pretrained_model=pretrained_model,
+                                        weights=weights,
+                                        max_queue_size=max_queue_size, train=train_bool)
+        if train_bool is False:
+            print("Loaded initial weights given by training for one epoch on MSE loss")
+            self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
+        else:
+            self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
+
         self.init_gamma = init_gamma
         self.init_alpha = init_alpha
         self.num_epochs = num_epochs
@@ -433,7 +452,6 @@ class CNNCauchy(CNN):
             self.validation_steps = len(self.validation_generator)
         self.validation_freq = validation_freq
 
-        self.path_model = path_summary
         self.period_model_save = period_model_save
 
         self.compile = compile
@@ -442,22 +460,6 @@ class CNNCauchy(CNN):
         print(self.train)
 
         if self.compile is True:
-            train_bool = not load_mse_weights
-            super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
-                                            steps_per_epoch=steps_per_epoch,
-                                            training_generator=training_generator, dim=training_generator.dim,
-                                            loss='mse', num_epochs=1, lr=lr, verbose=verbose, data_format=data_format,
-                                            use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
-                                            pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
-                                            path_summary=path_summary, pretrained_model=pretrained_model,
-                                            weights=weights,
-                                            max_queue_size=max_queue_size, train=train_bool)
-            if train_bool is False:
-                print("Loaded initial weights given by training for one epoch on MSE loss")
-                self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
-            else:
-                self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
-
             self.model = self.compile_cauchy_model(self.model)
 
             if self.train is True:
