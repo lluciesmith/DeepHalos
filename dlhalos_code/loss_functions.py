@@ -1,6 +1,14 @@
-import tensorflow.keras.backend as K
-import tensorflow as tf
+local_machine = False
+
 import numpy as np
+if local_machine:
+    import numpy as K
+    import numpy as tf
+    K.atan = np.arctan
+    np.pow = np.power
+else:
+    import tensorflow.keras.backend as K
+    import tensorflow as tf
 
 
 def mean_squared_error(y_true, y_predicted):
@@ -94,8 +102,10 @@ class ConditionalCauchySelectionLoss:
         self.g = gamma
         self.y_maximum = y_max
         self.y_minimum = y_min
-        self.e = K.constant(np.e, dtype="float32")
-        # self.e = np.e
+        if local_machine:
+            self.e = np.e
+        else:
+            self.e = K.constant(np.e, dtype="float32")
 
     def loss(self, y_true, y_pred):
         return self._loss(y_true, y_pred)

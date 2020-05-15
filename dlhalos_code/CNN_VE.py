@@ -12,20 +12,20 @@ from dlhalos_code import CNN
 
 
 class VCE(CNN.CNN):
-    def __init__(self, training_generator, conv_params, fcc_params, model_type="regression",
-                 validation_generator=None, data_format="channels_last", use_multiprocessing=False, workers=1,
-                 verbose=1, latent_dim=7, num_epochs=10, beta=1, model_name="my_model.h5", validation_freq=1,
-                 plot_models=False, callbacks=None, metrics=None, save=False, lr=0.0001, num_gpu=1, train=True):
+    def __init__(self, conv_params, fcc_params, model_type="regression", training_generator=None,
+                 validation_generator=None, callbacks=None, metrics=None, num_epochs=5, dim=(51, 51, 51),
+                 pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
+                 use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
+                 lr=0.0001, validation_freq=1):
+        super().__init__(training_generator, conv_params, model_type=model_type,
+                         validation_generator=validation_generator, callbacks=callbacks, metrics=save_model,
+                         num_epochs=num_epochs, data_format=data_format, use_multiprocessing=use_multiprocessing,
+                         workers=workers, verbose=verbose, save_model=save, model_name=model_name, num_gpu=num_gpu,
+                         lr=lr, validation_freq=validation_freq, train=False)
 
-        super().__init__(training_generator, conv_params, fcc_params, model_type=model_type,
-                         validation_generator=validation_generator, data_format=data_format,
-                         callbacks=callbacks, metrics=metrics, num_epochs=num_epochs,
-                         use_multiprocessing=use_multiprocessing, workers=workers, verbose=verbose, save=save,
-                         model_name=model_name, num_gpu=num_gpu, lr=lr, validation_freq=validation_freq, train=False)
-
-        self.beta = beta
-        self.plot_models = plot_models
-        self.latent_dim = latent_dim
+        # self.beta = beta
+        # self.plot_models = plot_models
+        # self.latent_dim = latent_dim
         input_shape = self.input_shape
 
         # encoder

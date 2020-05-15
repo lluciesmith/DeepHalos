@@ -7,6 +7,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import Callback
+import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.layers import Input, Dense, Flatten, Add
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras import regularizers
@@ -15,6 +16,8 @@ from tensorflow.keras.layers import Layer
 import os
 import tensorflow as tf
 from dlhalos_code import evaluation as eval
+from dlhalos_code import loss_functions as lf
+from dlhalos_code import regularizers as reg
 
 
 class CNN:
@@ -380,36 +383,136 @@ class CNN:
         x = self._fcc_layers(x, fcc_params, initialiser)
         return x
 
-    # def my_init(self, shape, dtype=None):
-    #     weight_matrix = np.zeros((3, 3, 3))
-    #     weight_matrix[1, 1, 1] = 1
-    #     l = K.random_normal(shape, dtype=dtype) * weight_matrix
-    #     return K.variable(val=l, dtype=dtype)
 
-
-class CauchyLayer(Layer):
-
-    def __init__(self, init_value=0.2, **kwargs):
+class LossTrainableParams(Layer):
+    def __init__(self, init_gamma=0.2, init_alpha=None, **kwargs):
         # self.output_dim = output_dim
-        super(CauchyLayer, self).__init__(**kwargs)
-        self.init_value = init_value
+        super(LossTrainableParams, self).__init__(**kwargs)
+        self.init_gamma = init_gamma
+        self.init_alpha = init_alpha
 
     def build(self, input_shape):
-        # Create a trainable weight variable for this layer.
-        init = tf.constant_initializer(value=self.init_value)
-        # init = tf.compat.v1.keras.initializers.RandomNormal(mean=1.0, stddev=0.2)
-        self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init, trainable=True)
-        super(CauchyLayer, self).build(input_shape)  # Be sure to call this at the end
+        if self.init_gamma is not None:
+            # Create a trainable parameter for gamma in the Cauchy log-likelihood
+            init_g = tf.constant_initializer(value=self.init_gamma)
+            self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init_g, trainable=True)
+
+        if self.init_alpha is not None:
+            # Create a trainable parameter for alpha in the weights priors terms (or, regularizers terms)
+            init_a = tf.constant_initializer(value=self.init_alpha)
+            self.alpha = self.add_weight(name='gamma', shape=(1,), initializer=init_a, trainable=True)
+
+        super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
     def call(self, x):
         return x
 
-    # def compute_output_shape(self, input_shape):
-    #     return (input_shape[0], self.output_dim)
 
+class CNNCauchy(CNN):
+    """
+    This is the model which uses the Cauchy+selection+fixed boundary loss,
+    after training the CNN on MSE loss for one epoch.
+
+    Important note: If you want to train the regularization parameter, alpha,
+    you must provide as input a `LossTrainableParams` layer which contains the parameter alpha
+    that was used in defining the regularizers inside `conv_params' and `fcc_params'.
+
+    """
+
+    def __init__(self, conv_params, fcc_params, init_gamma=0.2, init_alpha=None, model_type="regression",
+                 training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
+                 data_format="channels_last", num_epochs=5, validation_freq=1, period_model_save=1,
+                 lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
+                 max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
+                 save_summary=False, path_summary=".", compile=True, train=True, load_mse_weights=False):
+
+        train_bool = not load_mse_weights
+        super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type, steps_per_epoch=steps_per_epoch,
+                                        training_generator=training_generator, dim=training_generator.dim,
+                                        loss='mse', num_epochs=1, lr=lr, verbose=verbose, data_format=data_format,
+                                        use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
+                                        pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
+                                        path_summary=path_summary, pretrained_model=pretrained_model, weights=weights,
+                                        max_queue_size=max_queue_size, train=train_bool)
+        a = [self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5') if train_bool is False
+         else self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')]
+
+        self.init_gamma = init_gamma
+        self.init_alpha = init_alpha
+        self.num_epochs = num_epochs
+
+        self.validation_generator = validation_generator
+        self.validation_steps = validation_steps
+        if self.validation_steps is None:
+            self.validation_steps = len(self.validation_generator)
+        self.validation_freq = validation_freq
+
+        self.path_model = path_summary
+        self.period_model_save = period_model_save
+
+        self.compile = compile
+        self.train = train
+
+        if self.compile is True:
+            self.model = self.compile_cauchy_model()
+            if self.train is True:
+                self.model, self.history, self.trained_loss_params = self.train_cauchy_model()
+
+         print(self.trained_loss_params)
+        np.save(self.path_model + 'trained_loss_params.npy', np.array(self.trained_loss_params))
+
+    def compile_cauchy_model(self):
+        # Define Cauchy model
+        m = self.model
+        last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha)
+
+        if self.init_alpha is not None:
+            # We have to modify the form of the regularizers to take alpha as a trainable parameter
+            self.conv_params['kernel_regularizer'] = reg.l1_and_l21_group(last_layer.alpha)
+            self.fcc_params['kernel_regularizer'] = reg.l2_norm(last_layer.alpha)
+
+        predictions = last_layer(m.layers[-1].output)
+        new_model = keras.Model(inputs=m.input, outputs=predictions)
+
+        optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
+        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
+
+        new_model.compile(loss=loss_c, optimizer=optimiser)
+        return new_model
+
+    def train_cauchy_model(self):
+
+        # callbacks
+        filepath = self.path_model + "/model/weights.{epoch:02d}.hdf5"
+        checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
+        lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
+        cbk = CNN.CollectWeightCallback(layer_index=-1)
+        csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
+        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
+
+        # Train model
+
+        Model = self.model
+        history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
+                                      use_multiprocessing=self.use_multiprocessing, workers=self.workers,
+                                      max_queue_size=self.max_queue_size, initial_epoch=1,
+                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
+                                      callbacks=callbacks_list, validation_freq=self.val_freq,
+                                      validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
+
+        return Model, history, cbk.weights
 
 # This function keeps the learning rate at 0.001 for the first ten epochs
 # and decreases it exponentially after that.
+
+def lr_scheduler_half(epoch):
+    init_lr = 0.0001
+    if epoch < 10:
+        return init_lr
+    else:
+        drop_rate = 0.5
+        epoch_drop = 10
+        return init_lr * drop_rate**np.floor(epoch / epoch_drop)
 
 def lr_scheduler(epoch):
     n = 10

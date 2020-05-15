@@ -2,6 +2,84 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import trapz
 import collections
+from tensorflow.keras.models import load_model
+import dlhalos_code.data_processing as tn
+from pickle import load
+
+
+def evaluate_model(simulation_id, model_path,
+                   params_inputs=None, epochs="all", save=True, save_name="loss.npy",
+                   load_ids_sim=False, random_subset_each_sim=None, random_subset_all=None):
+
+    if params_inputs is None:
+        params_inputs = {'batch_size': 80,
+                         'rescale_mean': 1.005,
+                         'rescale_std': 0.05050,
+                         'dim': (75, 75, 75)
+                     }
+    s_output = load(open(model_path + 'scaler_output.pkl', 'rb'))
+
+    s_val = tn.SimulationPreparation(simulation_id)
+    validation_set = tn.InputsPreparation(simulation_id, load_ids=load_ids_sim,
+                                          random_subset_each_sim=random_subset_each_sim,
+                                          random_subset_all=random_subset_all, scaler_output=s_output, shuffle=False)
+    generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
+                                            s_val.sims_dic, **params_inputs)
+    if epochs == "all":
+        epochs = [5*i for i in range(1, 21)]
+        epochs = np.array(epochs).astype('str')
+        epochs[0] = "05"
+
+        loss = np.zeros((len(epochs), 2))
+        loss[:, 0] = [5*i for i in range(1, 21)]
+
+        for i, epoch in enumerate(epochs):
+            model_epoch = load_model(model_path + "model/weights." + epoch + ".hdf5")
+            loss[i, 1] = model_epoch.evaluate_generator(generator_validation, use_multiprocessing=False, workers=1,
+                                                        verbose=1)
+            del model_epoch
+
+    else:
+        model_epoch = load_model(model_path + "model/weights." + epochs + ".hdf5")
+        loss = model_epoch.evaluate_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
+
+    if save is True:
+        np.save(model_path + save_name, loss)
+
+    return loss
+
+
+
+def predict_model(simulation_id, model_path,
+                  params_inputs=None, epochs="100", save=True,
+                  load_ids_sim=False, random_subset_each_sim=None, random_subset_all=None):
+    if params_inputs is None:
+        params_inputs = {'batch_size': 80,
+                         'rescale_mean': 1.005,
+                         'rescale_std': 0.05050,
+                         'dim': (75, 75, 75)
+                         }
+    s_output = load(open(model_path + 'scaler_output.pkl', 'rb'))
+
+    s_val = tn.SimulationPreparation(simulation_id)
+    validation_set = tn.InputsPreparation(simulation_id, load_ids=load_ids_sim,
+                                          random_subset_each_sim=random_subset_each_sim,
+                                          random_subset_all=random_subset_all, scaler_output=s_output, shuffle=False)
+    generator_validation = tn.DataGenerator(validation_set.particle_IDs, validation_set.labels_particle_IDS,
+                                            s_val.sims_dic, **params_inputs)
+
+    model = load_model(model_path + "model/weights." + epochs + ".hdf5")
+
+    pred = model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
+    truth_rescaled = np.array([val for (key, val) in validation_set.labels_particle_IDS.items()])
+
+    h_m_pred = s_output.inverse_transform(pred).flatten()
+    true = s_output.inverse_transform(truth_rescaled).flatten()
+
+    if save is True:
+        np.save(model_path + "predicted" + simulation_id + "_" + epochs + ".npy", h_m_pred)
+        np.save(model_path + "true" + simulation_id + "_" + epochs + ".npy", true)
+    return h_m_pred, true
 
 
 def plot_true_vs_predict(true, predicted):
