@@ -5,8 +5,7 @@ import collections
 from tensorflow.keras.models import load_model
 import dlhalos_code.data_processing as tn
 from pickle import load
-import sys; sys.path.append("/Users/lls/Documents/Projects/LightGBM_halos/")
-import kde_functions as kde
+from utilss import kl_divergence as kde
 
 
 def get_KL_divergence(truth, predicted, bandwidth=0.1):
