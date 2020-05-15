@@ -438,6 +438,8 @@ class CNNCauchy(CNN):
 
         self.compile = compile
         self.train = train
+        print(self.compile)
+        print(self.train)
 
         if self.compile is True:
             train_bool = not load_mse_weights
@@ -451,6 +453,7 @@ class CNNCauchy(CNN):
                                             weights=weights,
                                             max_queue_size=max_queue_size, train=train_bool)
             if train_bool is False:
+                print("Loaded initial weights given by training for one epoch on MSE loss")
                 self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
             else:
                 self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
@@ -458,6 +461,7 @@ class CNNCauchy(CNN):
             self.model = self.compile_cauchy_model(self.model)
 
             if self.train is True:
+                print("Training model")
                 self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
 
         print(self.trained_loss_params)
