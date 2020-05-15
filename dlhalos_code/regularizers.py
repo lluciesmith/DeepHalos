@@ -13,7 +13,7 @@ def l1_norm(alpha):
 
 
 def l1_and_l21_group(alpha):
-    return l1_norm(alpha) + l21_group(alpha)
+    return K.sum(l1_norm(alpha), l21_group(alpha))
 
 
 def l21_group(alpha):
