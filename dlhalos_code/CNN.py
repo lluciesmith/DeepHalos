@@ -10,10 +10,7 @@ from tensorflow.keras.callbacks import Callback
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.layers import Input, Dense, Flatten, Add
 from tensorflow.keras.utils import multi_gpu_model
-from tensorflow.keras import regularizers
-import inspect
 from tensorflow.keras.layers import Layer
-import os
 import tensorflow as tf
 from dlhalos_code import evaluation as eval
 from dlhalos_code import loss_functions as lf
@@ -426,17 +423,6 @@ class CNNCauchy(CNN):
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                  save_summary=False, path_summary=".", compile=True, train=True, load_mse_weights=False):
 
-        train_bool = not load_mse_weights
-        super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type, steps_per_epoch=steps_per_epoch,
-                                        training_generator=training_generator, dim=training_generator.dim,
-                                        loss='mse', num_epochs=1, lr=lr, verbose=verbose, data_format=data_format,
-                                        use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
-                                        pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
-                                        path_summary=path_summary, pretrained_model=pretrained_model, weights=weights,
-                                        max_queue_size=max_queue_size, train=train_bool)
-        a = [self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5') if train_bool is False
-         else self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')]
-
         self.init_gamma = init_gamma
         self.init_alpha = init_alpha
         self.num_epochs = num_epochs
@@ -454,16 +440,31 @@ class CNNCauchy(CNN):
         self.train = train
 
         if self.compile is True:
-            self.model = self.compile_cauchy_model()
+            train_bool = not load_mse_weights
+            super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
+                                            steps_per_epoch=steps_per_epoch,
+                                            training_generator=training_generator, dim=training_generator.dim,
+                                            loss='mse', num_epochs=1, lr=lr, verbose=verbose, data_format=data_format,
+                                            use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
+                                            pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
+                                            path_summary=path_summary, pretrained_model=pretrained_model,
+                                            weights=weights,
+                                            max_queue_size=max_queue_size, train=train_bool)
+            if train_bool is False:
+                self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
+            else:
+                self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
+
+            self.model = self.compile_cauchy_model(self.model)
+
             if self.train is True:
-                self.model, self.history, self.trained_loss_params = self.train_cauchy_model()
+                self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
 
         print(self.trained_loss_params)
         np.save(self.path_model + 'trained_loss_params.npy', np.array(self.trained_loss_params))
 
-    def compile_cauchy_model(self):
+    def compile_cauchy_model(self, mse_model):
         # Define Cauchy model
-        m = self.model
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha)
 
         if self.init_alpha is not None:
@@ -471,8 +472,8 @@ class CNNCauchy(CNN):
             self.conv_params['kernel_regularizer'] = reg.l1_and_l21_group(last_layer.alpha)
             self.fcc_params['kernel_regularizer'] = reg.l2_norm(last_layer.alpha)
 
-        predictions = last_layer(m.layers[-1].output)
-        new_model = keras.Model(inputs=m.input, outputs=predictions)
+        predictions = last_layer(mse_model.layers[-1].output)
+        new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
@@ -480,7 +481,7 @@ class CNNCauchy(CNN):
         new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
 
-    def train_cauchy_model(self):
+    def train_cauchy_model(self, model):
 
         # callbacks
         filepath = self.path_model + "/model/weights.{epoch:02d}.hdf5"
@@ -492,15 +493,14 @@ class CNNCauchy(CNN):
 
         # Train model
 
-        Model = self.model
-        history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
+        history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=1,
                                       verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
                                       callbacks=callbacks_list, validation_freq=self.val_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
 
-        return Model, history, cbk.weights
+        return model, history, cbk.weights
 
 # This function keeps the learning rate at 0.001 for the first ten epochs
 # and decreases it exponentially after that.
