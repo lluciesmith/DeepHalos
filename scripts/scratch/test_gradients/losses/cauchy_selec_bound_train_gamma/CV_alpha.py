@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     # Define model
 
-    alpha_grid = [10**-j for j in np.arange(2, 6)]
+    alpha_grid = [10**-j for j in np.arange(2, 6).astype("float")]
 
     for alpha in alpha_grid:
         path_model = path + "alpha_" + str(alpha) + "/"
