@@ -35,7 +35,9 @@ class L2(Regularizer, RegClass):
         super().__init__(alpha)
 
     def __call__(self, x):
-        return regularizers.l2(self.alpha)
+        regularization = 0.
+        regularization += self.alpha * K.sum(K.square(x))
+        return regularization
 
     def get_config(self):
         return {'alpha_l2': self.alpha}
@@ -48,7 +50,9 @@ class L1(Regularizer, RegClass):
         super().__init__(alpha)
 
     def __call__(self, x):
-        return regularizers.l1(self.alpha)
+        regularization = 0.
+        regularization += self.alpha * K.sum(K.abs(x))
+        return regularization
 
     def get_config(self):
         return {'alpha_l1': self.alpha}
@@ -80,8 +84,9 @@ class L21(Regularizer, RegClass):
         # We do not add the normalization coefficient for now
         # const_coeff = np.sqrt(K.int_shape(x)[1])
 
-        reg = self.alpha * K.sum(K.sqrt(K.sum(K.square(x), axis=1)))
-        return reg
+        regularization = 0.
+        regularization += self.alpha * K.sum(K.sqrt(K.sum(K.square(x), axis=1)))
+        return regularization
 
     def get_config(self):
         return {'alpha_l21': self.alpha}
