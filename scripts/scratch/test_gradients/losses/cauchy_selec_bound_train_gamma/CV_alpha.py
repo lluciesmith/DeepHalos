@@ -47,13 +47,6 @@ if __name__ == "__main__":
     for alpha in alpha_grid:
         path_model = path + "alpha_" + str(alpha) + "/"
 
-        if alpha < 10**-5:
-            os.mkdir(path_model)
-            os.mkdir(path_model + "model/")
-            resume_training = False
-        else:
-            resume_training = True
-
         # Here we do not train alpha but we do a grid search
 
         conv_l2 = reg.l2_norm(alpha)
@@ -68,23 +61,14 @@ if __name__ == "__main__":
                       'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv}
                       }
 
-        params_all_fcc = {'bn': False, 'dropout': 0.4, 'activation': "linear", 'relu': True,
-                          'kernel_regularizer': dense_l21_l1}
+        params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'kernel_regularizer': dense_l21_l1}
         param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc}, 'last': {}}
 
         # Train for 60 epochs
 
-        if resume_training:
-            Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
-                                  training_generator=generator_training, validation_generator=generator_validation,
-                                  validation_freq=1, lr=0.0001, max_queue_size=10,
-                                  use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, save_summary=True,
-                                  path_summary=path_model, compile=True, train=True,  load_mse_weights=True,
-                                  num_epochs=60, initial_epoch=30, load_weights=path_model + "model/weights.30.hdf5")
-        else:
-            Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
-                                  training_generator=generator_training, validation_generator=generator_validation,
-                                  num_epochs=60, validation_freq=1, lr=0.0001, max_queue_size=10,
-                                  use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, save_summary=True,
-                                  path_summary=path_model, compile=True,
-                                  train=True, load_mse_weights=False)
+        Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
+                              training_generator=generator_training, validation_generator=generator_validation,
+                              num_epochs=60, validation_freq=1, lr=0.0001, max_queue_size=10,
+                              use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, save_summary=True,
+                              path_summary=path_model, compile=True,
+                              train=True, load_mse_weights=True)
