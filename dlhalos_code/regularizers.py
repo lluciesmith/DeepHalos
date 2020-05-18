@@ -38,7 +38,7 @@ class L2(Regularizer, RegClass):
         return regularizers.l2(self.alpha)
 
     def get_config(self):
-        return {'alpha_l2': float(K.get_value(self.alpha))}
+        return {'alpha_l2': self.alpha}
 
 
 class L1(Regularizer, RegClass):
@@ -51,7 +51,7 @@ class L1(Regularizer, RegClass):
         return regularizers.l1(self.alpha)
 
     def get_config(self):
-        return {'alpha_l1': float(K.get_value(self.alpha))}
+        return {'alpha_l1': self.alpha}
 
 
 class L21_and_L1(Regularizer, RegClass):
@@ -67,7 +67,7 @@ class L21_and_L1(Regularizer, RegClass):
         return regularization
 
     def get_config(self):
-        return {'alpha_l21_l1': float(K.get_value(self.alpha))}
+        return {'alpha_l21_l1': self.alpha}
 
 
 class L21(Regularizer, RegClass):
@@ -84,7 +84,7 @@ class L21(Regularizer, RegClass):
         return reg
 
     def get_config(self):
-        return {'alpha_l21': float(K.get_value(self.alpha))}
+        return {'alpha_l21': self.alpha}
 
 
 def active_neurons(model):
