@@ -502,13 +502,14 @@ class CNNCauchy(CNN):
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=reg_gamma, alpha_constraint=reg_alpha)
 
-        if self.init_alpha is not None:
-            # We have to modify the form of the regularizers to take alpha as a trainable parameter
-            self.conv_params['kernel_regularizer'] = reg.l1_and_l21_group(last_layer.alpha)
-            self.fcc_params['kernel_regularizer'] = reg.l2_norm(last_layer.alpha)
-
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
+
+        if self.init_alpha is not None:
+            # We have to modify the form of the regularizers to take alpha as a trainable parameter
+            for layer in new_model.layers:
+                if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, reg.RegClass):
+                    layer.kernel_regularizer.set_alpha(layer.alpha)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
