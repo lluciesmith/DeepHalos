@@ -22,10 +22,11 @@ def l21_group(alpha):
 
 class RegClass:
     def __init__(self, alpha):
-        self.alpha = K.cast_to_floatx(alpha)
+        self.alpha = K.variable(K.cast_to_floatx(alpha))
 
     def set_alpha(self, alpha):
-        K.set_value(self.alpha, alpha)
+        val_alpha = K.cast_to_floatx(alpha)
+        K.set_value(self.alpha, val_alpha)
 
 
 class L2(Regularizer, RegClass):
@@ -40,7 +41,7 @@ class L2(Regularizer, RegClass):
         return regularization
 
     def get_config(self):
-        return {'alpha_l2': self.alpha}
+        return {'alpha_l2': float(self.alpha)}
 
 
 class L1(Regularizer, RegClass):
