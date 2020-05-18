@@ -1,11 +1,9 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 from dlhalos_code import CNN
-from dlhalos_code import regularizers as reg
+from dlhalos_code import custom_regularizers as reg
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
-import numpy as np
-import os
 
 if __name__ == "__main__":
 
@@ -42,7 +40,11 @@ if __name__ == "__main__":
 
     # Regularizers are added in `CNNCauchy'
 
-    params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False}
+    conv_l2 = reg.l2_norm(0.1)
+    dense_l21_l1 = reg.l1_and_l21_group(0.1)
+
+    params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
+                       'kernel_regularizer': conv_l2}
     param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
@@ -50,14 +52,17 @@ if __name__ == "__main__":
                   'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv}
                   }
 
-    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True}
-    param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc}, 'last': {}}
+    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'kernel_regularizer': dense_l21_l1}
+    param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
+                 'last': {}}
+
+    reg_params = {'init_alpha': 0.1, 'upper_bound_alpha': 0.1, 'lower_bound_alpha': 0.001,
+                  'init_gamma': 0.2, 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1}
 
     # Train for 30 epochs
 
-    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", init_alpha=0.1, init_gamma=0.2,
-                          upper_bound_alpha=0.1, lower_bound_alpha=0.001, upper_bound_gamma=0.4, lower_bound_gamma=0.1,
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
                           training_generator=generator_training, validation_generator=generator_validation,
                           num_epochs=60, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path, compile=True,
-                          train=True, load_mse_weights=False)
+                          train=True, load_mse_weights=True, **reg_params)
