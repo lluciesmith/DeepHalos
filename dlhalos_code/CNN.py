@@ -511,7 +511,7 @@ class CNNCauchy(CNN):
             for layer in new_model.layers:
                 if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, reg.RegClass):
                     print(layer)
-                    layer.kernel_regularizer.set_alpha(layer.alpha)
+                    layer.kernel_regularizer.set_alpha(last_layer.alpha)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
