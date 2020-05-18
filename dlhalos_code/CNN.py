@@ -2,7 +2,6 @@
 # os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import time
 import numpy as np
-import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import Callback
@@ -13,8 +12,7 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 from dlhalos_code import evaluation as eval
 from dlhalos_code import loss_functions as lf
-from dlhalos_code import regularizers as reg
-from tensorflow.keras.constraints import Constraint
+from dlhalos_code import custom_regularizers as custom_reg
 
 
 class CNN:
@@ -483,8 +481,6 @@ class CNNCauchy(CNN):
                 self.model.load_weights(self.load_weights)
 
             if self.train is True:
-                print("Training model")
-                print(self.num_epochs)
                 self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
 
                 if self.init_alpha is None:
@@ -509,7 +505,7 @@ class CNNCauchy(CNN):
             print("Making the regularizer parameter a trainable parameter")
             # We have to modify the form of the regularizers to take alpha as a trainable parameter
             for layer in new_model.layers:
-                if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, reg.RegClass):
+                if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.RegClass):
                     print(layer)
                     layer.kernel_regularizer.set_alpha(last_layer.alpha)
 
