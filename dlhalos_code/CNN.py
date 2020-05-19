@@ -513,11 +513,9 @@ class CNNCauchy(CNN):
 
             for layer in new_model.layers[:layer_before_last_dense]:
                 if 'conv3d' in layer.name:
-                    print(layer)
                     new_model.add_loss(custom_reg.l2_norm(self.init_alpha, loss_params_layer)(layer.kernel))
                 elif 'dense' in layer.name:
-                    print(layer)
-                    new_model.add_loss(custom_reg.l1_and_l21_group(self.init_alpha, loss_params_layer)(layer.kernel))
+                    new_model.add_loss(custom_reg.l2_norm(self.init_alpha, loss_params_layer)(layer.kernel))
                 else:
                     pass
 
