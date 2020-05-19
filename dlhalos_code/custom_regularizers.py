@@ -20,8 +20,7 @@ def l21_group(alpha):
 
 
 class RegClass:
-    def __init__(self, alpha, layer):
-        self.layer = layer
+    def __init__(self, alpha):
         self.alpha = K.cast_to_floatx(alpha)
 
     def set_alpha_from_layer(self, layer):
