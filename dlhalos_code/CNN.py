@@ -514,9 +514,9 @@ class CNNCauchy(CNN):
             # We have to modify the form of the regularizers to take alpha as a trainable parameter
             for layer in new_model.layers[:layer_before_last_dense]:
                 if 'conv3d' in layer.name:
-                    new_model.add_loss(custom_reg.l2_norm(self.init_alpha, loss_params_layer)(layer.kernel))
+                    new_model.add_loss(custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel))
                 elif 'dense' in layer.name:
-                    new_model.add_loss(custom_reg.l2_norm(self.init_alpha, loss_params_layer)(layer.kernel))
+                    new_model.add_loss(custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel))
                 else:
                     pass
 

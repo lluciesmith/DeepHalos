@@ -3,8 +3,8 @@ from tensorflow.keras.regularizers import Regularizer
 from tensorflow.keras import backend as K
 
 
-def l2_norm(alpha, layer=None):
-    return L2(alpha, layer=layer)
+def l2_norm(alpha):
+    return L2(alpha)
 
 
 def l1_norm(alpha, layer=None):
@@ -34,11 +34,12 @@ class RegClass:
     #     # K.set_value(variable_alpha, val_alpha)
 
 
-class L2(RegClass, Regularizer):
+class L2(Regularizer):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
-    def __init__(self, alpha=0., layer=None):
-        super().__init__(alpha, layer=layer)
+    def __init__(self, alpha=0.):
+        # super().__init__(alpha)
+        self.alpha = alpha
 
     def __call__(self, x):
         # if self.layer is not None:
@@ -62,8 +63,8 @@ class L1(RegClass, Regularizer):
     # def __call__(self, x):
     #     if self.layer is not None:
     #         self.set_alpha_from_layer(self.layer)
-    def __init__(self, alpha=0., layer=None):
-        super().__init__(alpha, layer=layer)
+    def __init__(self, alpha):
+        super().__init__(alpha)
 
     def __call__(self, x):
         # if self.layer is not None:
