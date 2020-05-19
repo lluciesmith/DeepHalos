@@ -464,8 +464,6 @@ class CNNCauchy(CNN):
 
         self.validation_generator = validation_generator
         self.validation_steps = validation_steps
-        if self.validation_steps is None:
-            self.validation_steps = len(self.validation_generator)
         self.validation_freq = validation_freq
 
         self.period_model_save = period_model_save
@@ -503,18 +501,18 @@ class CNNCauchy(CNN):
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
-        if self.init_alpha is not None:
-            print("Making the regularizer parameter a trainable parameter")
-            # We have to modify the form of the regularizers to take alpha as a trainable parameter
-            for layer in new_model.layers:
-                if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.RegClass):
-                    print(layer)
-                    layer.kernel_regularizer = layer.kernel_regularizer.__init__(self.init_alpha, layer=last_layer)
-
-        optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
-
-        new_model.compile(loss=loss_c, optimizer=optimiser)
+        # if self.init_alpha is not None:
+        #     print("Making the regularizer parameter a trainable parameter")
+        #     # We have to modify the form of the regularizers to take alpha as a trainable parameter
+        #     for layer in new_model.layers:
+        #         if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.RegClass):
+        #             print(layer)
+        #             layer.kernel_regularizer = layer.kernel_regularizer.__init__(self.init_alpha, layer=last_layer)
+        #
+        # optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
+        # loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
+        #
+        # new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
 
     def train_cauchy_model(self, model):
