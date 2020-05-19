@@ -40,11 +40,12 @@ if __name__ == "__main__":
 
     # Regularizers are added in `CNNCauchy'
 
-    conv_l2 = reg.l2_norm(0.1)
-    dense_l21_l1 = reg.l1_and_l21_group(0.1)
+    # conv_l2 = reg.l2_norm(0.1)
+    # dense_l21_l1 = reg.l1_and_l21_group(0.1)
 
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
-                       'kernel_regularizer': conv_l2}
+                       #'kernel_regularizer': conv_l2
+                       }
     param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
@@ -52,7 +53,9 @@ if __name__ == "__main__":
                   'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv}
                   }
 
-    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'kernel_regularizer': dense_l21_l1}
+    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True,
+                      #'kernel_regularizer': dense_l21_l1
+                      }
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
@@ -65,7 +68,7 @@ if __name__ == "__main__":
                           training_generator=generator_training, validation_generator=generator_validation,
                           num_epochs=60, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path, compile=True,
-                          train=True, load_mse_weights=False, **reg_params)
+                          train=True, load_mse_weights=True, **reg_params)
 
     # Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
     #                       training_generator={}, validation_generator={}, dim=(31, 31, 31),

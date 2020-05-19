@@ -19,7 +19,7 @@ def l21_group(alpha):
     return L21(alpha)
 
 
-class L2:
+class L2(Regularizer):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
     def __init__(self, alpha=0.):
@@ -34,7 +34,7 @@ class L2:
         return {'alpha_l2': float(K.get_value(self.alpha))}
 
 
-class L1:
+class L1(Regularizer):
     def __init__(self, alpha):
         self.alpha = alpha
 
@@ -47,7 +47,7 @@ class L1:
         return {'alpha_l1': float(K.get_value(self.alpha))}
 
 
-class L21_and_L1:
+class L21_and_L1(Regularizer):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
     def __init__(self, alpha):
@@ -63,7 +63,7 @@ class L21_and_L1:
         return {'alpha_l21_l1': float(K.get_value(self.alpha))}
 
 
-class L21:
+class L21(Regularizer):
     """ Regularizer for L21 regularization. """
 
     def __init__(self, alpha):
