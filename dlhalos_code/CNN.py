@@ -501,16 +501,17 @@ class CNNCauchy(CNN):
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
+        # We have to modify the form of the regularizers to take alpha as a trainable parameter
+        names = [layer.name for layer in new_model.layers]
+        layer_before_last_dense = -1
+        for i, name in enumerate(names):
+            if 'loss_trainable_params' in name:
+                loss_params_layer = new_model.layers[i]
+                layer_before_last_dense = i - 1
+
         if self.init_alpha is not None:
             print("Making the regularizer parameter a trainable parameter")
             # We have to modify the form of the regularizers to take alpha as a trainable parameter
-            names = [layer.name for layer in new_model.layers]
-            layer_before_last_dense = -1
-            for i, name in enumerate(names):
-                    if 'loss_trainable_params' in name:
-                        loss_params_layer = new_model.layers[i]
-                        layer_before_last_dense = i - 1
-
             for layer in new_model.layers[:layer_before_last_dense]:
                 if 'conv3d' in layer.name:
                     new_model.add_loss(custom_reg.l2_norm(self.init_alpha, loss_params_layer)(layer.kernel))
