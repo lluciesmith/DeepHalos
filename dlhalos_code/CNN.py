@@ -424,7 +424,7 @@ class CNNCauchy(CNN):
     def __init__(self, conv_params, fcc_params, model_type="regression", init_gamma=0.2, init_alpha=None,
                  upper_bound_alpha=2., lower_bound_alpha=0., upper_bound_gamma=2., lower_bound_gamma=0.,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
-                 data_format="channels_last", validation_freq=1, period_model_save=1,
+                 data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                  save_summary=False, path_summary=".", compile=True, train=True,
@@ -432,11 +432,12 @@ class CNNCauchy(CNN):
 
         self.path_model = path_summary
 
+
         # initialize CNN to load/train weights for one epoch on MSE
         train_bool = not load_mse_weights
         super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
                                         steps_per_epoch=steps_per_epoch,
-                                        training_generator=training_generator, dim=training_generator.dim,
+                                        training_generator=training_generator, dim=dim,
                                         loss='mse', num_epochs=1, lr=lr, verbose=verbose, data_format=data_format,
                                         use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
                                         pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
