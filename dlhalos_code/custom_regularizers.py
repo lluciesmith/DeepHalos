@@ -7,44 +7,25 @@ def l2_norm(alpha):
     return L2(alpha)
 
 
-def l1_norm(alpha, layer=None):
-    return L1(alpha, layer=layer)
+def l1_norm(alpha):
+    return L1(alpha)
 
 
-def l1_and_l21_group(alpha, layer=None):
-    return L21_and_L1(alpha, layer=layer)
+def l1_and_l21_group(alpha):
+    return L21_and_L1(alpha)
 
 
-def l21_group(alpha, layer=None):
-    return L21(alpha, layer=layer)
+def l21_group(alpha):
+    return L21(alpha)
 
 
-class RegClass:
-    def __init__(self, alpha, layer=None):
-        self.layer = layer
-        if self.layer is None:
-            self.alpha = self.alpha
-        if self.layer is not None:
-            self.alpha = layer.alpha
-
-    # def set_alpha_from_layer(self, layer):
-    #     self.alpha = K.get_value(layer.gamma)
-    #     # val_alpha = K.get_value(alpha)[0]
-    #     # variable_alpha = K.variable(self.alpha)
-    #     # K.set_value(variable_alpha, val_alpha)
-
-
-class L2(Regularizer):
+class L2:
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
     def __init__(self, alpha=0.):
-        # super().__init__(alpha)
         self.alpha = alpha
 
     def __call__(self, x):
-        # if self.layer is not None:
-        #     self.set_alpha_from_layer(self.layer)
-
         regularization = 0.
         regularization += self.alpha * K.sum(K.square(x))
         return regularization
@@ -53,23 +34,11 @@ class L2(Regularizer):
         return {'alpha_l2': float(K.get_value(self.alpha))}
 
 
-class L1(RegClass, Regularizer):
-    """ Regularizer for combined L21 group regularization and L1 regularization. """
-
-    # def __init__(self, alpha=0., layer=None):
-    #     super().__init__(alpha)
-    #     self.layer = layer
-    #
-    # def __call__(self, x):
-    #     if self.layer is not None:
-    #         self.set_alpha_from_layer(self.layer)
+class L1:
     def __init__(self, alpha):
-        super().__init__(alpha)
+        self.alpha = alpha
 
     def __call__(self, x):
-        # if self.layer is not None:
-        #     self.set_alpha_from_layer(self.layer)
-
         regularization = 0.
         regularization += self.alpha * K.sum(K.abs(x))
         return regularization
@@ -78,11 +47,11 @@ class L1(RegClass, Regularizer):
         return {'alpha_l1': float(K.get_value(self.alpha))}
 
 
-class L21_and_L1(RegClass, Regularizer):
+class L21_and_L1:
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
-    def __init__(self, alpha=0., layer=None):
-        super().__init__(alpha, layer=layer)
+    def __init__(self, alpha):
+        self.alpha = alpha
 
     def __call__(self, x):
         regularization = 0.
@@ -94,11 +63,11 @@ class L21_and_L1(RegClass, Regularizer):
         return {'alpha_l21_l1': float(K.get_value(self.alpha))}
 
 
-class L21(RegClass, Regularizer):
+class L21:
     """ Regularizer for L21 regularization. """
 
-    def __init__(self, alpha=0., layer=None):
-        super().__init__(alpha, layer=layer)
+    def __init__(self, alpha):
+        self.alpha = alpha
 
     def __call__(self, x):
         # We do not add the normalization coefficient for now

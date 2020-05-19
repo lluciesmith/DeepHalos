@@ -517,7 +517,7 @@ class CNNCauchy(CNN):
                 if 'conv3d' in layer.name:
                     reg_losses.append(custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel))
                 elif 'dense' in layer.name:
-                    reg_losses.append(custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel))
+                    reg_losses.append(custom_reg.l1_and_l21_group(loss_params_layer.alpha)(layer.kernel))
                 else:
                     pass
 
