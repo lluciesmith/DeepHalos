@@ -20,11 +20,12 @@ def l21_group(alpha):
 
 
 class RegClass:
-    def __init__(self, alpha):
+    def __init__(self, alpha, layer):
+        self.layer = layer
         self.alpha = K.cast_to_floatx(alpha)
 
-    def set_alpha(self, alpha):
-        self.alpha = alpha
+    def set_alpha_from_layer(self, layer):
+        self.alpha = K.get_value(layer.gamma)
         # val_alpha = K.get_value(alpha)[0]
         # variable_alpha = K.variable(self.alpha)
         # K.set_value(variable_alpha, val_alpha)
@@ -33,56 +34,71 @@ class RegClass:
 class L2(RegClass, Regularizer):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
-    def __init__(self, alpha=0.):
+    def __init__(self, alpha=0., layer=None):
         super().__init__(alpha)
+        self.layer = layer
 
     def __call__(self, x):
+        if self.layer is not None:
+            self.set_alpha_from_layer(self.layer)
+
         regularization = 0.
         regularization += self.alpha * K.sum(K.square(x))
         return regularization
 
     def get_config(self):
-        return {'alpha_l2': float(self.alpha)}
+        return {'alpha_l2': float(K.get_value(self.alpha))}
 
 
 class L1(RegClass, Regularizer):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
-    def __init__(self, alpha=0.):
+    def __init__(self, alpha=0., layer=None):
         super().__init__(alpha)
+        self.layer = layer
 
     def __call__(self, x):
+        if self.layer is not None:
+            self.set_alpha_from_layer(self.layer)
+
         regularization = 0.
         regularization += self.alpha * K.sum(K.abs(x))
         return regularization
 
     def get_config(self):
-        return {'alpha_l1': self.alpha}
+        return {'alpha_l1': float(K.get_value(self.alpha))}
 
 
 class L21_and_L1(RegClass, Regularizer):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
-    def __init__(self, alpha=0.):
+    def __init__(self, alpha=0., layer=None):
         super().__init__(alpha)
+        self.layer = layer
 
     def __call__(self, x):
+        if self.layer is not None:
+            self.set_alpha_from_layer(self.layer)
+
         regularization = 0.
         regularization += self.alpha * K.sum(K.abs(x))
         regularization += self.alpha * K.sum(K.sqrt(K.sum(K.square(x), axis=1)))
         return regularization
 
     def get_config(self):
-        return {'alpha_l21_l1': self.alpha}
+        return {'alpha_l21_l1': float(K.get_value(self.alpha))}
 
 
 class L21(RegClass, Regularizer):
     """ Regularizer for L21 regularization. """
 
-    def __init__(self, alpha=0.):
+    def __init__(self, alpha=0., layer=None):
         super().__init__(alpha)
+        self.layer = layer
 
     def __call__(self, x):
+        if self.layer is not None:
+            self.set_alpha_from_layer(self.layer)
         # We do not add the normalization coefficient for now
         # const_coeff = np.sqrt(K.int_shape(x)[1])
 
@@ -91,7 +107,7 @@ class L21(RegClass, Regularizer):
         return regularization
 
     def get_config(self):
-        return {'alpha_l21': self.alpha}
+        return {'alpha_l21': float(K.get_value(self.alpha))}
 
 
 def active_neurons(model):

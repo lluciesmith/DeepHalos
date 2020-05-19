@@ -66,3 +66,18 @@ if __name__ == "__main__":
                           num_epochs=60, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path, compile=True,
                           train=True, load_mse_weights=True, **reg_params)
+
+    # Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
+    #                       training_generator={}, validation_generator={}, dim=(31, 31, 31),
+    #                       num_epochs=60, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
+    #                       workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path, compile=True,
+    #                       train=False, load_mse_weights=True, **reg_params)
+
+    # alphas = [0.1]
+    # gammas = [0.2]
+    # for epoch in epochs:
+    #     Model.model.load_weights(path + "model/weights." + epoch + ".hdf5")
+    #     g = float(K.get_value(Model.model.layers[-1].gamma))
+    #     a = float(K.get_value(Model.model.layers[-1].alpha))
+    #     gammas.append(g)
+    #     alphas.append(a)

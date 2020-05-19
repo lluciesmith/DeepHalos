@@ -483,14 +483,15 @@ class CNNCauchy(CNN):
 
             if self.train is True:
                 self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
+                np.save(self.path_model + 'trained_loss_params.npy', self.trained_loss_params)
 
-                if self.init_alpha is None:
-                    g = np.insert(self.trained_loss_params, 0, self.init_gamma)
-                    np.save(self.path_model + 'trained_loss_gamma.npy', g)
-                else:
-                    g, a = self.trained_loss_params
-                    np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
-                    np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
+                # if self.init_alpha is None:
+                #     g = np.insert(self.trained_loss_params, 0, self.init_gamma)
+                #     np.save(self.path_model + 'trained_loss_gamma.npy', g)
+                # else:
+                #     g, a = self.trained_loss_params
+                #     np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
+                #     np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
 
     def compile_cauchy_model(self, mse_model):
         # Define Cauchy model
@@ -508,7 +509,7 @@ class CNNCauchy(CNN):
             for layer in new_model.layers:
                 if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.RegClass):
                     print(layer)
-                    layer.kernel_regularizer.set_alpha(last_layer.alpha)
+                    layer.kernel_regularizer = layer.kernel_regularizer.__init__(self.init_alpha, layer=last_layer)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
