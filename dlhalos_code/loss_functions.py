@@ -24,11 +24,14 @@ def sivia_skilling_loss(y_true, y_predicted):
     return K.mean(factor, axis=-1)
 
 
-def cauchy_selection_loss_fixed_boundary_trainable_gamma(layer, y_max=1, y_min=-1):
+def cauchy_selection_loss_fixed_boundary_trainable_gamma(layer, y_max=1, y_min=-1, regularizers=None):
     L = ConditionalCauchySelectionLoss(gamma=layer.gamma, y_max=y_max, y_min=y_min)
 
     def loss(y_true, y_predicted):
-        return L.loss(y_true, y_predicted)
+        if regularizers is not None:
+            return L.loss(y_true, y_predicted) + regularizers
+        else:
+            return L.loss(y_true, y_predicted)
     return loss
 
 
@@ -38,7 +41,6 @@ def cauchy_selection_loss_fixed_boundary(gamma=0.2, y_max=1, y_min=-1):
     def loss(y_true, y_predicted):
         return L.loss(y_true, y_predicted)
     return loss
-
 
 def cauchy_selection_loss_trainable_gamma(layer, y_max=1, y_min=-1):
     def loss(y_true, y_pred):

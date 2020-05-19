@@ -511,21 +511,23 @@ class CNNCauchy(CNN):
 
         if self.init_alpha is not None:
             print("Making the regularizer parameter a trainable parameter")
+            reg_losses = []
             # We have to modify the form of the regularizers to take alpha as a trainable parameter
             for layer in new_model.layers[:layer_before_last_dense]:
                 if 'conv3d' in layer.name:
-                    new_model.add_loss(custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel))
+                    reg_losses.append(custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel))
                 elif 'dense' in layer.name:
-                    new_model.add_loss(custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel))
+                    reg_losses.append(custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel))
                 else:
                     pass
 
+            reg_losses = K.sum(reg_losses)
             # if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.RegClass):
                 # print(layer)
                 # layer.kernel_regularizer = layer.kernel_regularizer.__init__(self.init_alpha, layer=last_layer)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
+        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer, regularizers=reg_losses)
 
         new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
