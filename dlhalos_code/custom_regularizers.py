@@ -34,7 +34,7 @@ class RegClass:
     #     # K.set_value(variable_alpha, val_alpha)
 
 
-class L2(RegClass):
+class L2(RegClass, Regularizer):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
     def __init__(self, alpha=0., layer=None):
@@ -52,7 +52,7 @@ class L2(RegClass):
         return {'alpha_l2': float(K.get_value(self.alpha))}
 
 
-class L1(RegClass):
+class L1(RegClass, Regularizer):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
     # def __init__(self, alpha=0., layer=None):
@@ -77,7 +77,7 @@ class L1(RegClass):
         return {'alpha_l1': float(K.get_value(self.alpha))}
 
 
-class L21_and_L1(RegClass):
+class L21_and_L1(RegClass, Regularizer):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
     def __init__(self, alpha=0., layer=None):
@@ -93,7 +93,7 @@ class L21_and_L1(RegClass):
         return {'alpha_l21_l1': float(K.get_value(self.alpha))}
 
 
-class L21(RegClass):
+class L21(RegClass, Regularizer):
     """ Regularizer for L21 regularization. """
 
     def __init__(self, alpha=0., layer=None):

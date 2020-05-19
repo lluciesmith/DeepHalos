@@ -501,18 +501,34 @@ class CNNCauchy(CNN):
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
-        # if self.init_alpha is not None:
-        #     print("Making the regularizer parameter a trainable parameter")
-        #     # We have to modify the form of the regularizers to take alpha as a trainable parameter
-        #     for layer in new_model.layers:
-        #         if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.RegClass):
-        #             print(layer)
-        #             layer.kernel_regularizer = layer.kernel_regularizer.__init__(self.init_alpha, layer=last_layer)
-        #
-        # optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-        # loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model.layers[-1])
-        #
-        # new_model.compile(loss=loss_c, optimizer=optimiser)
+        if self.init_alpha is not None:
+            print("Making the regularizer parameter a trainable parameter")
+            # We have to modify the form of the regularizers to take alpha as a trainable parameter
+            names = [layer.name for layer in new_model.layers]
+            layer_before_last_dense = -1
+            for i, name in enumerate(names):
+                    if 'loss_trainable_params' in name:
+                        loss_params_layer = new_model.layers[i]
+                        layer_before_last_dense = i - 1
+
+            for layer in new_model.layers[:layer_before_last_dense]:
+                if 'conv3d' in layer.name:
+                    print(layer)
+                    new_model.add_loss(custom_reg.l2_norm(self.init_alpha, loss_params_layer)(layer.kernel))
+                elif 'dense' in layer.name:
+                    print(layer)
+                    new_model.add_loss(custom_reg.l1_and_l21_group(self.init_alpha, loss_params_layer)(layer.kernel))
+                else:
+                    pass
+
+            # if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.RegClass):
+                # print(layer)
+                # layer.kernel_regularizer = layer.kernel_regularizer.__init__(self.init_alpha, layer=last_layer)
+
+        optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
+        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
+
+        new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
 
     def train_cauchy_model(self, model):
