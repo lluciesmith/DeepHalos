@@ -557,7 +557,7 @@ class CNNCauchy(CNN):
 
             # new_model._losses *= last_layer.alpha
         if self.init_alpha is not None:
-            for layer in new_model[:-2]:
+            for layer in new_model.layers[:-2]:
                 if 'conv3d' in layer.name:
                     print(layer)
                     layer.add_loss(lambda: last_layer.alpha * custom_reg.l2_norm(1.)(layer.kernel))
