@@ -595,7 +595,7 @@ class RegularizerCallback(Callback):
 
     def on_train_batch_end(self, batch, logs=None):
         self.set_model_l1_l2(self.model, self.alpha_layer)
-        print("Updated alpha to value " + K.get_value(self.alpha_layer.alpha))
+        print("Updated alpha to value %.5f" % float(K.get_value(self.alpha)))
 
     def set_model_l1_l2(self, model, alpha_layer):
         for layer in model.layers:
