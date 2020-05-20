@@ -380,13 +380,15 @@ class CNN:
 
 
 class LossTrainableParams(Layer):
-    def __init__(self, init_gamma=0.2, init_alpha=None, gamma_constraint=None, alpha_constraint=None, **kwargs):
+    def __init__(self, init_gamma=0.2, init_alpha=None, gamma_constraint=None, alpha_constraint=None,
+                 layers_model=None, **kwargs):
         # self.output_dim = output_dim
         super(LossTrainableParams, self).__init__(**kwargs)
         self.init_gamma = init_gamma
         self.constraint_gamma = gamma_constraint
         self.init_alpha = init_alpha
         self.constraint_alpha = alpha_constraint
+        self.layers_model = layers_model
 
     def build(self, input_shape):
         if self.init_gamma is not None:
@@ -403,7 +405,7 @@ class LossTrainableParams(Layer):
 
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
-    def call(self, x, previous_layers=None):
+    def call(self, x):
         print("Making the regularizer parameter a trainable parameter")
         # reg_losses = 0.
         # for layer in new_model.layers[:-2]:
@@ -416,7 +418,7 @@ class LossTrainableParams(Layer):
         #     else:
         #         pass
 
-        for layer in previous_layers[:-1]:
+        for layer in self.layers_model[:-1]:
             if 'conv3d' in layer.name:
                 print(layer)
                 self.add_loss(self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
@@ -517,9 +519,10 @@ class CNNCauchy(CNN):
         reg_gamma = tf.keras.constraints.MinMaxNorm(min_value=self.LB_gamma, max_value=self.UB_gamma, rate=1.0, axis=0)
         reg_alpha = tf.keras.constraints.MinMaxNorm(min_value=self.LB_alpha, max_value=self.UB_alpha, rate=1.0, axis=0)
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
-                                         gamma_constraint=reg_gamma, alpha_constraint=reg_alpha)
+                                         gamma_constraint=reg_gamma, alpha_constraint=reg_alpha,
+                                         layers_model=mse_model.layers)
 
-        predictions = last_layer(mse_model.layers[-1].output, mse_model.layers)
+        predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
         # # We have to modify the form of the regularizers to take alpha as a trainable parameter
