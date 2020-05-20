@@ -406,7 +406,7 @@ class LossTrainableParams(Layer):
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
     def call(self, x):
-        print("Making the regularizer parameter a trainable parameter")
+        # print("Making the regularizer parameter a trainable parameter")
         # reg_losses = 0.
         # for layer in new_model.layers[:-2]:
         #     if 'conv3d' in layer.name:
@@ -418,15 +418,15 @@ class LossTrainableParams(Layer):
         #     else:
         #         pass
 
-        for layer in self.layers_model[:-1]:
-            if 'conv3d' in layer.name:
-                print(layer)
-                layer.add_loss(lambda: self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
-            elif 'dense' in layer.name:
-                print(layer)
-                layer.add_loss(lambda: self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
-            else:
-                pass
+        # for layer in self.layers_model[:-1]:
+        #     if 'conv3d' in layer.name:
+        #         print(layer)
+        #         layer.add_loss(lambda: self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+        #     elif 'dense' in layer.name:
+        #         print(layer)
+        #         layer.add_loss(lambda: self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+        #     else:
+        #         pass
         return x
 
     def get_config(self):
@@ -556,6 +556,16 @@ class CNNCauchy(CNN):
         #             pass
 
             # new_model._losses *= last_layer.alpha
+        if self.init_alpha is not None:
+            for layer in new_model[:-2]:
+                if 'conv3d' in layer.name:
+                    print(layer)
+                    layer.add_loss(lambda: last_layer.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                elif 'dense' in layer.name:
+                    print(layer)
+                    layer.add_loss(lambda: last_layer.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+                else:
+                    pass
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(last_layer)
