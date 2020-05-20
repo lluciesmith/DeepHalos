@@ -560,10 +560,10 @@ class CNNCauchy(CNN):
             for layer in new_model.layers[:-2]:
                 if 'conv3d' in layer.name:
                     print(layer)
-                    layer.add_loss(last_layer.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                    new_model.add_loss(lambda: last_layer.alpha * custom_reg.l2_norm(1.)(layer.kernel))
                 elif 'dense' in layer.name:
                     print(layer)
-                    layer.add_loss(last_layer.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+                    new_model.add_loss(lambda: last_layer.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
                 else:
                     pass
 
@@ -581,9 +581,9 @@ class CNNCauchy(CNN):
         lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
         cbk = CollectWeightCallback(layer_index=-1)
         csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
-        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
-        # alpha_logger = RegularizerCallback(model, model.layers[-1])
-        #callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
+        # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
+        alpha_logger = RegularizerCallback(model.layers[-1])
+        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
 
@@ -598,19 +598,13 @@ class CNNCauchy(CNN):
 
 
 class RegularizerCallback(Callback):
-    def __init__(self, model, alpha_layer):
+    def __init__(self, layer):
         super(Callback, self).__init__()
-        self.model = model
-        self.alpha_layer = alpha_layer
+        self.layer = layer
 
     def on_train_batch_end(self, batch, logs=None):
-        self.set_model_l1_l2(self.model, self.alpha_layer)
-        print("Updated alpha to value %.5f" % float(K.get_value(self.alpha_layer)))
-
-    def set_model_l1_l2(self, model, alpha_layer):
-        for layer in model.layers:
-            if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.TrainRegParameter):
-                    layer.kernel_regularizer.set_alpha(alpha_layer.alpha)
+        print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
+        print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
 
 
 def lr_scheduler_half(epoch):
