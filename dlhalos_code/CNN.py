@@ -571,9 +571,9 @@ class CNNCauchy(CNN):
         lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
         cbk = CollectWeightCallback(layer_index=-1)
         csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
-        # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
-        alpha_logger = RegularizerCallback(model, model.layers[-1])
-        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
+        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
+        # alpha_logger = RegularizerCallback(model, model.layers[-1])
+        #callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
 
@@ -595,7 +595,7 @@ class RegularizerCallback(Callback):
 
     def on_train_batch_end(self, batch, logs=None):
         self.set_model_l1_l2(self.model, self.alpha_layer)
-        print("Updated alpha to value %.5f" % float(K.get_value(self.alpha)))
+        print("Updated alpha to value %.5f" % float(K.get_value(self.alpha_layer)))
 
     def set_model_l1_l2(self, model, alpha_layer):
         for layer in model.layers:
