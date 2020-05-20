@@ -403,7 +403,7 @@ class LossTrainableParams(Layer):
 
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
-    def call(self, x, previous_layers):
+    def call(self, x, previous_layers=None):
         print("Making the regularizer parameter a trainable parameter")
         # reg_losses = 0.
         # for layer in new_model.layers[:-2]:
@@ -429,7 +429,6 @@ class LossTrainableParams(Layer):
 
     def get_config(self):
         return {'alpha': self.alpha, 'gamma':self.gamma}
-
 
 
 class CNNCauchy(CNN):
