@@ -538,7 +538,7 @@ class CNNCauchy(CNN):
                 else:
                     pass
 
-            new_model._losses *= last_layer.alpha
+            # new_model._losses *= last_layer.alpha
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer, regularizers=reg_losses)
