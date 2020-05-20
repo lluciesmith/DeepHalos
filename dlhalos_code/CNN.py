@@ -421,10 +421,10 @@ class LossTrainableParams(Layer):
         for layer in self.layers_model[:-1]:
             if 'conv3d' in layer.name:
                 print(layer)
-                self.add_loss(self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                self.add_loss(lambda: self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
             elif 'dense' in layer.name:
                 print(layer)
-                self.add_loss(self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+                self.add_loss(lambda: self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
             else:
                 pass
         return x
