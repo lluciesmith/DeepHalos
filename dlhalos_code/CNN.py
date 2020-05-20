@@ -531,12 +531,14 @@ class CNNCauchy(CNN):
             for layer in new_model.layers[:-2]:
                 if 'conv3d' in layer.name:
                     print(layer)
-                    layer.kernel_regularizer = custom_reg.l2_norm(loss_params_layer.alpha)
+                    layer.kernel_regularizer = custom_reg.l2_norm(1)
                 elif 'dense' in layer.name:
                     print(layer)
-                    layer.kernel_regularizer = custom_reg.l1_and_l21_group(loss_params_layer.alpha)
+                    layer.kernel_regularizer = custom_reg.l1_and_l21_group(1)
                 else:
                     pass
+
+            new_model._losses *= last_layer.alpha
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer, regularizers=reg_losses)
