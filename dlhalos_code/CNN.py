@@ -6,7 +6,7 @@ import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import Callback
 import tensorflow.keras.callbacks as callbacks
-from tensorflow.keras.layers import Input, Dense, Flatten, Add
+from tensorflow.keras.layers import Input, Dense, Flatten, Add, Conv3D
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras.layers import Layer
 import tensorflow as tf
@@ -558,19 +558,20 @@ class CNNCauchy(CNN):
             # new_model._losses *= last_layer.alpha
         if self.init_alpha is not None:
             for layer in new_model.layers[:-2]:
-                if 'conv3d' in layer.name:
+                if isinstance(layer, Conv3D):
                     print(layer)
-                    new_model.add_loss(lambda: last_layer.alpha * custom_reg.l2_norm(1.)(layer.kernel))
-                elif 'dense' in layer.name:
+                    layer.add_loss(lambda: new_model.layers[-1].alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                if isinstance(layer, Dense):
                     print(layer)
-                    new_model.add_loss(lambda: last_layer.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+                    layer.add_loss(lambda: new_model.layers[-1].alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
                 else:
                     pass
+        print(new_model.losses)
 
-        optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(last_layer)
-
-        new_model.compile(loss=loss_c, optimizer=optimiser)
+        # optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
+        # loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(last_layer)
+        #
+        # new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
 
     def train_cauchy_model(self, model):
