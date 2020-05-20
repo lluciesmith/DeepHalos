@@ -19,10 +19,19 @@ def l21_group(alpha):
     return L21(alpha)
 
 
-class L2(Regularizer):
+class TrainRegParameter:
+    def __init__(self, alpha):
+        self.alpha = alpha
+
+    def set_alpha(self, alpha):
+        K.set_value(self.alpha, alpha)
+
+
+class L2(Regularizer, TrainRegParameter):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
     def __init__(self, alpha=0.):
+        super().__init__(alpha)
         self.alpha = alpha
 
     def __call__(self, x):
@@ -34,8 +43,9 @@ class L2(Regularizer):
         return {'alpha_l2': float(K.get_value(self.alpha))}
 
 
-class L1(Regularizer):
+class L1(Regularizer, TrainRegParameter):
     def __init__(self, alpha):
+        super().__init__(alpha)
         self.alpha = alpha
 
     def __call__(self, x):
@@ -47,10 +57,11 @@ class L1(Regularizer):
         return {'alpha_l1': float(K.get_value(self.alpha))}
 
 
-class L21_and_L1(Regularizer):
+class L21_and_L1(Regularizer, TrainRegParameter):
     """ Regularizer for combined L21 group regularization and L1 regularization. """
 
     def __init__(self, alpha):
+        super().__init__(alpha)
         self.alpha = alpha
 
     def __call__(self, x):
@@ -63,10 +74,11 @@ class L21_and_L1(Regularizer):
         return {'alpha_l21_l1': float(K.get_value(self.alpha))}
 
 
-class L21(Regularizer):
+class L21(Regularizer, TrainRegParameter):
     """ Regularizer for L21 regularization. """
 
     def __init__(self, alpha):
+        super().__init__(alpha)
         self.alpha = alpha
 
     def __call__(self, x):

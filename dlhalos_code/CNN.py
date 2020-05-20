@@ -491,6 +491,13 @@ class CNNCauchy(CNN):
                 #     np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
                 #     np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
 
+    class LossAndErrorPrintingCallback(tf.keras.callbacks.Callback):
+        def __init__(self, model):
+            self.model = model
+
+        def on_train_batch_end(self, batch, logs=None):
+            self.reinstantiate_regularizers(model)
+
     def compile_cauchy_model(self, mse_model):
         # Define Cauchy model
         reg_gamma = tf.keras.constraints.MinMaxNorm(min_value=self.LB_gamma, max_value=self.UB_gamma, rate=1.0, axis=0)
@@ -510,14 +517,24 @@ class CNNCauchy(CNN):
         reg_losses = None
         if self.init_alpha is not None:
             print("Making the regularizer parameter a trainable parameter")
-            reg_losses = 0.
+            # reg_losses = 0.
+            # for layer in new_model.layers[:-2]:
+            #     if 'conv3d' in layer.name:
+            #         print(layer)
+            #         reg_losses += custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel)
+            #     elif 'dense' in layer.name:
+            #         print(layer)
+            #         reg_losses += custom_reg.l1_and_l21_group(loss_params_layer.alpha)(layer.kernel)
+            #     else:
+            #         pass
+
             for layer in new_model.layers[:-2]:
                 if 'conv3d' in layer.name:
                     print(layer)
-                    reg_losses += custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel)
+                    layer['kernel_regularizer'] = custom_reg.l2_norm(loss_params_layer.alpha)
                 elif 'dense' in layer.name:
                     print(layer)
-                    reg_losses += custom_reg.l1_and_l21_group(loss_params_layer.alpha)(layer.kernel)
+                    layer['kernel_regularizer'] = custom_reg.l1_and_l21_group(loss_params_layer.alpha)
                 else:
                     pass
 
@@ -535,7 +552,9 @@ class CNNCauchy(CNN):
         lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
         cbk = CollectWeightCallback(layer_index=-1)
         csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
-        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
+        # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
+        alpha_logger = RegularizerCallback(model, model.layers[-1])
+        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
 
@@ -547,6 +566,23 @@ class CNNCauchy(CNN):
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
 
         return model, history, cbk.weights
+
+
+class RegularizerCallback(Callback):
+    def __init__(self, model, alpha_layer):
+        super(Callback, self).__init__()
+        self.model = model
+        self.alpha_layer = alpha_layer
+
+    def on_train_batch_end(self, batch, logs=None):
+        self.set_model_l1_l2(self.model, self.alpha_layer)
+        print("Updated alpha to value " + K.get_value(self.alpha_layer.alpha))
+
+
+def set_model_l1_l2(model, alpha_layer):
+    for layer in model.layers:
+        if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.TrainRegParameter):
+                layer.kernel_regularizer.set_alpha(alpha_layer.alpha)
 
 
 def lr_scheduler_half(epoch):
