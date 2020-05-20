@@ -597,11 +597,10 @@ class RegularizerCallback(Callback):
         self.set_model_l1_l2(self.model, self.alpha_layer)
         print("Updated alpha to value " + K.get_value(self.alpha_layer.alpha))
 
-
-def set_model_l1_l2(model, alpha_layer):
-    for layer in model.layers:
-        if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.TrainRegParameter):
-                layer.kernel_regularizer.set_alpha(alpha_layer.alpha)
+    def set_model_l1_l2(self, model, alpha_layer):
+        for layer in model.layers:
+            if 'kernel_regularizer' in dir(layer) and isinstance(layer.kernel_regularizer, custom_reg.TrainRegParameter):
+                    layer.kernel_regularizer.set_alpha(alpha_layer.alpha)
 
 
 def lr_scheduler_half(epoch):
