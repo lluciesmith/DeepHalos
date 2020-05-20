@@ -403,11 +403,33 @@ class LossTrainableParams(Layer):
 
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
-    def call(self, x):
+    def call(self, x, previous_layers):
+        print("Making the regularizer parameter a trainable parameter")
+        # reg_losses = 0.
+        # for layer in new_model.layers[:-2]:
+        #     if 'conv3d' in layer.name:
+        #         print(layer)
+        #         reg_losses += custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel)
+        #     elif 'dense' in layer.name:
+        #         print(layer)
+        #         reg_losses += custom_reg.l1_and_l21_group(loss_params_layer.alpha)(layer.kernel)
+        #     else:
+        #         pass
+
+        for layer in previous_layers[:-1]:
+            if 'conv3d' in layer.name:
+                print(layer)
+                self.add_loss(self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+            elif 'dense' in layer.name:
+                print(layer)
+                self.add_loss(self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+            else:
+                pass
         return x
 
     def get_config(self):
         return {'alpha': self.alpha, 'gamma':self.gamma}
+
 
 
 class CNNCauchy(CNN):
@@ -491,13 +513,6 @@ class CNNCauchy(CNN):
                 #     np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
                 #     np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
 
-    class LossAndErrorPrintingCallback(tf.keras.callbacks.Callback):
-        def __init__(self, model):
-            self.model = model
-
-        def on_train_batch_end(self, batch, logs=None):
-            self.reinstantiate_regularizers(model)
-
     def compile_cauchy_model(self, mse_model):
         # Define Cauchy model
         reg_gamma = tf.keras.constraints.MinMaxNorm(min_value=self.LB_gamma, max_value=self.UB_gamma, rate=1.0, axis=0)
@@ -505,43 +520,43 @@ class CNNCauchy(CNN):
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=reg_gamma, alpha_constraint=reg_alpha)
 
-        predictions = last_layer(mse_model.layers[-1].output)
+        predictions = last_layer(mse_model.layers[-1].output, mse_model.layers)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
-        # We have to modify the form of the regularizers to take alpha as a trainable parameter
-        names = [layer.name for layer in new_model.layers]
-        for i, name in enumerate(names):
-            if 'loss_trainable_params' in name:
-                loss_params_layer = new_model.layers[i]
-
-        reg_losses = None
-        if self.init_alpha is not None:
-            print("Making the regularizer parameter a trainable parameter")
-            # reg_losses = 0.
-            # for layer in new_model.layers[:-2]:
-            #     if 'conv3d' in layer.name:
-            #         print(layer)
-            #         reg_losses += custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel)
-            #     elif 'dense' in layer.name:
-            #         print(layer)
-            #         reg_losses += custom_reg.l1_and_l21_group(loss_params_layer.alpha)(layer.kernel)
-            #     else:
-            #         pass
-
-            for layer in new_model.layers[:-2]:
-                if 'conv3d' in layer.name:
-                    print(layer)
-                    layer.kernel_regularizer = custom_reg.l2_norm(1)
-                elif 'dense' in layer.name:
-                    print(layer)
-                    layer.kernel_regularizer = custom_reg.l1_and_l21_group(1)
-                else:
-                    pass
+        # # We have to modify the form of the regularizers to take alpha as a trainable parameter
+        # names = [layer.name for layer in new_model.layers]
+        # for i, name in enumerate(names):
+        #     if 'loss_trainable_params' in name:
+        #         loss_params_layer = new_model.layers[i]
+        #
+        # reg_losses = None
+        # if self.init_alpha is not None:
+        #     print("Making the regularizer parameter a trainable parameter")
+        #     # reg_losses = 0.
+        #     # for layer in new_model.layers[:-2]:
+        #     #     if 'conv3d' in layer.name:
+        #     #         print(layer)
+        #     #         reg_losses += custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel)
+        #     #     elif 'dense' in layer.name:
+        #     #         print(layer)
+        #     #         reg_losses += custom_reg.l1_and_l21_group(loss_params_layer.alpha)(layer.kernel)
+        #     #     else:
+        #     #         pass
+        #
+        #     for layer in new_model.layers[:-2]:
+        #         if 'conv3d' in layer.name:
+        #             print(layer)
+        #             layer.kernel_regularizer = custom_reg.l2_norm(1)
+        #         elif 'dense' in layer.name:
+        #             print(layer)
+        #             layer.kernel_regularizer = custom_reg.l1_and_l21_group(1)
+        #         else:
+        #             pass
 
             # new_model._losses *= last_layer.alpha
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer, regularizers=reg_losses)
+        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(new_model)
 
         new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
