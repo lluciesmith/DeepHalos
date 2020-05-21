@@ -525,11 +525,11 @@ class CNNCauchy(CNN):
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
-        # # We have to modify the form of the regularizers to take alpha as a trainable parameter
-        # names = [layer.name for layer in new_model.layers]
-        # for i, name in enumerate(names):
-        #     if 'loss_trainable_params' in name:
-        #         loss_params_layer = new_model.layers[i]
+        # We have to modify the form of the regularizers to take alpha as a trainable parameter
+        names = [layer.name for layer in new_model.layers]
+        for i, name in enumerate(names):
+            if 'loss_trainable_params' in name:
+                loss_params_layer = new_model.layers[i]
         #
         # reg_losses = None
         # if self.init_alpha is not None:
@@ -561,10 +561,10 @@ class CNNCauchy(CNN):
                 if isinstance(layer, Conv3D):
                     print(layer)
                     # l = new_model.layers[-1].alpha * custom_reg.l2_norm(1.)(layer.kernel)
-                    new_model.add_loss(new_model.layers[-1].alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                    new_model.add_loss(loss_params_layer.alpha * custom_reg.l2_norm(1.)(layer.kernel))
                 if isinstance(layer, Dense):
                     print(layer)
-                    new_model.add_loss(new_model.layers[-1].alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+                    new_model.add_loss(loss_params_layer.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
                 else:
                     pass
         print(new_model.losses)
