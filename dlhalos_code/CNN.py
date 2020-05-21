@@ -537,16 +537,16 @@ class CNNCauchy(CNN):
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=reg_gamma, alpha_constraint=reg_alpha,
                                          layers_model=mse_model.layers)
-        print(mse_model.layers)
+        print(str(len(mse_model.losses)))
         print("Finished instantiating Loss Trainable Params layer")
 
         print("Calling Loss Trainable Params layer")
         predictions = last_layer(mse_model.layers[-1].output)
-        print(mse_model.layers)
+        print(str(len(mse_model.losses)))
         print("Finished calling Loss Trainable Params layer")
 
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
-        print(mse_model.layers)
+        print(str(len(new_model.losses)))
 
         # We have to modify the form of the regularizers to take alpha as a trainable parameter
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
