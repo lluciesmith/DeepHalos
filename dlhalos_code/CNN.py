@@ -517,7 +517,7 @@ class CNNCauchy(CNN):
 
     def train_cauchy_model(self, model):
         # callbacks
-        filepath = self.path_model + "model/weights.{epoch:02d}.h5"
+        filepath = self.path_model + "model/weights.{epoch:02d}.tf"
         checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
 
         lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
@@ -533,12 +533,15 @@ class CNNCauchy(CNN):
             print("Training for " + str(self.use_tanh_n_epoch) + " epoch with a tanh activation in the last layer")
 
             # Define a different model with different last layer and the load its weights onto current model
-            tanh_model = self.train_with_tanh_activation(model, num_epochs=self.use_tanh_n_epoch)
+            tanh_model = self.train_with_tanh_activation(model, callbacks=callbacks_list,
+                                                         num_epochs=self.use_tanh_n_epoch)
             model.set_weights(tanh_model.get_weights())
             self.initial_epoch = 1
 
         print("Updated alpha to value %.5f" % float(K.get_value(model.layers[-1].alpha)))
         print("Updated gamma to value %.5f" % float(K.get_value(model.layers[-1].gamma)))
+
+        print([layer.name for layer in model.layers])
 
         print("Start training with a linear activation in the last layer")
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
