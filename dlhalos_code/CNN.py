@@ -430,11 +430,16 @@ class LossTrainableParams(Layer):
         for layer in self.layers_model[:-1]:
             if isinstance(layer, Conv3D):
                 print(layer)
-                # l = new_model.layers[-1].alpha * custom_reg.l2_norm(1.)(layer.kernel)
-                layer.add_loss(self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
+                print(l)
+                print(l.shape)
+                layer.add_loss(l)
             if isinstance(layer, Dense):
                 print(layer)
-                layer.add_loss(self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+                l = self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel)
+                print(l)
+                print(l.shape)
+                layer.add_loss(l)
             else:
                 pass
         return x
@@ -528,18 +533,15 @@ class CNNCauchy(CNN):
         # Define Cauchy model
         reg_gamma = tf.keras.constraints.MinMaxNorm(min_value=self.LB_gamma, max_value=self.UB_gamma, rate=1.0, axis=0)
         reg_alpha = tf.keras.constraints.MinMaxNorm(min_value=self.LB_alpha, max_value=self.UB_alpha, rate=1.0, axis=0)
+        print("Calling Loss Trainable Params layer")
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=reg_gamma, alpha_constraint=reg_alpha,
                                          layers_model=mse_model.layers)
-
+        print("Done with Loss Trainable Params layer")
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
         # We have to modify the form of the regularizers to take alpha as a trainable parameter
-        names = [layer.name for layer in new_model.layers]
-        for i, name in enumerate(names):
-            if 'loss_trainable_params' in name:
-                loss_params_layer = new_model.layers[i]
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
         # #
         # # reg_losses = None
