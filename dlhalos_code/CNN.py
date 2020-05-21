@@ -517,7 +517,7 @@ class CNNCauchy(CNN):
 
     def train_cauchy_model(self, model):
         # callbacks
-        filepath = self.path_model + "model/weights.{epoch:02d}.hdf5"
+        filepath = self.path_model + "model/weights.{epoch:02d}.h5"
         checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
 
         lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
