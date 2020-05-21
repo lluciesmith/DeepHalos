@@ -519,14 +519,16 @@ class CNNCauchy(CNN):
         return new_model
 
     def train_cauchy_model(self, model):
+        callbacks_list = []
 
         # callbacks
-        filepath = self.path_model + "/model/weights.{epoch:02d}.hdf5"
-        checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
-        lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
-        cbk = CollectWeightCallback(layer_index=-1)
-        csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
-        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
+        # filepath = self.path_model + "/model/weights.{epoch:02d}.hdf5"
+        # checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
+        # lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
+        # cbk = CollectWeightCallback(layer_index=-1)
+        # csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
+        # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
+
 
         # loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
         # alpha_logger = RegularizerCallback(loss_params_layer)
@@ -534,11 +536,13 @@ class CNNCauchy(CNN):
 
         # Train model
         if self.use_tanh_first_epoch is True:
+            print("Training the model for one epoch with a tanh activation in the last layer")
             # Define a different model with different last layer and the load its weights onto current model
             tanh_model = self.train_with_tanh_activation(model, callbacks_list)
             model.load_weights(tanh_model.get_weights())
             self.initial_epoch = 1
 
+        print("Start training without tanh")
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
@@ -555,8 +559,10 @@ class CNNCauchy(CNN):
                       save_summary=False, path_summary="."):
         if train_mse is True:
             # initialize CNN to load/train weights for one epoch on MSE
+
             train_bool = not load_mse_weights
             num_epochs = 3
+
             super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
                                             steps_per_epoch=steps_per_epoch,
                                             training_generator=training_generator, dim=dim,
@@ -570,9 +576,11 @@ class CNNCauchy(CNN):
                 print("Loaded initial weights given by training for one epoch on MSE loss")
                 self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
             else:
+                print("Trained model for " + str(num_epochs) + " epochs using MSE loss")
                 self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
             self.initial_epoch = num_epochs
         else:
+
             super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
                                             steps_per_epoch=steps_per_epoch,
                                             training_generator=training_generator, dim=dim,
