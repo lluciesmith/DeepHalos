@@ -619,7 +619,7 @@ class RegularizerCallback(Callback):
         super(Callback, self).__init__()
         self.layer = layer
 
-    def on_train_epoch_end(self, batch, logs=None):
+    def on_train_end(self, batch, logs=None):
         print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
         print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
 
