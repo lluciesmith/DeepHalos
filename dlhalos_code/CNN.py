@@ -533,13 +533,20 @@ class CNNCauchy(CNN):
         # Define Cauchy model
         reg_gamma = tf.keras.constraints.MinMaxNorm(min_value=self.LB_gamma, max_value=self.UB_gamma, rate=1.0, axis=0)
         reg_alpha = tf.keras.constraints.MinMaxNorm(min_value=self.LB_alpha, max_value=self.UB_alpha, rate=1.0, axis=0)
-        print("Calling Loss Trainable Params layer")
+        print("Instantiating Loss Trainable Params layer")
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=reg_gamma, alpha_constraint=reg_alpha,
                                          layers_model=mse_model.layers)
-        print("Done with Loss Trainable Params layer")
+        print(mse_model.layers)
+        print("Finished instantiating Loss Trainable Params layer")
+
+        print("Calling Loss Trainable Params layer")
         predictions = last_layer(mse_model.layers[-1].output)
+        print(mse_model.layers)
+        print("Finished calling Loss Trainable Params layer")
+
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
+        print(mse_model.layers)
 
         # We have to modify the form of the regularizers to take alpha as a trainable parameter
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
