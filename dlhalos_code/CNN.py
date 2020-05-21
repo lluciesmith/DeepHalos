@@ -453,7 +453,7 @@ class CNNCauchy(CNN):
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
                            workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
-                           save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
+                           save_summary=False, path_summary="/home/lls", pretrained_model=pretrained_model,
                            weights=weights, max_queue_size=max_queue_size)
 
         self.init_gamma = init_gamma
@@ -522,16 +522,17 @@ class CNNCauchy(CNN):
         # callbacks_list = []
 
         # callbacks
-        filepath = self.path_model + "/model/weights.{epoch:02d}.hdf5"
-        checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
+        filepath = self.path_model + "model/weights.{epoch:02d}.hdf5"
+        # checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
         lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
         cbk = CollectWeightCallback(layer_index=-1)
-        csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
+        csv_logger = callbacks.CSVLogger(self.path_model + "training.log", separator=',', append=True)
         # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
 
         loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
         alpha_logger = RegularizerCallback(loss_params_layer)
-        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
+        # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
+        callbacks_list = [csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
         if self.use_tanh_n_epoch > 0:
