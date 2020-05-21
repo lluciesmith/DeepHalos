@@ -402,6 +402,21 @@ class LossTrainableParams(Layer):
             init_a = tf.constant_initializer(value=self.init_alpha)
             self.alpha = self.add_weight(name='alpha', shape=(1,), initializer=init_a, trainable=True,
                                          constraint=self.constraint_alpha)
+            # for layer in self.layers_model[:-1]:
+            #     if isinstance(layer, Conv3D):
+            #         print(layer)
+            #         l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
+            #         print(l)
+            #         print(l.shape)
+            #         layer.add_loss(l)
+            #     if isinstance(layer, Dense):
+            #         print(layer)
+            #         l = self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel)
+            #         print(l)
+            #         print(l.shape)
+            #         layer.add_loss(l)
+            #     else:
+            #         pass
 
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
@@ -586,7 +601,9 @@ class CNNCauchy(CNN):
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
 
+        print("Before compiling")
         new_model.compile(loss=loss_c, optimizer=optimiser)
+        print("After compiling")
         return new_model
 
     def train_cauchy_model(self, model):
