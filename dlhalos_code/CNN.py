@@ -561,19 +561,18 @@ class CNNCauchy(CNN):
                 if isinstance(layer, Conv3D):
                     print(layer)
                     # l = new_model.layers[-1].alpha * custom_reg.l2_norm(1.)(layer.kernel)
-                    layer.add_loss(lambda: K.sum(layer.kernel))
+                    new_model.add_loss(new_model.layers[-1].alpha * custom_reg.l2_norm(1.)(layer.kernel))
                 if isinstance(layer, Dense):
                     print(layer)
-                    # layer.add_loss(lambda: new_model.layers[-1].alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
-                    layer.add_loss(lambda: K.sum(layer.kernel))
+                    new_model.add_loss(new_model.layers[-1].alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
                 else:
                     pass
         print(new_model.losses)
 
-        # optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-        # loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(last_layer)
-        #
-        # new_model.compile(loss=loss_c, optimizer=optimiser)
+        optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
+        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(last_layer)
+
+        new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
 
     def train_cauchy_model(self, model):
