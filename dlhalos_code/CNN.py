@@ -519,27 +519,26 @@ class CNNCauchy(CNN):
         return new_model
 
     def train_cauchy_model(self, model):
-        callbacks_list = []
+        # callbacks_list = []
 
         # callbacks
-        # filepath = self.path_model + "/model/weights.{epoch:02d}.hdf5"
-        # checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
-        # lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
-        # cbk = CollectWeightCallback(layer_index=-1)
-        # csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
+        filepath = self.path_model + "/model/weights.{epoch:02d}.hdf5"
+        checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
+        lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
+        cbk = CollectWeightCallback(layer_index=-1)
+        csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
         # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
 
-
-        # loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
-        # alpha_logger = RegularizerCallback(loss_params_layer)
-        # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
+        loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
+        alpha_logger = RegularizerCallback(loss_params_layer)
+        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
         if self.use_tanh_first_epoch is True:
             print("Training the model for one epoch with a tanh activation in the last layer")
             # Define a different model with different last layer and the load its weights onto current model
             tanh_model = self.train_with_tanh_activation(model, callbacks_list)
-            model.load_weights(tanh_model.get_weights())
+            model.set_weights(tanh_model.get_weights())
             self.initial_epoch = 1
 
         print("Start training without tanh")
@@ -600,6 +599,7 @@ class CNNCauchy(CNN):
                                           model=_model, tanh=True)
         _predictions = _last_layer(_model.layers[-1].output)
         _tanh_model = keras.Model(inputs=_model.input, outputs=_predictions)
+        print("Number of regularization loss terms are " + str(len(_tanh_model.losses)))
 
         _optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                            amsgrad=True)
