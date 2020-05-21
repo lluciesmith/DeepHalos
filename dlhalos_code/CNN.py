@@ -453,9 +453,10 @@ class CNNCauchy(CNN):
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
                            workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
-                           save_summary=False, path_summary="/home/lls", pretrained_model=pretrained_model,
+                           save_summary=True, path_summary="/home/lls", pretrained_model=pretrained_model,
                            weights=weights, max_queue_size=max_queue_size)
 
+        self.path_model = path_summary
         self.init_gamma = init_gamma
         self.LB_gamma = lower_bound_gamma
         self.UB_gamma = upper_bound_gamma
@@ -501,6 +502,50 @@ class CNNCauchy(CNN):
                 #     np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
                 #     np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
 
+        def get_mse_model(self, train_mse, load_mse_weights, conv_params, fcc_params, model_type="regression",
+                          training_generator=None, steps_per_epoch=None, data_format="channels_last", dim=(51, 51, 51),
+                          lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
+                          max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
+                          save_summary=False, path_summary="."):
+            if train_mse is True:
+                # initialize CNN to load/train weights for one epoch on MSE
+
+                train_bool = not load_mse_weights
+                num_epochs = 3
+
+                super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
+                                                steps_per_epoch=steps_per_epoch,
+                                                training_generator=training_generator, dim=dim,
+                                                loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
+                                                data_format=data_format,
+                                                use_multiprocessing=use_multiprocessing, workers=workers,
+                                                num_gpu=num_gpu,
+                                                pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
+                                                path_summary=path_summary, pretrained_model=pretrained_model,
+                                                weights=weights, compile=True, max_queue_size=max_queue_size,
+                                                train=train_bool)
+                if train_bool is False:
+                    print("Loaded initial weights given by training for one epoch on MSE loss")
+                    self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
+                else:
+                    print("Trained model for " + str(num_epochs) + " epochs using MSE loss")
+                    self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
+                self.initial_epoch = num_epochs
+            else:
+
+                super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
+                                                steps_per_epoch=steps_per_epoch,
+                                                training_generator=training_generator, dim=dim,
+                                                loss='mse', num_epochs=3, lr=lr, verbose=verbose,
+                                                data_format=data_format,
+                                                use_multiprocessing=use_multiprocessing, workers=workers,
+                                                num_gpu=num_gpu,
+                                                pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
+                                                path_summary=path_summary, pretrained_model=pretrained_model,
+                                                weights=weights, max_queue_size=max_queue_size, train=False,
+                                                compile=True)
+                self.initial_epoch = 0
+
     def compile_cauchy_model(self, mse_model, tanh=False):
 
         # Define Cauchy model
@@ -509,7 +554,7 @@ class CNNCauchy(CNN):
                                          model=mse_model, tanh=tanh)
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
-        print("Number of regularization loss terms are " + str(len(new_model.losses)))
+        print("Number of regularization loss terms are " + str(len(new_model.losses))+ " \n")
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
@@ -523,27 +568,29 @@ class CNNCauchy(CNN):
 
         # callbacks
         filepath = self.path_model + "model/weights.{epoch:02d}.hdf5"
-        # checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
+        checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
         lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
         cbk = CollectWeightCallback(layer_index=-1)
         csv_logger = callbacks.CSVLogger(self.path_model + "training.log", separator=',', append=True)
         # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
-
         loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
         alpha_logger = RegularizerCallback(loss_params_layer)
-        # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
-        callbacks_list = [csv_logger, lrate, cbk, alpha_logger]
+        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
         if self.use_tanh_n_epoch > 0:
             print("Training the model for " + str(self.use_tanh_n_epoch) +
-                  " epoch with a tanh activation in the last layer")
+                  " epoch with a tanh activation in the last layer"+ " \n")
 
             # Define a different model with different last layer and the load its weights onto current model
             tanh_model = self.train_with_tanh_activation(model, num_epochs=self.use_tanh_n_epoch)
             model.set_weights(tanh_model.get_weights())
             self.initial_epoch = 1
 
+        print("Updated alpha to value %.5f" % float(K.get_value(model.layer[-1].alpha)) + " \n")
+        print("Updated gamma to value %.5f" % float(K.get_value(model.layer[-2].gamma)) + " \n")
+
+        print("Start training with a linear activation in the last layer"+ " \n")
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
@@ -601,7 +648,7 @@ class CNNCauchy(CNN):
                                           model=_model, tanh=True)
         _predictions = _last_layer(_model.layers[-1].output)
         _tanh_model = keras.Model(inputs=_model.input, outputs=_predictions)
-        print("Number of regularization loss terms are " + str(len(_tanh_model.losses)))
+        print("Number of regularization loss terms are " + str(len(_tanh_model.losses))+ " \n")
 
         _optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                            amsgrad=True)
@@ -624,8 +671,8 @@ class RegularizerCallback(Callback):
         self.layer = layer
 
     def on_epoch_end(self, epoch, logs=None):
-        print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
-        print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
+        print("\n Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha))+ " \n")
+        print("\n Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma))+ " \n")
 
 
 def lr_scheduler_half(epoch):
