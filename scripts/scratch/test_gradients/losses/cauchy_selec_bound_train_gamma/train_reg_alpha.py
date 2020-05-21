@@ -65,13 +65,13 @@ if __name__ == "__main__":
 
     # Train for 30 epochs
 
-Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                      training_generator=generator_training, validation_generator=generator_validation,
-                      num_epochs=3, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
-                      workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
-                      compile=True, train=True,
-                      train_mse=False, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=2,
-                      **reg_params)
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
+                          training_generator=generator_training, validation_generator=generator_validation,
+                          num_epochs=3, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
+                          workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
+                          compile=True, train=True,
+                          train_mse=False, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=2,
+                          **reg_params)
 
     # Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
     #                       training_generator={}, validation_generator={}, dim=(31, 31, 31),
