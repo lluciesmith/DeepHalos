@@ -540,6 +540,7 @@ class CNNCauchy(CNN):
         for i, name in enumerate(names):
             if 'loss_trainable_params' in name:
                 loss_params_layer = new_model.layers[i]
+        loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
         # #
         # # reg_losses = None
         # # if self.init_alpha is not None:
@@ -578,6 +579,7 @@ class CNNCauchy(CNN):
         #         else:
         #             pass
         print(new_model.losses)
+        print("Number of regularization loss terms are " + str(len(new_model.losses)))
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
@@ -614,7 +616,7 @@ class RegularizerCallback(Callback):
         super(Callback, self).__init__()
         self.layer = layer
 
-    def on_train_batch_end(self, batch, logs=None):
+    def on_train_epoch_end(self, batch, logs=None):
         print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
         print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
 
