@@ -616,7 +616,7 @@ class RegularizerCallback(Callback):
 
     def on_train_batch_end(self, batch, logs=None):
         print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
-        print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
+        # print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
 
 
 def lr_scheduler_half(epoch):
