@@ -446,7 +446,7 @@ class CNNCauchy(CNN):
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5,
-                 train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_first_epoch=False):
+                 train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0):
 
         self.path_model = path_summary
         self.get_mse_model(train_mse, load_mse_weights, conv_params, fcc_params, model_type=model_type,
@@ -469,7 +469,7 @@ class CNNCauchy(CNN):
         self.num_epochs = num_epochs
         self.initial_epoch = 0
         self.load_weights = load_weights
-        self.use_tanh_first_epoch = use_tanh_first_epoch
+        self.use_tanh_n_epoch = use_tanh_n_epoch
 
         self.validation_generator = validation_generator
         self.validation_steps = validation_steps
@@ -534,14 +534,13 @@ class CNNCauchy(CNN):
         # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
-        if self.use_tanh_first_epoch is True:
+        if self.use_tanh_n_epoch > 0:
             print("Training the model for one epoch with a tanh activation in the last layer")
             # Define a different model with different last layer and the load its weights onto current model
-            tanh_model = self.train_with_tanh_activation(model, callbacks_list)
+            tanh_model = self.train_with_tanh_activation(model, callbacks_list, num_epochs=self.use_tanh_n_epoch)
             model.set_weights(tanh_model.get_weights())
             self.initial_epoch = 1
 
-        print("Start training without tanh")
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
@@ -590,7 +589,7 @@ class CNNCauchy(CNN):
                                             weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
             self.initial_epoch = 0
 
-    def train_with_tanh_activation(self, model, callbacks):
+    def train_with_tanh_activation(self, model, callbacks, num_epochs=0.):
         # Define a different model with different last layer and the load its weights onto current model
         _model = keras.Model(inputs=model.input, outputs=model.layers[-2].output)
 
@@ -610,7 +609,7 @@ class CNNCauchy(CNN):
         _h = _tanh_model.fit_generator(generator=self.training_generator,
                                        validation_data=self.validation_generator,
                                        use_multiprocessing=self.use_multiprocessing, workers=self.workers,
-                                       max_queue_size=self.max_queue_size, verbose=self.verbose, epochs=1,
+                                       max_queue_size=self.max_queue_size, verbose=self.verbose, epochs=num_epochs,
                                        shuffle=True, callbacks=callbacks, validation_freq=self.val_freq,
                                        validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
         return _tanh_model
