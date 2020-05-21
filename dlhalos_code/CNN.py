@@ -535,9 +535,11 @@ class CNNCauchy(CNN):
 
         # Train model
         if self.use_tanh_n_epoch > 0:
-            print("Training the model for one epoch with a tanh activation in the last layer")
+            print("Training the model for " + str(self.use_tanh_n_epoch) +
+                  " epoch with a tanh activation in the last layer")
+
             # Define a different model with different last layer and the load its weights onto current model
-            tanh_model = self.train_with_tanh_activation(model, callbacks_list, num_epochs=self.use_tanh_n_epoch)
+            tanh_model = self.train_with_tanh_activation(model, num_epochs=self.use_tanh_n_epoch)
             model.set_weights(tanh_model.get_weights())
             self.initial_epoch = 1
 
@@ -589,7 +591,7 @@ class CNNCauchy(CNN):
                                             weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
             self.initial_epoch = 0
 
-    def train_with_tanh_activation(self, model, callbacks, num_epochs=0.):
+    def train_with_tanh_activation(self, model, callbacks=None, num_epochs=0.):
         # Define a different model with different last layer and the load its weights onto current model
         _model = keras.Model(inputs=model.input, outputs=model.layers[-2].output)
 
