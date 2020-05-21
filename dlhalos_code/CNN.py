@@ -535,11 +535,11 @@ class CNNCauchy(CNN):
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
-        # # We have to modify the form of the regularizers to take alpha as a trainable parameter
-        # names = [layer.name for layer in new_model.layers]
-        # for i, name in enumerate(names):
-        #     if 'loss_trainable_params' in name:
-        #         loss_params_layer = new_model.layers[i]
+        # We have to modify the form of the regularizers to take alpha as a trainable parameter
+        names = [layer.name for layer in new_model.layers]
+        for i, name in enumerate(names):
+            if 'loss_trainable_params' in name:
+                loss_params_layer = new_model.layers[i]
         # #
         # # reg_losses = None
         # # if self.init_alpha is not None:
@@ -580,7 +580,7 @@ class CNNCauchy(CNN):
         print(new_model.losses)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(last_layer)
+        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
 
         new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
