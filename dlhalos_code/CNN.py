@@ -599,7 +599,8 @@ class CNNCauchy(CNN):
         cbk = CollectWeightCallback(layer_index=-1)
         csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
         # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
-        alpha_logger = RegularizerCallback(model.layers[-1])
+        loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
+        alpha_logger = RegularizerCallback(loss_params_layer)
         callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
