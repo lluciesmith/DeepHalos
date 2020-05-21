@@ -403,25 +403,16 @@ class LossTrainableParams(Layer):
             init_a = tf.constant_initializer(value=self.init_alpha)
             self.alpha = self.add_weight(name='alpha', shape=(1,), initializer=init_a, trainable=True,
                                          constraint=self.constraint_alpha)
-            for layer in self.layers_model[:-1]:
-                if isinstance(layer, Conv3D):
-                    print(layer)
-                    l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
-                    print(l)
-                    print(l.shape)
-                    self.model.add_loss(l)
-                if isinstance(layer, Dense):
-                    print(layer)
-                    l = self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel)
-                    print(l)
-                    print(l.shape)
-                    self.model.add_loss(l)
-                else:
-                    pass
-
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
     def call(self, x):
+        for layer in self.layers_model[:-1]:
+            if isinstance(layer, Conv3D):
+                self.model.add_loss(self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+            if isinstance(layer, Dense):
+                self.model.add_loss(self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+            else:
+                pass
         # print("Making the regularizer parameter a trainable parameter")
         # reg_losses = 0.
         # for layer in new_model.layers[:-2]:
@@ -537,7 +528,7 @@ class CNNCauchy(CNN):
         print("Instantiating Loss Trainable Params layer")
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=reg_gamma, alpha_constraint=reg_alpha,
-                                         layers_model=mse_model)
+                                         model=mse_model)
         print(str(len(mse_model.losses)))
         print("Finished instantiating Loss Trainable Params layer")
 
