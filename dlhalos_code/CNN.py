@@ -530,17 +530,17 @@ class CNNCauchy(CNN):
 
         # Train model
         if self.use_tanh_n_epoch > 0:
-            print("Training for " + str(self.use_tanh_n_epoch) + " epoch with a tanh activation in the last layer\n")
+            print("Training for " + str(self.use_tanh_n_epoch) + " epoch with a tanh activation in the last layer")
 
             # Define a different model with different last layer and the load its weights onto current model
             tanh_model = self.train_with_tanh_activation(model, num_epochs=self.use_tanh_n_epoch)
             model.set_weights(tanh_model.get_weights())
             self.initial_epoch = 1
 
-        print("Updated alpha to value %.5f" % float(K.get_value(model.layers[-1].alpha)) + " \n")
-        print("Updated gamma to value %.5f" % float(K.get_value(model.layers[-2].gamma)) + " \n")
+        print("Updated alpha to value %.5f" % float(K.get_value(model.layers[-1].alpha)))
+        print("Updated gamma to value %.5f" % float(K.get_value(model.layers[-1].gamma)))
 
-        print("Start training with a linear activation in the last layer"+ " \n")
+        print("Start training with a linear activation in the last layer")
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
@@ -598,7 +598,6 @@ class CNNCauchy(CNN):
                                           model=_model, tanh=True)
         _predictions = _last_layer(_model.layers[-1].output)
         _tanh_model = keras.Model(inputs=_model.input, outputs=_predictions)
-        print("Number of regularization loss terms are " + str(len(_tanh_model.losses))+ " \n")
 
         _optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                            amsgrad=True)
