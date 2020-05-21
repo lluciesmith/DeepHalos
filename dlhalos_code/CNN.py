@@ -427,6 +427,16 @@ class LossTrainableParams(Layer):
         #         layer.add_loss(lambda: self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
         #     else:
         #         pass
+        for layer in self.layers_model[:-1]:
+            if isinstance(layer, Conv3D):
+                print(layer)
+                # l = new_model.layers[-1].alpha * custom_reg.l2_norm(1.)(layer.kernel)
+                layer.add_loss(self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+            if isinstance(layer, Dense):
+                print(layer)
+                layer.add_loss(self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+            else:
+                pass
         return x
 
     def get_config(self):
@@ -525,48 +535,48 @@ class CNNCauchy(CNN):
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
-        # We have to modify the form of the regularizers to take alpha as a trainable parameter
-        names = [layer.name for layer in new_model.layers]
-        for i, name in enumerate(names):
-            if 'loss_trainable_params' in name:
-                loss_params_layer = new_model.layers[i]
+        # # We have to modify the form of the regularizers to take alpha as a trainable parameter
+        # names = [layer.name for layer in new_model.layers]
+        # for i, name in enumerate(names):
+        #     if 'loss_trainable_params' in name:
+        #         loss_params_layer = new_model.layers[i]
+        # #
+        # # reg_losses = None
+        # # if self.init_alpha is not None:
+        # #     print("Making the regularizer parameter a trainable parameter")
+        # #     # reg_losses = 0.
+        # #     # for layer in new_model.layers[:-2]:
+        # #     #     if 'conv3d' in layer.name:
+        # #     #         print(layer)
+        # #     #         reg_losses += custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel)
+        # #     #     elif 'dense' in layer.name:
+        # #     #         print(layer)
+        # #     #         reg_losses += custom_reg.l1_and_l21_group(loss_params_layer.alpha)(layer.kernel)
+        # #     #     else:
+        # #     #         pass
+        # #
+        # #     for layer in new_model.layers[:-2]:
+        # #         if 'conv3d' in layer.name:
+        # #             print(layer)
+        # #             layer.kernel_regularizer = custom_reg.l2_norm(1)
+        # #         elif 'dense' in layer.name:
+        # #             print(layer)
+        # #             layer.kernel_regularizer = custom_reg.l1_and_l21_group(1)
+        # #         else:
+        # #             pass
         #
-        # reg_losses = None
+        #     # new_model._losses *= last_layer.alpha
         # if self.init_alpha is not None:
-        #     print("Making the regularizer parameter a trainable parameter")
-        #     # reg_losses = 0.
-        #     # for layer in new_model.layers[:-2]:
-        #     #     if 'conv3d' in layer.name:
-        #     #         print(layer)
-        #     #         reg_losses += custom_reg.l2_norm(loss_params_layer.alpha)(layer.kernel)
-        #     #     elif 'dense' in layer.name:
-        #     #         print(layer)
-        #     #         reg_losses += custom_reg.l1_and_l21_group(loss_params_layer.alpha)(layer.kernel)
-        #     #     else:
-        #     #         pass
-        #
         #     for layer in new_model.layers[:-2]:
-        #         if 'conv3d' in layer.name:
+        #         if isinstance(layer, Conv3D):
         #             print(layer)
-        #             layer.kernel_regularizer = custom_reg.l2_norm(1)
-        #         elif 'dense' in layer.name:
+        #             # l = new_model.layers[-1].alpha * custom_reg.l2_norm(1.)(layer.kernel)
+        #             new_model.add_loss(loss_params_layer.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+        #         if isinstance(layer, Dense):
         #             print(layer)
-        #             layer.kernel_regularizer = custom_reg.l1_and_l21_group(1)
+        #             new_model.add_loss(loss_params_layer.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
         #         else:
         #             pass
-
-            # new_model._losses *= last_layer.alpha
-        if self.init_alpha is not None:
-            for layer in new_model.layers[:-2]:
-                if isinstance(layer, Conv3D):
-                    print(layer)
-                    # l = new_model.layers[-1].alpha * custom_reg.l2_norm(1.)(layer.kernel)
-                    new_model.add_loss(loss_params_layer.alpha * custom_reg.l2_norm(1.)(layer.kernel))
-                if isinstance(layer, Dense):
-                    print(layer)
-                    new_model.add_loss(loss_params_layer.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
-                else:
-                    pass
         print(new_model.losses)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
