@@ -582,6 +582,7 @@ class CNNCauchy(CNN):
     def train_with_tanh_activation(self, model, callbacks):
         # Define a different model with different last layer and the load its weights onto current model
         _model = keras.Model(inputs=model.input, outputs=model.layers[-2].output)
+
         _last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                           gamma_constraint=self.constr_gamma, alpha_constraint=self.constr_alpha,
                                           model=_model, tanh=True)
@@ -590,7 +591,7 @@ class CNNCauchy(CNN):
 
         _optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                            amsgrad=True)
-        _loss_params_layer = [layer for layer in _model.layers if 'loss_trainable_params' in layer.name][0]
+        _loss_params_layer = [layer for layer in _tanh_model.layers if 'loss_trainable_params' in layer.name][0]
         _loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(_loss_params_layer)
         _tanh_model.compile(loss=_loss_c, optimizer=_optimiser)
 
