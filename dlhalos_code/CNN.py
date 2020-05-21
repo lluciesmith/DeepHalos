@@ -380,7 +380,7 @@ class CNN:
 
 
 class LossTrainableParams(Layer):
-    def __init__(self, init_gamma=0.2, init_alpha=None, gamma_constraint=None, alpha_constraint=None,
+    def __init__(self, init_gamma=None, init_alpha=None, gamma_constraint=None, alpha_constraint=None,
                  layers_model=None, **kwargs):
         # self.output_dim = output_dim
         super(LossTrainableParams, self).__init__(**kwargs)
