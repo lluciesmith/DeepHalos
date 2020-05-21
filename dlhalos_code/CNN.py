@@ -471,7 +471,7 @@ class CNNCauchy(CNN):
         super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
                                         steps_per_epoch=steps_per_epoch,
                                         training_generator=training_generator, dim=dim,
-                                        loss='mse', num_epochs=1, lr=lr, verbose=verbose, data_format=data_format,
+                                        loss='mse', num_epochs=3, lr=lr, verbose=verbose, data_format=data_format,
                                         use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
                                         pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
@@ -580,9 +580,9 @@ class CNNCauchy(CNN):
         print(new_model.losses)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-        # loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
+        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
 
-        new_model.compile(loss='mse', optimizer=optimiser)
+        new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
 
     def train_cauchy_model(self, model):
@@ -616,7 +616,7 @@ class RegularizerCallback(Callback):
 
     def on_train_batch_end(self, batch, logs=None):
         print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
-        # print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
+        print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
 
 
 def lr_scheduler_half(epoch):
