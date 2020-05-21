@@ -582,7 +582,7 @@ class CNNCauchy(CNN):
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(last_layer)
 
-        new_model.compile(loss=loss_c, optimizer=optimiser)
+        new_model.compile(loss='mse', optimizer=optimiser)
         return new_model
 
     def train_cauchy_model(self, model):
