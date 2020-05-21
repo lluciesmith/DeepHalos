@@ -402,21 +402,21 @@ class LossTrainableParams(Layer):
             init_a = tf.constant_initializer(value=self.init_alpha)
             self.alpha = self.add_weight(name='alpha', shape=(1,), initializer=init_a, trainable=True,
                                          constraint=self.constraint_alpha)
-            # for layer in self.layers_model[:-1]:
-            #     if isinstance(layer, Conv3D):
-            #         print(layer)
-            #         l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
-            #         print(l)
-            #         print(l.shape)
-            #         layer.add_loss(l)
-            #     if isinstance(layer, Dense):
-            #         print(layer)
-            #         l = self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel)
-            #         print(l)
-            #         print(l.shape)
-            #         layer.add_loss(l)
-            #     else:
-            #         pass
+            for layer in self.layers_model[:-1]:
+                if isinstance(layer, Conv3D):
+                    print(layer)
+                    l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
+                    print(l)
+                    print(l.shape)
+                    layer.add_loss(l)
+                if isinstance(layer, Dense):
+                    print(layer)
+                    l = self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel)
+                    print(l)
+                    print(l.shape)
+                    layer.add_loss(l)
+                else:
+                    pass
 
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
@@ -442,21 +442,6 @@ class LossTrainableParams(Layer):
         #         layer.add_loss(lambda: self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
         #     else:
         #         pass
-        for layer in self.layers_model[:-1]:
-            if isinstance(layer, Conv3D):
-                print(layer)
-                l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
-                print(l)
-                print(l.shape)
-                layer.add_loss(l)
-            if isinstance(layer, Dense):
-                print(layer)
-                l = self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel)
-                print(l)
-                print(l.shape)
-                layer.add_loss(l)
-            else:
-                pass
         return x
 
     def get_config(self):
