@@ -445,7 +445,7 @@ class CNNCauchy(CNN):
                  data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
-                 save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5, initial_epoch=1,
+                 save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5,
                  train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_first_epoch=False):
 
         self.path_model = path_summary
@@ -467,7 +467,7 @@ class CNNCauchy(CNN):
         self.constr_alpha = constraints.MinMaxNorm(min_value=self.LB_alpha, max_value=self.UB_alpha, rate=1.0, axis=0)
 
         self.num_epochs = num_epochs
-        self.initial_epoch = initial_epoch
+        self.initial_epoch = 0
         self.load_weights = load_weights
         self.use_tanh_first_epoch = use_tanh_first_epoch
 
@@ -526,10 +526,11 @@ class CNNCauchy(CNN):
         lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
         cbk = CollectWeightCallback(layer_index=-1)
         csv_logger = callbacks.CSVLogger(self.path_model + "/training.log", separator=',', append=True)
-        # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
-        loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
-        alpha_logger = RegularizerCallback(loss_params_layer)
-        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
+        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk]
+
+        # loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
+        # alpha_logger = RegularizerCallback(loss_params_layer)
+        # callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
         if self.use_tanh_first_epoch is True:
@@ -555,10 +556,11 @@ class CNNCauchy(CNN):
         if train_mse is True:
             # initialize CNN to load/train weights for one epoch on MSE
             train_bool = not load_mse_weights
+            num_epochs = 3
             super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
                                             steps_per_epoch=steps_per_epoch,
                                             training_generator=training_generator, dim=dim,
-                                            loss='mse', num_epochs=3, lr=lr, verbose=verbose, data_format=data_format,
+                                            loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose, data_format=data_format,
                                             use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
                                             pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
                                             path_summary=path_summary, pretrained_model=pretrained_model,
@@ -569,6 +571,7 @@ class CNNCauchy(CNN):
                 self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
             else:
                 self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
+            self.initial_epoch = num_epochs
         else:
             super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
                                             steps_per_epoch=steps_per_epoch,
@@ -578,6 +581,7 @@ class CNNCauchy(CNN):
                                             pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
                                             path_summary=path_summary, pretrained_model=pretrained_model,
                                             weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
+            self.initial_epoch = 0
 
     def train_with_tanh_activation(self, model, callbacks):
         # Define a different model with different last layer and the load its weights onto current model
