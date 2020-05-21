@@ -380,15 +380,16 @@ class CNN:
 
 
 class LossTrainableParams(Layer):
-    def __init__(self, init_gamma=None, init_alpha=None, gamma_constraint=None, alpha_constraint=None,
-                 layers_model=None, **kwargs):
+    def __init__(self, init_gamma=None, init_alpha=None, gamma_constraint=None, alpha_constraint=None, model=None,
+                 **kwargs):
         # self.output_dim = output_dim
         super(LossTrainableParams, self).__init__(**kwargs)
         self.init_gamma = init_gamma
         self.constraint_gamma = gamma_constraint
         self.init_alpha = init_alpha
         self.constraint_alpha = alpha_constraint
-        self.layers_model = layers_model
+        self.model = model
+        self.layers_model = model.layers
 
     def build(self, input_shape):
         if self.init_gamma is not None:
@@ -408,13 +409,13 @@ class LossTrainableParams(Layer):
                     l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
                     print(l)
                     print(l.shape)
-                    layer.add_loss(l)
+                    self.model.add_loss(l)
                 if isinstance(layer, Dense):
                     print(layer)
                     l = self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel)
                     print(l)
                     print(l.shape)
-                    layer.add_loss(l)
+                    self.model.add_loss(l)
                 else:
                     pass
 
@@ -536,7 +537,7 @@ class CNNCauchy(CNN):
         print("Instantiating Loss Trainable Params layer")
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=reg_gamma, alpha_constraint=reg_alpha,
-                                         layers_model=mse_model.layers)
+                                         layers_model=mse_model)
         print(str(len(mse_model.losses)))
         print("Finished instantiating Loss Trainable Params layer")
 
