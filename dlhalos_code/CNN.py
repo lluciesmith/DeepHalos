@@ -448,12 +448,11 @@ class CNNCauchy(CNN):
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5,
                  train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0):
 
-        self.path_model = path_summary
         self.get_mse_model(train_mse, load_mse_weights, conv_params, fcc_params, model_type=model_type,
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
                            workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
-                           save_summary=True, path_summary="/home/lls", pretrained_model=pretrained_model,
+                           save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
                            weights=weights, max_queue_size=max_queue_size)
 
         self.path_model = path_summary
