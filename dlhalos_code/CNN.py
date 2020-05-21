@@ -506,9 +506,8 @@ class CNNCauchy(CNN):
         # Define Cauchy model
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=self.constr_gamma, alpha_constraint=self.constr_alpha,
-                                         model=mse_model)
-
-        predictions = last_layer(mse_model.layers[-1].output, tanh=tanh)
+                                         model=mse_model, tanh=tanh)
+        predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
         print("Number of regularization loss terms are " + str(len(new_model.losses)))
 
