@@ -413,9 +413,11 @@ class LossTrainableParams(Layer):
     def call(self, x):
         for layer in self.layers_model[:-1]:
             if isinstance(layer, Conv3D):
-                self.model.add_loss(self.alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
+                self.model.add_loss(lambda: l)
             if isinstance(layer, Dense):
-                self.model.add_loss(self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel))
+                l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
+                self.model.add_loss(lambda: l)
             else:
                 pass
 

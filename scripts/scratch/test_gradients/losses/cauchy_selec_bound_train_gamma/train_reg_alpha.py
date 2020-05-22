@@ -36,7 +36,7 @@ if __name__ == "__main__":
     ######### TRAIN THE MODEL ################
 
     path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-           "/cauchy_selec_bound_gamma_train_alpha/"
+           "/cauchy_selec_bound_gamma_train_alpha2/"
 
     # Regularizers are added in `CNNCauchy'
 
