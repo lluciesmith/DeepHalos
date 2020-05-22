@@ -411,13 +411,13 @@ class LossTrainableParams(Layer):
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
     def call(self, x):
+        alpha = K.pow(10, self.alpha)
+
         for layer in self.layers_model[:-1]:
             if isinstance(layer, Conv3D):
-                l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
-                self.model.add_loss(lambda: l)
-            if isinstance(layer, Dense):
-                l = self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel)
-                self.model.add_loss(lambda: l)
+                self.model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
+            elif isinstance(layer, Dense):
+                self.model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
             else:
                 pass
 
@@ -508,8 +508,11 @@ class CNNCauchy(CNN):
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=self.constr_gamma, alpha_constraint=self.constr_alpha,
                                          model=mse_model, tanh=tanh)
+        print(mse_model.losses)
         predictions = last_layer(mse_model.layers[-1].output)
+        print(mse_model.losses)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
+        print(new_model.losses)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
@@ -563,15 +566,16 @@ class CNNCauchy(CNN):
                       save_summary=False, path_summary=".", num_epochs=3):
         if train_mse is True:
             # initialize CNN to load/train weights for one epoch on MSE
-
             train_bool = not load_mse_weights
 
-            for key in conv_params.keys():
-                conv_params[key]['kernel_regularizer'] = custom_reg.l2_norm(0.1)
+            conv_params2 = conv_params.copy()
+            fcc_params2 = fcc_params.copy()
+            for key in conv_params2.keys():
+                conv_params2[key]['kernel_regularizer'] = custom_reg.l2_norm(0.001)
             for key in fcc_params.keys():
-                fcc_params[key]['kernel_regularizer'] = custom_reg.l1_and_l21_group(0.1)
+                fcc_params2[key]['kernel_regularizer'] = custom_reg.l1_and_l21_group(0.001)
 
-            super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
+            super(CNNCauchy, self).__init__(conv_params2, fcc_params2, model_type=model_type,
                                             steps_per_epoch=steps_per_epoch,
                                             training_generator=training_generator, dim=dim,
                                             loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose, data_format=data_format,
@@ -585,7 +589,7 @@ class CNNCauchy(CNN):
                 self.model.load_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
             else:
                 print("Trained model for " + str(num_epochs) + " epochs using MSE loss")
-                self.model.save_weights(self.path_model + 'model/mse_weights_one_epoch.hdf5')
+                self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
             self.initial_epoch = num_epochs
         else:
 
