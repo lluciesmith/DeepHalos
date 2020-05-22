@@ -411,7 +411,8 @@ class LossTrainableParams(Layer):
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
     def call(self, x):
-        alpha = K.pow(10, self.alpha)
+        alpha = K.pow(10., self.alpha)
+        print(K.get_value(alpha))
 
         for layer in self.layers_model[:-1]:
             if isinstance(layer, Conv3D):
