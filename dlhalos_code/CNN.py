@@ -416,7 +416,7 @@ class LossTrainableParams(Layer):
                 l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
                 self.model.add_loss(lambda: l)
             if isinstance(layer, Dense):
-                l = self.alpha * custom_reg.l2_norm(1.)(layer.kernel)
+                l = self.alpha * custom_reg.l1_and_l21_group(1.)(layer.kernel)
                 self.model.add_loss(lambda: l)
             else:
                 pass
@@ -565,6 +565,11 @@ class CNNCauchy(CNN):
             # initialize CNN to load/train weights for one epoch on MSE
 
             train_bool = not load_mse_weights
+
+            for key in conv_params.keys():
+                conv_params[key]['kernel_regularizer'] = custom_reg.l2_norm(0.1)
+            for key in fcc_params.keys():
+                fcc_params[key]['kernel_regularizer'] = custom_reg.l1_and_l21_group(0.1)
 
             super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
                                             steps_per_epoch=steps_per_epoch,
