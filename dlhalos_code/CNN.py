@@ -448,14 +448,14 @@ class CNNCauchy(CNN):
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5,
-                 train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0):
+                 train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0):
 
         self.get_mse_model(train_mse, load_mse_weights, conv_params, fcc_params, model_type=model_type,
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
                            workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
                            save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
-                           weights=weights, max_queue_size=max_queue_size)
+                           weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
 
         self.path_model = path_summary
         self.init_gamma = init_gamma
@@ -559,12 +559,11 @@ class CNNCauchy(CNN):
                       training_generator=None, steps_per_epoch=None, data_format="channels_last", dim=(51, 51, 51),
                       lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                       max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
-                      save_summary=False, path_summary="."):
+                      save_summary=False, path_summary=".", num_epochs=3):
         if train_mse is True:
             # initialize CNN to load/train weights for one epoch on MSE
 
             train_bool = not load_mse_weights
-            num_epochs = 3
 
             super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
                                             steps_per_epoch=steps_per_epoch,
