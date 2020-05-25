@@ -504,7 +504,8 @@ class CNNCauchy(CNN):
                 #     np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
 
     def add_losses(self, model):
-        last_layer_alpha = model.layers[-1].alpha
+        loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
+        last_layer_alpha = loss_params_layer.alpha
         alpha = K.pow(10., last_layer_alpha)
 
         for layer in model.layers[:-2]:
