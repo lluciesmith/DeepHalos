@@ -527,7 +527,7 @@ class CNNCauchy(CNN):
         print(new_model.losses)
 
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
-        new_model.add_loss(lambda: loss_params_layer.alpha * custom_reg.l2_norm(1.)(new_model.layers[1].kernel))
+        new_model.add_loss(lambda: 0.1 * custom_reg.l2_norm(1.)(new_model.layers[1].kernel))
         # new_model = self.add_losses(new_model)
         print(new_model.losses)
         print(new_model.layers)
