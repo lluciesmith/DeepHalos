@@ -589,31 +589,30 @@ class CNNCauchy(CNN):
         if train_mse is True:
             train_bool = not load_mse_weights
 
-            conv_params2 = conv_params.copy()
-            fcc_params2 = fcc_params.copy()
-            for key in conv_params2.keys():
-                conv_params2[key]['kernel_regularizer'] = custom_reg.l2_norm(0.001)
-            for key in fcc_params.keys():
-                fcc_params2[key]['kernel_regularizer'] = custom_reg.l1_and_l21_group(0.001)
-
-            MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
-                            training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
-                            verbose=verbose, data_format=data_format, use_multiprocessing=use_multiprocessing,
-                            workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
-                            save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
-                            weights=weights, compile=True, max_queue_size=max_queue_size, train=train_bool)
-
             if train_bool is False:
                 print("Loaded initial weights given by training for " + str(num_epochs) + " epochs using MSE loss")
-                MSE_model.model.load_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
+                self.model.load_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
             else:
+                conv_params2 = conv_params.copy()
+                fcc_params2 = fcc_params.copy()
+                for key in conv_params2.keys():
+                    conv_params2[key]['kernel_regularizer'] = custom_reg.l2_norm(0.001)
+                for key in fcc_params.keys():
+                    fcc_params2[key]['kernel_regularizer'] = custom_reg.l1_and_l21_group(0.001)
+
+                MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
+                                training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
+                                verbose=verbose, data_format=data_format, use_multiprocessing=use_multiprocessing,
+                                workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
+                                save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
+                                weights=weights, compile=True, max_queue_size=max_queue_size, train=train_bool)
+
                 print("Trained model for " + str(num_epochs) + " epochs using MSE loss")
                 MSE_model.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
+                self.model.set_weights(MSE_model.model.get_weights())
 
             self.initial_epoch = num_epochs
-            self.model.set_weights(MSE_model.model.get_weights())
-
         else:
             self.initial_epoch = 0
 
