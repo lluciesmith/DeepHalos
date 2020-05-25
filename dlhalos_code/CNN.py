@@ -566,8 +566,8 @@ class CNNCauchy(CNN):
         cbk = CollectWeightCallback(layer_index=-1)
         csv_logger = callbacks.CSVLogger(self.path_model + "training.log", separator=',', append=True)
 
-        loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
-        alpha_logger = RegularizerCallback(loss_params_layer)
+        loss_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
+        alpha_logger = RegularizerCallback(loss_layer, alpha_check=[True if self.init_alpha is not None else False][0])
         callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
 
         # Train model
@@ -581,8 +581,8 @@ class CNNCauchy(CNN):
             self.initial_epoch = 1
 
         if self.init_alpha is not None:
-            print("Updated alpha to value %.5f" % float(K.get_value(loss_params_layer.alpha)))
-        print("Updated gamma to value %.5f" % float(K.get_value(loss_params_layer.gamma)))
+            print("Updated alpha to value %.5f" % float(K.get_value(loss_layer.alpha)))
+        print("Updated gamma to value %.5f" % float(K.get_value(loss_layer.gamma)))
 
         print([layer.name for layer in model.layers])
 
@@ -673,13 +673,16 @@ class CNNCauchy(CNN):
 
 
 class RegularizerCallback(Callback):
-    def __init__(self, layer):
+    def __init__(self, layer, alpha_check):
         super(Callback, self).__init__()
         self.layer = layer
+        self.alpha_check = alpha_check
 
     def on_epoch_end(self, epoch, logs=None):
-        # print("\n Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha))+ " \n")
-        print("\n Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma))+ " \n")
+        print("\n Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)) + " \n")
+        if self.alpha_check is True:
+            print("\n Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha))+ " \n")
+
 
 
 def lr_scheduler_half(epoch):
