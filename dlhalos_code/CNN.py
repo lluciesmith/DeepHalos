@@ -536,6 +536,9 @@ class CNNCauchy(CNN):
             alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None else K.pow(10., -3)][0]
             new_model.add_loss(lambda: alpha * self.regularizer_dense(new_model.layers[index].kernel))
 
+        print("These are the losses from the Cauchy model:")
+        print(new_model.losses)
+
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
@@ -595,7 +598,6 @@ class CNNCauchy(CNN):
                                         pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
-        print(self.model.losses)
 
         if train_mse is True:
             train_bool = not load_mse_weights
@@ -663,11 +665,14 @@ class RegularizerCallback(Callback):
         self.alpha_check = alpha_check
 
     def on_epoch_end(self, epoch, logs=None):
-        print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
+        print("\nUpdated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
         if self.alpha_check is True:
             print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
 
-
+    def on_batch_end(self, batch, logs=None):
+        print("\nUpdated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
+        if self.alpha_check is True:
+            print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
 
 def lr_scheduler_half(epoch):
     # This function halves the learning rate every ten epochs.
