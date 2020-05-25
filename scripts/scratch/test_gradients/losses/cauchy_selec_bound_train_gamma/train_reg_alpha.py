@@ -70,7 +70,7 @@ if __name__ == "__main__":
                           num_epochs=100, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
                           compile=True, train=True, load_weights=None,
-                          train_mse=True, load_mse_weights=False, use_mse_n_epoch=3, use_tanh_n_epoch=0,
+                          train_mse=True, load_mse_weights=True, use_mse_n_epoch=3, use_tanh_n_epoch=0,
                           **reg_params)
 
     # Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression",
