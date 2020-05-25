@@ -523,14 +523,17 @@ class CNNCauchy(CNN):
                                          model=mse_model, tanh=tanh)
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
+        print(new_model.losses)
 
         new_model = self.add_losses(new_model)
+        print(new_model.losses)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
 
         new_model.compile(loss=loss_c, optimizer=optimiser)
+        print(new_model.losses)
         return new_model
 
     def train_cauchy_model(self, model):
