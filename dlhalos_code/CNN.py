@@ -14,6 +14,7 @@ import tensorflow as tf
 from dlhalos_code import evaluation as eval
 from dlhalos_code import loss_functions as lf
 from dlhalos_code import custom_regularizers as custom_reg
+from tensorflow.keras.constraints import Constraint
 
 
 class CNN:
@@ -464,12 +465,15 @@ class CNNCauchy(CNN):
         self.init_gamma = init_gamma
         self.LB_gamma = lower_bound_gamma
         self.UB_gamma = upper_bound_gamma
-        self.constr_gamma = constraints.MinMaxNorm(min_value=self.LB_gamma, max_value=self.UB_gamma, rate=1.0,  axis=0)
+        self.constr_gamma = Between(min_value=self.LB_gamma, max_value=self.UB_gamma)
+        # self.constr_gamma = constraints.MinMaxNorm(min_value=self.LB_gamma, max_value=self.UB_gamma, rate=1.0,
+        # axis=0)
 
         self.init_alpha = init_alpha
         self.LB_alpha = lower_bound_alpha
         self.UB_alpha = upper_bound_alpha
-        self.constr_alpha = constraints.MinMaxNorm(min_value=self.LB_alpha, max_value=self.UB_alpha, rate=1.0, axis=0)
+        self.constr_alpha = Between(min_value=self.LB_alpha, max_value=self.UB_alpha)
+        # self.constr_alpha = constraints.MinMaxNorm(min_value=self.LB_alpha, max_value=self.UB_alpha, rate=1.0, axis=0)
 
         self.num_epochs = num_epochs
         self.load_weights = load_weights
@@ -799,6 +803,20 @@ class LossCallback(Callback):
 
     def on_batch_end(self, batch, logs={}):
         return
+
+
+class Between(Constraint):
+    def __init__(self, min_value, max_value):
+        self.min_value = min_value
+        self.max_value = max_value
+
+    def __call__(self, w):
+        return K.clip(w, self.min_value, self.max_value)
+
+    def get_config(self):
+        return {'min_value': self.min_value,
+                'max_value': self.max_value}
+
 
 
 
