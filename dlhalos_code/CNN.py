@@ -6,10 +6,9 @@ import tensorflow.keras as keras
 from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import Callback
 import tensorflow.keras.callbacks as callbacks
-from tensorflow.keras.layers import Input, Dense, Flatten, Add, Conv3D
+from tensorflow.keras.layers import Input, Dense, Flatten, Add
 from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras.layers import Layer
-import tensorflow.keras.constraints as constraints
 import tensorflow as tf
 from dlhalos_code import evaluation as eval
 from dlhalos_code import loss_functions as lf
@@ -466,14 +465,11 @@ class CNNCauchy(CNN):
         self.LB_gamma = lower_bound_gamma
         self.UB_gamma = upper_bound_gamma
         self.constr_gamma = Between(min_value=self.LB_gamma, max_value=self.UB_gamma)
-        # self.constr_gamma = constraints.MinMaxNorm(min_value=self.LB_gamma, max_value=self.UB_gamma, rate=1.0,
-        # axis=0)
 
         self.init_alpha = init_alpha
         self.LB_alpha = lower_bound_alpha
         self.UB_alpha = upper_bound_alpha
         self.constr_alpha = Between(min_value=self.LB_alpha, max_value=self.UB_alpha)
-        # self.constr_alpha = constraints.MinMaxNorm(min_value=self.LB_alpha, max_value=self.UB_alpha, rate=1.0, axis=0)
 
         self.num_epochs = num_epochs
         self.load_weights = load_weights
@@ -521,12 +517,14 @@ class CNNCauchy(CNN):
 
         conv_layers = [s for s in names_layers if 'conv3d'in s]
         for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
-            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None else K.pow(10., -3)][0]
+            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
+                     else K.pow(10., self.init_alpha)][0]
             new_model.add_loss(lambda: alpha * self.regularizer_conv(new_model.layers[index].kernel))
 
         dense_layers = [s for s in names_layers if 'dense' in s][:-1]
         for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
-            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None else K.pow(10., -3)][0]
+            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
+                     else K.pow(10., self.init_alpha)][0]
             new_model.add_loss(lambda: alpha * self.regularizer_dense(new_model.layers[index].kernel))
 
         print("These are the losses from the Cauchy model:")
@@ -563,7 +561,7 @@ class CNNCauchy(CNN):
             self.initial_epoch = 1
 
         if self.init_alpha is not None:
-            print("Initial value of alpha is %.5f" % float(K.get_value(loss_layer.alpha)))
+            print("Initial value of log-alpha is %.5f" % float(K.get_value(loss_layer.alpha)))
         print("Initial value of gamma is %.5f" % float(K.get_value(loss_layer.gamma)))
 
         print("Start training with a linear activation in the last layer")
@@ -602,10 +600,11 @@ class CNNCauchy(CNN):
             else:
                 conv_params2 = conv_params.copy()
                 fcc_params2 = fcc_params.copy()
+                alpha = float(K.get_value(K.pow(10., self.init_alpha)))
                 for key in conv_params2.keys():
-                    conv_params2[key]['kernel_regularizer'] = custom_reg.l2_norm(0.001)
+                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
                 for key in fcc_params.keys():
-                    fcc_params2[key]['kernel_regularizer'] = custom_reg.l1_and_l21_group(0.001)
+                    fcc_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
 
                 MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                                 training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
@@ -660,7 +659,7 @@ class RegularizerCallback(Callback):
     def on_epoch_end(self, epoch, logs=None):
         print("\nUpdated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
         if self.alpha_check is True:
-            print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
+            print("Updated log-alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
 
 
 def lr_scheduler_half(epoch):

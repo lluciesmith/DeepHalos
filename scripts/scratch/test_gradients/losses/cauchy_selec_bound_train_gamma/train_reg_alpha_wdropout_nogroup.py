@@ -36,7 +36,7 @@ if __name__ == "__main__":
     ######### TRAIN THE MODEL ################
 
     path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-           "/cauchy_selec_bound_gamma_train_alpha/l2_conv_l21_l1_dense/"
+           "/cauchy_selec_bound_gamma_train_alpha/l2_conv_l1_dense_wdropout/"
 
     # Convolutional layers parameters
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     # Dense layers parameters
 
-    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True}
+    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'dropout': 0.4}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     reg_params = {'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
                   'init_gamma': 0.2, 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
-                  'regularizer_conv': reg.l2_norm(1.), 'regularizer_dense': reg.l1_and_l21_group(1.)
+                  'regularizer_conv': reg.l2_norm(1.), 'regularizer_dense': reg.l1_norm(1.)
                   }
 
     # Train for 100 epochs

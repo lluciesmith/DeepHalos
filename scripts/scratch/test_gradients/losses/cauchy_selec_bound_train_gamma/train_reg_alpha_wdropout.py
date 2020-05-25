@@ -36,7 +36,7 @@ if __name__ == "__main__":
     ######### TRAIN THE MODEL ################
 
     path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-           "/cauchy_selec_bound_gamma_train_alpha/l2_conv_l21_l1_dense/"
+           "/cauchy_selec_bound_gamma_train_alpha/l2_conv_l21_l1_dense_wdropout/"
 
     # Convolutional layers parameters
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     # Dense layers parameters
 
-    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True}
+    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'dropout': 0.4}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
