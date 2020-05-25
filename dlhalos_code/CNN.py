@@ -580,7 +580,8 @@ class CNNCauchy(CNN):
             model.set_weights(tanh_model.get_weights())
             self.initial_epoch = 1
 
-        print("Updated alpha to value %.5f" % float(K.get_value(loss_params_layer.alpha)))
+        if self.init_alpha is not None:
+            print("Updated alpha to value %.5f" % float(K.get_value(loss_params_layer.alpha)))
         print("Updated gamma to value %.5f" % float(K.get_value(loss_params_layer.gamma)))
 
         print([layer.name for layer in model.layers])
@@ -677,7 +678,7 @@ class RegularizerCallback(Callback):
         self.layer = layer
 
     def on_epoch_end(self, epoch, logs=None):
-        print("\n Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha))+ " \n")
+        # print("\n Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha))+ " \n")
         print("\n Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma))+ " \n")
 
 
