@@ -472,7 +472,6 @@ class CNNCauchy(CNN):
         self.constr_alpha = constraints.MinMaxNorm(min_value=self.LB_alpha, max_value=self.UB_alpha, rate=1.0, axis=0)
 
         self.num_epochs = num_epochs
-        self.initial_epoch = 0
         self.load_weights = load_weights
         self.use_tanh_n_epoch = use_tanh_n_epoch
 
