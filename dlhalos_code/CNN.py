@@ -446,6 +446,7 @@ class CNNCauchy(CNN):
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5,
+                 regularizer_conv=None, regularizer_dense=None,
                  train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0):
 
         self.path_model = path_summary
@@ -455,6 +456,9 @@ class CNNCauchy(CNN):
                            workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
                            save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
                            weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
+
+        self.regularizer_conv = regularizer_conv
+        self.regularizer_dense = regularizer_dense
 
         self.path_model = path_summary
         self.init_gamma = init_gamma
@@ -519,7 +523,6 @@ class CNNCauchy(CNN):
                                          tanh=tanh)
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
-        print(new_model.losses)
 
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
         names_layers = [layer.name for layer in new_model.layers]
@@ -527,34 +530,18 @@ class CNNCauchy(CNN):
         conv_layers = [s for s in names_layers if 'conv3d'in s]
         for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
             alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None else K.pow(10., -3)][0]
-            new_model.add_loss(lambda: alpha * custom_reg.l2_norm(1.)(new_model.layers[index].kernel))
+            new_model.add_loss(lambda: alpha * self.regularizer_conv(new_model.layers[index].kernel))
 
         dense_layers = [s for s in names_layers if 'dense' in s][:-1]
         for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
             alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None else K.pow(10., -3)][0]
-            new_model.add_loss(lambda: alpha * custom_reg.l1_and_l21_group(1.)(new_model.layers[index].kernel))
-
-        # dense_layers = [s for s in names_layers if 'dense' in s][:-1]
-        # layers = conv_layers + dense_layers
-        # matched_indices = [i for i, item in enumerate(names_layers) if item in layers]
-        #
-        # loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
-        # for index in matched_indices:
-        #     if self.init_alpha is not None:
-        #         l2 = loss_params_layer.alpha * custom_reg.l2_norm(1.)
-        #         new_model.add_loss(lambda: l2(new_model.layers[index].kernel))
-
-        # new_model.add_loss(lambda: 0.1 * custom_reg.l2_norm(1.)(new_model.layers[1].kernel))
-        # new_model = self.add_losses(new_model)
-        print(new_model.losses)
-        print(new_model.layers)
+            new_model.add_loss(lambda: alpha * self.regularizer_dense(new_model.layers[index].kernel))
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
 
         new_model.compile(loss=loss_c, optimizer=optimiser)
-        print(new_model.losses)
         return new_model
 
     def train_cauchy_model(self, model):
@@ -581,10 +568,8 @@ class CNNCauchy(CNN):
             self.initial_epoch = 1
 
         if self.init_alpha is not None:
-            print("Updated alpha to value %.5f" % float(K.get_value(loss_layer.alpha)))
-        print("Updated gamma to value %.5f" % float(K.get_value(loss_layer.gamma)))
-
-        print([layer.name for layer in model.layers])
+            print("Initial value of alpha is %.5f" % float(K.get_value(loss_layer.alpha)))
+        print("Initial value of gamma is %.5f" % float(K.get_value(loss_layer.gamma)))
 
         print("Start training with a linear activation in the last layer")
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
@@ -679,9 +664,9 @@ class RegularizerCallback(Callback):
         self.alpha_check = alpha_check
 
     def on_epoch_end(self, epoch, logs=None):
-        print("\n Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)) + " \n")
+        print("Updated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
         if self.alpha_check is True:
-            print("\n Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha))+ " \n")
+            print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
 
 
 
