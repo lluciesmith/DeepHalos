@@ -526,12 +526,12 @@ class CNNCauchy(CNN):
 
         conv_layers = [s for s in names_layers if 'conv3d'in s]
         for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
-            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None else 0.001]
+            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None else K.pow(10., -3)][0]
             new_model.add_loss(lambda: alpha * custom_reg.l2_norm(1.)(new_model.layers[index].kernel))
 
         dense_layers = [s for s in names_layers if 'dense' in s][:-1]
         for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
-            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None else 0.001]
+            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None else K.pow(10., -3)][0]
             new_model.add_loss(lambda: alpha * custom_reg.l1_and_l21_group(1.)(new_model.layers[index].kernel))
 
         # dense_layers = [s for s in names_layers if 'dense' in s][:-1]
