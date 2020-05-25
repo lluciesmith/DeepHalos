@@ -509,9 +509,10 @@ class CNNCauchy(CNN):
 
         for layer in model.layers[:-2]:
             if isinstance(layer, Conv3D):
-                self.model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                layer.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
             elif isinstance(layer, Dense):
-                self.model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                layer.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
+        return model
 
 
     def compile_cauchy_model(self, mse_model, tanh=False):
@@ -523,7 +524,7 @@ class CNNCauchy(CNN):
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
-        self.add_losses(new_model)
+        new_model = self.add_losses(new_model)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
