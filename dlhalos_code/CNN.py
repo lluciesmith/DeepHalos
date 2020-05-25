@@ -381,8 +381,8 @@ class CNN:
 
 
 class LossTrainableParams(Layer):
-    def __init__(self, init_gamma=None, init_alpha=None, gamma_constraint=None, alpha_constraint=None,
-                 model=None, tanh=False, **kwargs):
+    def __init__(self, init_gamma=None, init_alpha=None, gamma_constraint=None, alpha_constraint=None, tanh=False,
+                 **kwargs):
         # self.output_dim = output_dim
         super(LossTrainableParams, self).__init__(**kwargs)
 
@@ -390,9 +390,6 @@ class LossTrainableParams(Layer):
         self.constraint_gamma = gamma_constraint
         self.init_alpha = init_alpha
         self.constraint_alpha = alpha_constraint
-
-        self.model = model
-        self.layers_model = model.layers
 
         self.tanh = tanh
 
@@ -521,18 +518,20 @@ class CNNCauchy(CNN):
         # Define Cauchy model
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=self.constr_gamma, alpha_constraint=self.constr_alpha,
-                                         model=mse_model, tanh=tanh)
+                                         tanh=tanh)
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
         print(new_model.losses)
 
-        # names_layers = [layer.name for layer in new_model.layers]
-        # conv_layers = [s for s in names_layers if 'conv3d' or 'dense' in s]
-        # dense_layers = [s for s in names_layers if 'dense' in s][:-1]
-        # layers = np.concatenate([conv_layers, dense_layers]
-        # loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
-        # for index in np.concatenate([conv_layers, dense_layers]):
-        #     new_model.add_loss(lambda: 0.1 * custom_reg.l2_norm(1.)(new_model.layers[index].kernel))
+        names_layers = [layer.name for layer in new_model.layers]
+        conv_layers = [s for s in names_layers if 'conv3d'in s]
+        dense_layers = [s for s in names_layers if 'dense' in s][:-1]
+        layers = conv_layers + dense_layers
+        matched_indices = [i for i, item in enumerate(names_layers) if item in layers]
+
+        loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
+        for index in matched_indices:
+            new_model.add_loss(lambda: loss_params_layer.alpha * custom_reg.l2_norm(1.)(new_model.layers[index].kernel))
 
         # new_model.add_loss(lambda: 0.1 * custom_reg.l2_norm(1.)(new_model.layers[1].kernel))
         # new_model = self.add_losses(new_model)
