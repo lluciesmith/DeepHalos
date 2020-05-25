@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     reg_params = {'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
                   'init_gamma': 0.2, 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
-                  'regularizer_conv': reg.l2_norm(1.), 'regularizer_dense': reg.l1_norm(1.)
+                  'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_norm
                   }
 
     # Train for 100 epochs

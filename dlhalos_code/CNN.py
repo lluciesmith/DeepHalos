@@ -519,13 +519,13 @@ class CNNCauchy(CNN):
         for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
             alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
                      else K.pow(10., self.init_alpha)][0]
-            new_model.add_loss(lambda: alpha * self.regularizer_conv(new_model.layers[index].kernel))
+            new_model.add_loss(lambda: alpha * self.regularizer_conv(1.)(new_model.layers[index].kernel))
 
         dense_layers = [s for s in names_layers if 'dense' in s][:-1]
         for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
             alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
                      else K.pow(10., self.init_alpha)][0]
-            new_model.add_loss(lambda: alpha * self.regularizer_dense(new_model.layers[index].kernel))
+            new_model.add_loss(lambda: alpha * self.regularizer_dense(1.)(new_model.layers[index].kernel))
 
         print("These are the losses from the Cauchy model:")
         print(new_model.losses)
@@ -600,11 +600,10 @@ class CNNCauchy(CNN):
             else:
                 conv_params2 = conv_params.copy()
                 fcc_params2 = fcc_params.copy()
-                alpha = float(K.get_value(K.pow(10., self.init_alpha)))
                 for key in conv_params2.keys():
-                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
+                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.001)
                 for key in fcc_params.keys():
-                    fcc_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
+                    fcc_params2[key]['kernel_regularizer'] = self.regularizer_dense(0.001)
 
                 MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                                 training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
