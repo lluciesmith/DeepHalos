@@ -499,25 +499,14 @@ class CNNCauchy(CNN):
                 self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
                 np.save(self.path_model + 'trained_loss_params.npy', self.trained_loss_params)
 
-                # if self.init_alpha is None:
-                #     g = np.insert(self.trained_loss_params, 0, self.init_gamma)
-                #     np.save(self.path_model + 'trained_loss_gamma.npy', g)
-                # else:
-                #     g, a = self.trained_loss_params
-                #     np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
-                #     np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
-
-    # def add_losses(self, model):
-    #     loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
-    #     last_layer_alpha = loss_params_layer.alpha
-    #     alpha = K.pow(10., last_layer_alpha)
-    #
-    #     for layer in model.layers[:-2]:
-    #         if isinstance(layer, Conv3D):
-    #             model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
-    #         elif isinstance(layer, Dense):
-    #             model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
-    #     return model
+                if self.init_alpha is None:
+                    g = [float(a) for (a, b) in self.trained_loss_params]
+                    np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
+                    a = [float(b) for (a, b) in self.trained_loss_params]
+                    np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
+                else:
+                    g = np.insert(self.trained_loss_params, 0, self.init_gamma)
+                    np.save(self.path_model + 'trained_loss_gamma.npy', g)
 
     def compile_cauchy_model(self, mse_model, tanh=False):
         # Define Cauchy model
@@ -673,10 +662,6 @@ class RegularizerCallback(Callback):
         if self.alpha_check is True:
             print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
 
-    def on_batch_end(self, batch, logs=None):
-        print("\nUpdated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
-        if self.alpha_check is True:
-            print("Updated alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
 
 def lr_scheduler_half(epoch):
     # This function halves the learning rate every ten epochs.
