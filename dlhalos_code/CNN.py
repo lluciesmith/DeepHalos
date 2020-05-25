@@ -509,9 +509,9 @@ class CNNCauchy(CNN):
 
         for layer in model.layers[:-2]:
             if isinstance(layer, Conv3D):
-                layer.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
             elif isinstance(layer, Dense):
-                layer.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
+                model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
         return model
 
 
