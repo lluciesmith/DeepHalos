@@ -526,8 +526,11 @@ class CNNCauchy(CNN):
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
         print(new_model.losses)
 
-        new_model = self.add_losses(new_model)
+        loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
+        new_model.add_loss(lambda: loss_params_layer.alpha * custom_reg.l2_norm(1.)(new_model.layers[1].kernel))
+        # new_model = self.add_losses(new_model)
         print(new_model.losses)
+        print(new_model.layers)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
@@ -560,8 +563,8 @@ class CNNCauchy(CNN):
             model.set_weights(tanh_model.get_weights())
             self.initial_epoch = 1
 
-        print("Updated alpha to value %.5f" % float(K.get_value(model.layers[-1].alpha)))
-        print("Updated gamma to value %.5f" % float(K.get_value(model.layers[-1].gamma)))
+        print("Updated alpha to value %.5f" % float(K.get_value(loss_params_layer.alpha)))
+        print("Updated gamma to value %.5f" % float(K.get_value(loss_params_layer.gamma)))
 
         print([layer.name for layer in model.layers])
 
