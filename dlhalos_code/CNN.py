@@ -411,16 +411,16 @@ class LossTrainableParams(Layer):
         super(LossTrainableParams, self).build(input_shape)  # Be sure to call this at the end
 
     def call(self, x):
-        alpha = K.pow(10., self.alpha)
-        print(K.get_value(alpha))
-
-        for layer in self.layers_model[:-1]:
-            if isinstance(layer, Conv3D):
-                self.model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
-            elif isinstance(layer, Dense):
-                self.model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
-            else:
-                pass
+        # alpha = K.pow(10., self.alpha)
+        # print(K.get_value(alpha))
+        #
+        # for layer in self.layers_model[:-1]:
+        #     if isinstance(layer, Conv3D):
+        #         self.model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
+        #     elif isinstance(layer, Dense):
+        #         self.model.add_loss(alpha * custom_reg.l2_norm(1.)(layer.kernel))
+        #     else:
+        #         pass
 
         if self.tanh is True:
             return K.tanh(x)
@@ -503,17 +503,27 @@ class CNNCauchy(CNN):
                 #     np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
                 #     np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
 
+    def add_losses(self, model):
+        last_layer_alpha = model.layers[-1].alpha
+        alpha = K.pow(10., last_layer_alpha)
+
+        for layer in model.layers[:-2]:
+            if isinstance(layer, Conv3D):
+                self.model.add_loss(lambda: alpha * custom_reg.l2_norm(1.)(layer.kernel))
+            elif isinstance(layer, Dense):
+                self.model.add_loss(lambda: alpha * custom_reg.l2_norm(1.)(layer.kernel))
+
+
     def compile_cauchy_model(self, mse_model, tanh=False):
 
         # Define Cauchy model
         last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
                                          gamma_constraint=self.constr_gamma, alpha_constraint=self.constr_alpha,
                                          model=mse_model, tanh=tanh)
-        print(mse_model.losses)
         predictions = last_layer(mse_model.layers[-1].output)
-        print(mse_model.losses)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
-        print(new_model.losses)
+
+        self.add_losses(new_model)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
@@ -594,7 +604,7 @@ class CNNCauchy(CNN):
                             weights=weights, compile=True, max_queue_size=max_queue_size, train=train_bool)
 
             if train_bool is False:
-                print("Loaded initial weights given by training for one epoch on MSE loss")
+                print("Loaded initial weights given by training for " + str(num_epochs) + " epochs using MSE loss")
                 MSE_model.model.load_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
             else:
