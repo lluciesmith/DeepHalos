@@ -610,9 +610,9 @@ class CNNCauchy(CNN):
                     alpha = 0.001
 
                 for key in conv_params2.keys():
-                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.001)
+                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
                 for key in fcc_params.keys():
-                    fcc_params2[key]['kernel_regularizer'] = self.regularizer_dense(0.001)
+                    fcc_params2[key]['kernel_regularizer'] = self.regularizer_dense(alpha)
 
                 MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                                 training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
