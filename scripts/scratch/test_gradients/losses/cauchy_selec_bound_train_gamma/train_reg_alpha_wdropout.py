@@ -62,8 +62,8 @@ if __name__ == "__main__":
 
     for i, alpha in enumerate(log_alpha_grid):
         path_model = path + "log_alpha_" + str(alpha) + "/"
-        os.mkdir(path + "log_alpha_" + str(alpha) + "/")
-        os.mkdir(path + "log_alpha_" + str(alpha) + "/model")
+        os.mkdir(path_model)
+        os.mkdir(path_model + "model")
 
         reg_params = {# 'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
                       'fixed_alpha': alpha,
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                               training_generator=generator_training, validation_generator=generator_validation,
                               num_epochs=100, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
-                              workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
+                              workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
                               compile=True, train=True, load_weights=None,
                               train_mse=True, load_mse_weights=False, use_mse_n_epoch=5, use_tanh_n_epoch=0,
                               **reg_params)

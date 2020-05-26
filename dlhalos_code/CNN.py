@@ -448,7 +448,7 @@ class CNNCauchy(CNN):
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5,
-                 regularizer_conv=None, regularizer_dense=None,
+                 regularizer_conv=None, regularizer_dense=None, lr_scheduler=True,
                  train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0):
 
         self.path_model = path_summary
@@ -477,6 +477,7 @@ class CNNCauchy(CNN):
         self.num_epochs = num_epochs
         self.load_weights = load_weights
         self.use_tanh_n_epoch = use_tanh_n_epoch
+        self.lr_scheduler = lr_scheduler
 
         self.validation_generator = validation_generator
         self.validation_steps = validation_steps
@@ -540,18 +541,36 @@ class CNNCauchy(CNN):
         new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
 
-    def train_cauchy_model(self, model):
-        # callbacks
+    def get_callbacks(self, model):
+        callbacks_list = []
+
+        # checkpoint
         filepath = self.path_model + "model/weights.{epoch:02d}.h5"
         checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
+        callbacks_list.append(checkpoint_call)
 
-        lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
+        # learning rate scheduler
+        if self.lr_scheduler:
+            lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
+            callbacks_list.append(lrate)
+
+        # collect weights last layer
         cbk = CollectWeightCallback(layer_index=-1)
-        csv_logger = callbacks.CSVLogger(self.path_model + "training.log", separator=',', append=True)
+        callbacks_list.append(cbk)
 
+        # Record training history in log file
+        csv_logger = callbacks.CSVLogger(self.path_model + "training.log", separator=',', append=True)
+        callbacks_list.append(csv_logger)
+
+        # Alpha logger
         loss_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
         alpha_logger = RegularizerCallback(loss_layer, alpha_check=[True if self.init_alpha is not None else False][0])
-        callbacks_list = [checkpoint_call, csv_logger, lrate, cbk, alpha_logger]
+        callbacks_list.append(alpha_logger)
+        return callbacks_list
+
+    def train_cauchy_model(self, model):
+        # callbacks
+        callbacks_list = self.get_callbacks(model)
 
         # Train model
         if self.use_tanh_n_epoch > 0:
