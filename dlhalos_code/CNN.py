@@ -439,8 +439,10 @@ class CNNCauchy(CNN):
 
     """
 
-    def __init__(self, conv_params, fcc_params, model_type="regression", init_gamma=0.2, init_alpha=None,
-                 upper_bound_alpha=2., lower_bound_alpha=0., upper_bound_gamma=2., lower_bound_gamma=0.,
+    def __init__(self, conv_params, fcc_params, model_type="regression",
+                 init_gamma=0.2, init_alpha=None, fixed_alpha=None,
+                 upper_bound_alpha=2., lower_bound_alpha=0.,
+                 upper_bound_gamma=2., lower_bound_gamma=0.,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
                  data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
@@ -452,7 +454,7 @@ class CNNCauchy(CNN):
         self.path_model = path_summary
         self.regularizer_conv = regularizer_conv
         self.regularizer_dense = regularizer_dense
-        
+
         self.get_mse_model(train_mse, load_mse_weights, conv_params, fcc_params, model_type=model_type,
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
@@ -467,6 +469,7 @@ class CNNCauchy(CNN):
         self.constr_gamma = Between(min_value=self.LB_gamma, max_value=self.UB_gamma)
 
         self.init_alpha = init_alpha
+        self.fixed_alpha = fixed_alpha
         self.LB_alpha = lower_bound_alpha
         self.UB_alpha = upper_bound_alpha
         self.constr_alpha = Between(min_value=self.LB_alpha, max_value=self.UB_alpha)
@@ -495,7 +498,7 @@ class CNNCauchy(CNN):
                 self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
                 np.save(self.path_model + 'trained_loss_params.npy', self.trained_loss_params)
 
-                if self.init_alpha is None:
+                if self.init_alpha is not None:
                     g = [float(a) for (a, b) in self.trained_loss_params]
                     np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
                     a = [float(b) for (a, b) in self.trained_loss_params]
@@ -518,13 +521,13 @@ class CNNCauchy(CNN):
         conv_layers = [s for s in names_layers if 'conv3d'in s]
         for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
             alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
-                     else K.pow(10., self.init_alpha)][0]
+                     else K.pow(10., self.fixed_alpha)][0]
             new_model.add_loss(lambda: alpha * self.regularizer_conv(1.)(new_model.layers[index].kernel))
 
         dense_layers = [s for s in names_layers if 'dense' in s][:-1]
         for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
             alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
-                     else K.pow(10., self.init_alpha)][0]
+                     else K.pow(10., self.fixed_alpha)][0]
             new_model.add_loss(lambda: alpha * self.regularizer_dense(1.)(new_model.layers[index].kernel))
 
         print("These are the losses from the Cauchy model:")
@@ -600,6 +603,12 @@ class CNNCauchy(CNN):
             else:
                 conv_params2 = conv_params.copy()
                 fcc_params2 = fcc_params.copy()
+
+                if self.fixed_alpha is not None:
+                    alpha = self.fixed_alpha
+                else:
+                    alpha = 0.001
+
                 for key in conv_params2.keys():
                     conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.001)
                 for key in fcc_params.keys():

@@ -4,6 +4,8 @@ from dlhalos_code import CNN
 from dlhalos_code import custom_regularizers as reg
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
+import numpy as np
+import os
 
 if __name__ == "__main__":
 
@@ -34,7 +36,9 @@ if __name__ == "__main__":
 
 
     ######### TRAIN THE MODEL ################
-
+    #
+    # path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
+    #        "/cauchy_selec_bound_gamma_train_alpha/l2_conv_l21_l1_dense/"
     path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
            "/cauchy_selec_bound_gamma_train_alpha/l2_conv_l21_l1_dense/"
 
@@ -56,17 +60,25 @@ if __name__ == "__main__":
 
     # Regularization parameters + Cauchy likelihood
 
-    reg_params = {'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
-                  'init_gamma': 0.2, 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
-                  'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
-                  }
+    log_alpha_grid = np.linspace(-3.1, -3.9, endpoint=True)
 
-    # Train for 100 epochs
+    for i, alpha in enumerate(log_alpha_grid):
+        path_model = path + "log_alpha_" + str(alpha) + "/"
+        os.mkdir(path + "log_alpha_" + str(alpha) + "/")
+        os.mkdir(path + "log_alpha_" + str(alpha) + "/model")
 
-    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                          training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=100, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
-                          workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
-                          compile=True, train=True, load_weights=None,
-                          train_mse=True, load_mse_weights=False, use_mse_n_epoch=5, use_tanh_n_epoch=0,
-                          **reg_params)
+        reg_params = {# 'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
+                      'fixed_alpha': alpha,
+                      'init_gamma': 0.2, 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
+                      'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
+                      }
+
+        # Train for 100 epochs
+
+        Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
+                              training_generator=generator_training, validation_generator=generator_validation,
+                              num_epochs=100, validation_freq=1, lr=0.0001, max_queue_size=10, use_multiprocessing=False,
+                              workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
+                              compile=True, train=True, load_weights=None,
+                              train_mse=True, load_mse_weights=False, use_mse_n_epoch=5, use_tanh_n_epoch=0,
+                              **reg_params)
