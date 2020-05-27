@@ -60,13 +60,12 @@ if __name__ == "__main__":
     path_model = path + "lr/"
 
     for lr_i in [0.001, 0.0001]:
+        p = path_model + str(lr_i) + "/"
         try:
-            os.mkdir(path_model + str(lr_i) + "/")
-            os.mkdir(path_model + str(lr_i) + "/model")
+            os.mkdir(p)
+            os.mkdir(p + "model")
         except:
             FileExistsError("File already exists")
-
-        p = path_model + str(lr_i)
 
         reg_params = {'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
                       # 'fixed_alpha': alpha,

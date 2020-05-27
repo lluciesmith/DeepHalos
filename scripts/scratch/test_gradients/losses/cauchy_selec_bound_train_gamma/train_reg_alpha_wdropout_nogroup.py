@@ -75,10 +75,6 @@ if __name__ == "__main__":
                       }
 
         # Train for 100 epochs
-        if i == 0:
-            load_mse_weights = True
-        else:
-            load_mse_weights = False
 
         Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                               training_generator=generator_training, validation_generator=generator_validation,
@@ -86,5 +82,5 @@ if __name__ == "__main__":
                               use_multiprocessing=False,
                               workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
                               compile=True, train=True, load_weights=None,
-                              train_mse=True, load_mse_weights=load_mse_weights, use_mse_n_epoch=5, use_tanh_n_epoch=0,
+                              train_mse=True, load_mse_weights=False, use_mse_n_epoch=5, use_tanh_n_epoch=0,
                               **reg_params)
