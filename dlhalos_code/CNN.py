@@ -541,7 +541,7 @@ class CNNCauchy(CNN):
         new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
 
-    def get_callbacks(self, model):
+    def get_callbacks(self, layer_loss):
         callbacks_list = []
 
         # checkpoint
@@ -563,14 +563,14 @@ class CNNCauchy(CNN):
         callbacks_list.append(csv_logger)
 
         # Alpha logger
-        loss_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
-        alpha_logger = RegularizerCallback(loss_layer, alpha_check=[True if self.init_alpha is not None else False][0])
+        alpha_logger = RegularizerCallback(layer_loss, alpha_check=[True if self.init_alpha is not None else False][0])
         callbacks_list.append(alpha_logger)
-        return callbacks_list
+        return callbacks_list, cbk
 
     def train_cauchy_model(self, model):
         # callbacks
-        callbacks_list = self.get_callbacks(model)
+        loss_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
+        callbacks_list, cbk = self.get_callbacks(loss_layer)
 
         # Train model
         if self.use_tanh_n_epoch > 0:

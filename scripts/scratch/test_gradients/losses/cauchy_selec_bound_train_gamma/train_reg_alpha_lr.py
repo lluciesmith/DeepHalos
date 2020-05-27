@@ -58,11 +58,10 @@ if __name__ == "__main__":
     # Regularization parameters + Cauchy likelihood
 
     path_model = path + "lr/"
-    # lrs = [0.001,0.0001]
 
     for lr_i in [0.001, 0.0001]:
         try:
-            os.mkdir(path_model + str(lr_i))
+            os.mkdir(path_model + str(lr_i) + "/")
             os.mkdir(path_model + str(lr_i) + "/model")
         except:
             FileExistsError("File already exists")
@@ -81,7 +80,7 @@ if __name__ == "__main__":
                               lr=lr_i, lr_scheduler=False,
                               model_type="regression", dim=generator_training.dim,
                               training_generator=generator_training, validation_generator=generator_validation,
-                              num_epochs=50, validation_freq=1, max_queue_size=10, use_multiprocessing=False,
+                              num_epochs=100, validation_freq=1, max_queue_size=10, use_multiprocessing=False,
                               workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=p,
                               compile=True, train=True, load_weights=None,
                               train_mse=True, load_mse_weights=False, use_mse_n_epoch=5, use_tanh_n_epoch=0,
