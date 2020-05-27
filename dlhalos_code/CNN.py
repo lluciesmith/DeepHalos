@@ -455,13 +455,6 @@ class CNNCauchy(CNN):
         self.regularizer_conv = regularizer_conv
         self.regularizer_dense = regularizer_dense
 
-        self.get_mse_model(train_mse, load_mse_weights, conv_params, fcc_params, model_type=model_type,
-                           steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
-                           verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
-                           workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
-                           save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
-                           weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
-
         self.path_model = path_summary
         self.init_gamma = init_gamma
         self.LB_gamma = lower_bound_gamma
@@ -473,6 +466,13 @@ class CNNCauchy(CNN):
         self.LB_alpha = lower_bound_alpha
         self.UB_alpha = upper_bound_alpha
         self.constr_alpha = Between(min_value=self.LB_alpha, max_value=self.UB_alpha)
+
+        self.get_mse_model(train_mse, load_mse_weights, conv_params, fcc_params, model_type=model_type,
+                           steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
+                           verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
+                           workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
+                           save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
+                           weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
 
         self.num_epochs = num_epochs
         self.load_weights = load_weights
