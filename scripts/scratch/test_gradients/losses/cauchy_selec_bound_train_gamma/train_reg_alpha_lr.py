@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     path_model = path + "lr/"
 
-    for lr_i in [0.001, 0.0001]:
+    for lr_i in [0.001, 0.0001][1:]:
         p = path_model + str(lr_i) + "/"
         try:
             os.mkdir(p)
@@ -84,3 +84,4 @@ if __name__ == "__main__":
                               compile=True, train=True, load_weights=None,
                               train_mse=True, load_mse_weights=False, use_mse_n_epoch=5, use_tanh_n_epoch=0,
                               **reg_params)
+        del Model
