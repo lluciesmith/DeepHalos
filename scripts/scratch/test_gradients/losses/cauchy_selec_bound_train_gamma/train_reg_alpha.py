@@ -58,9 +58,10 @@ if __name__ == "__main__":
 
     # Regularization parameters + Cauchy likelihood
 
-    log_alpha_grid = np.linspace(-3.1, -3.9, endpoint=True)
+    log_alpha_grid = np.linspace(-3.1, -3.9, 5, endpoint=True)
 
-    for i, alpha in enumerate(log_alpha_grid):
+    # for i, alpha in enumerate(log_alpha_grid):
+    for alpha in log_alpha_grid[1:]:
         path_model = path + "log_alpha_" + str(alpha) + "/"
         try:
             os.mkdir(path_model)
