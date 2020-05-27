@@ -624,7 +624,7 @@ class CNNCauchy(CNN):
                 fcc_params2 = fcc_params.copy()
 
                 if self.fixed_alpha is not None:
-                    alpha = float(K.pow(10., self.fixed_alpha))
+                    alpha = 10.**self.fixed_alpha
                 else:
                     alpha = 0.001
 
