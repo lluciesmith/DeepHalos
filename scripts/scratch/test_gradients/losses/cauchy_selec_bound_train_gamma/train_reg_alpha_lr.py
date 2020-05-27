@@ -58,6 +58,7 @@ if __name__ == "__main__":
     # Regularization parameters + Cauchy likelihood
 
     path_model = path + "lr/"
+    # lrs = [0.001,0.0001]
 
     for lr_i in [0.001, 0.0001]:
         os.mkdir(path_model + str(lr_i))
