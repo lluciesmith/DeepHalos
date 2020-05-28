@@ -628,7 +628,7 @@ class CNNCauchy(CNN):
                 fcc_params2 = fcc_params.copy()
                 keys = [key for key in conv_params.keys()]
 
-                if hasattr(conv_params[keys[0]], 'kernel_regularizer'):
+                if 'kernel_regularizer' in conv_params[keys[0]]:
                     print("Convolutional layers already have kernel regularizer")
 
                 else:
