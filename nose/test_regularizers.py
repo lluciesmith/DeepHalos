@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     log_alpha = -4
     alpha = 0.0001
-    path_model = path + "log_alpha_" + str(alpha) + "/"
+    path_model = path + "log_alpha_" + str(log_alpha) + "/"
     path_model1 = path_model + "reg_added_layer/"
     path_model2 = path_model + "reg_added_loss/"
 
