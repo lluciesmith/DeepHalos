@@ -528,7 +528,7 @@ class CNNCauchy(CNN):
                 alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
                          else K.pow(10., self.fixed_alpha)][0]
                 # alpha = K.pow(10., loss_params_layer.alpha)
-                new_model.add_loss(lambda: self.regularizer_conv(alpha/2.)(new_model.layers[index].kernel))
+                new_model.add_loss(lambda: self.regularizer_conv(alpha * 2.)(new_model.layers[index].kernel))
 
             print("here")
 
