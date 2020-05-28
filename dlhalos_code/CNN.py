@@ -148,7 +148,7 @@ class CNN:
                 Model.load_weights(self.weights)
 
             self.optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
-                                              amsgrad=True)
+                                                   amsgrad=True)
             Model.compile(loss=self.loss, optimizer=self.optimiser, metrics=self.metrics)
 
         elif self.model_type == "binary_classification":
@@ -193,7 +193,7 @@ class CNN:
         else:
             x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
 
-        predictions = Dense(1, **fcc_params['last'])(x)
+        predictions = Dense(1, **fcc_params['last'], name='prediction_layer')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
@@ -397,8 +397,9 @@ class LossTrainableParams(Layer):
         if self.init_gamma is not None:
             # Create a trainable parameter for gamma in the Cauchy log-likelihood
             init_g = tf.constant_initializer(value=self.init_gamma)
-            self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init_g, trainable=True,
-                                         constraint=self.constraint_gamma)
+            if self.constraint_gamma is not None:
+                self.gamma = self.add_weight(name='gamma', shape=(1,), initializer=init_g, trainable=True,
+                                             constraint=self.constraint_gamma)
 
         if self.init_alpha is not None:
             # Create a trainable parameter for alpha in the weights priors terms (or, regularizers terms)
@@ -440,15 +441,14 @@ class CNNCauchy(CNN):
     """
 
     def __init__(self, conv_params, fcc_params, model_type="regression",
-                 init_gamma=0.2, init_alpha=None, fixed_alpha=None,
-                 upper_bound_alpha=2., lower_bound_alpha=0.,
-                 upper_bound_gamma=2., lower_bound_gamma=0.,
+                 init_alpha=None, fixed_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0.,
+                 init_gamma=0.2, upper_bound_gamma=2., lower_bound_gamma=0.,
+                 regularizer_conv=None, regularizer_dense=None,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
                  data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
-                 save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5,
-                 regularizer_conv=None, regularizer_dense=None, lr_scheduler=True,
+                 save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5, lr_scheduler=True,
                  train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0):
 
         self.path_model = path_summary
@@ -517,22 +517,26 @@ class CNNCauchy(CNN):
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
-        names_layers = [layer.name for layer in new_model.layers]
 
-        conv_layers = [s for s in names_layers if 'conv3d'in s]
-        for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
-            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
-                     else K.pow(10., self.fixed_alpha)][0]
-            new_model.add_loss(lambda: alpha * self.regularizer_conv(1.)(new_model.layers[index].kernel))
+        if self.init_alpha is not None:
+            names_layers = [layer.name for layer in new_model.layers]
 
-        dense_layers = [s for s in names_layers if 'dense' in s][:-1]
-        for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
-            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
-                     else K.pow(10., self.fixed_alpha)][0]
-            new_model.add_loss(lambda: alpha * self.regularizer_dense(1.)(new_model.layers[index].kernel))
+            conv_layers = [s for s in names_layers if 'conv3d' in s]
+            for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
+                # alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
+                #          else K.pow(10., self.fixed_alpha)][0]
+                alpha = K.pow(10., loss_params_layer.alpha)
+                new_model.add_loss(lambda: alpha * self.regularizer_conv(1.)(new_model.layers[index].kernel))
 
-        print("These are the losses from the Cauchy model:")
-        print(new_model.losses)
+            dense_layers = [s for s in names_layers if 'dense' in s]
+            for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
+                # alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
+                #          else K.pow(10., self.fixed_alpha)][0]
+                alpha = K.pow(10., loss_params_layer.alpha)
+                new_model.add_loss(lambda: alpha * self.regularizer_dense(1.)(new_model.layers[index].kernel))
+
+            print("These are the losses from the Cauchy model:")
+            print(new_model.losses)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
@@ -623,21 +627,29 @@ class CNNCauchy(CNN):
                 conv_params2 = conv_params.copy()
                 fcc_params2 = fcc_params.copy()
 
-                if self.fixed_alpha is not None:
-                    alpha = 10.**self.fixed_alpha
-                else:
-                    alpha = 0.001
+                if hasattr(conv_params, 'kernel_regularizer'):
+                    print("Convolutional layers already have kernel regularizer")
 
-                for key in conv_params2.keys():
-                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
-                for key in fcc_params.keys():
-                    fcc_params2[key]['kernel_regularizer'] = self.regularizer_dense(alpha)
+                else:
+                    print("Adding regularizers to convolutional and dense layers when training on MSE")
+                    if self.fixed_alpha is not None:
+                        alpha = 10.**self.fixed_alpha
+                    else:
+                        alpha = 0.001
+
+                    for key in conv_params2.keys():
+                        conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
+                    for key in fcc_params2.keys():
+                        if key == 'last':
+                            pass
+                        else:
+                           fcc_params2[key]['kernel_regularizer'] = self.regularizer_dense(alpha)
 
                 MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                                 training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
                                 verbose=verbose, data_format=data_format, use_multiprocessing=use_multiprocessing,
                                 workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
-                                save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
+                                save_summary=False, path_summary=path_summary, pretrained_model=pretrained_model,
                                 weights=weights, compile=True, max_queue_size=max_queue_size, train=train_bool)
 
                 print("Trained model for " + str(num_epochs) + " epochs using MSE loss")
