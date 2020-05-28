@@ -528,7 +528,7 @@ class CNNCauchy(CNN):
                 alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
                          else K.pow(10., self.fixed_alpha)][0]
                 # alpha = K.pow(10., loss_params_layer.alpha)
-                new_model.add_loss(lambda: 2. * self.regularizer_conv(alpha)(new_model.layers[index].kernel))
+                new_model.add_loss(lambda: 6. * self.regularizer_conv(alpha)(new_model.layers[index].kernel))
 
             print("here")
 
@@ -537,7 +537,7 @@ class CNNCauchy(CNN):
                 alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
                          else K.pow(10., self.fixed_alpha)][0]
                 # alpha = K.pow(10., loss_params_layer.alpha)
-                new_model.add_loss(lambda: 2. * self.regularizer_dense(alpha)(new_model.layers[index].kernel))
+                new_model.add_loss(lambda: 6. * self.regularizer_dense(alpha)(new_model.layers[index].kernel))
 
         print("These are the losses from the Cauchy model:")
         print(new_model.losses)
