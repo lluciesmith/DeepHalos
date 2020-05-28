@@ -490,7 +490,9 @@ class CNNCauchy(CNN):
         self.train = train
 
         if self.compile is True:
+            print("compiling")
             self.model = self.compile_cauchy_model(self.mse_model)
+            print("done compiling")
 
             if self.load_weights is not None:
                 self.model.load_weights(self.load_weights)
@@ -527,6 +529,8 @@ class CNNCauchy(CNN):
                      else K.pow(10., self.fixed_alpha)][0]
             # alpha = K.pow(10., loss_params_layer.alpha)
             new_model.add_loss(lambda: alpha * self.regularizer_conv(1.)(new_model.layers[index].kernel))
+
+        print("here")
 
         dense_layers = [s for s in names_layers if 'dense' in s]
         for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
