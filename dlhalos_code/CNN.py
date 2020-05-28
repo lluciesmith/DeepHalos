@@ -518,25 +518,25 @@ class CNNCauchy(CNN):
 
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
 
-        if self.init_alpha is not None:
-            names_layers = [layer.name for layer in new_model.layers]
+        # if self.init_alpha is not None:
+        names_layers = [layer.name for layer in new_model.layers]
 
-            conv_layers = [s for s in names_layers if 'conv3d' in s]
-            for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
-                # alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
-                #          else K.pow(10., self.fixed_alpha)][0]
-                alpha = K.pow(10., loss_params_layer.alpha)
-                new_model.add_loss(lambda: alpha * self.regularizer_conv(1.)(new_model.layers[index].kernel))
+        conv_layers = [s for s in names_layers if 'conv3d' in s]
+        for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
+            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
+                     else K.pow(10., self.fixed_alpha)][0]
+            # alpha = K.pow(10., loss_params_layer.alpha)
+            new_model.add_loss(lambda: alpha * self.regularizer_conv(1.)(new_model.layers[index].kernel))
 
-            dense_layers = [s for s in names_layers if 'dense' in s]
-            for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
-                # alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
-                #          else K.pow(10., self.fixed_alpha)][0]
-                alpha = K.pow(10., loss_params_layer.alpha)
-                new_model.add_loss(lambda: alpha * self.regularizer_dense(1.)(new_model.layers[index].kernel))
+        dense_layers = [s for s in names_layers if 'dense' in s]
+        for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
+            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
+                     else K.pow(10., self.fixed_alpha)][0]
+            # alpha = K.pow(10., loss_params_layer.alpha)
+            new_model.add_loss(lambda: alpha * self.regularizer_dense(1.)(new_model.layers[index].kernel))
 
-            print("These are the losses from the Cauchy model:")
-            print(new_model.losses)
+        print("These are the losses from the Cauchy model:")
+        print(new_model.losses)
 
         optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
