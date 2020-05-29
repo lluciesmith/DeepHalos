@@ -669,6 +669,9 @@ class CNNCauchy(CNN):
                         else:
                            fcc_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
 
+                    print(conv_params2)
+                    print(fcc_params2)
+
                 MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                                 training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
                                 verbose=verbose, data_format=data_format, use_multiprocessing=use_multiprocessing,
