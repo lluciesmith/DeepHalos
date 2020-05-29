@@ -618,6 +618,7 @@ class CNNCauchy(CNN):
 
         # Define the model from MSE loss
 
+        train_bool = not load_mse_weights
         super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
                                         steps_per_epoch=steps_per_epoch,
                                         training_generator=training_generator, dim=dim,
@@ -625,11 +626,15 @@ class CNNCauchy(CNN):
                                         use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
                                         pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
-                                        weights=weights, max_queue_size=max_queue_size, train=train_mse, compile=True)
-        self.initial_epoch = num_epochs
+                                        weights=weights, max_queue_size=max_queue_size, train=train_bool, compile=True)
 
-        print("Trained model for " + str(num_epochs) + " epochs using MSE loss")
-        self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
+        if train_bool is False:
+            print("Loaded initial weights given by training for one epoch on MSE loss")
+            self.model.load_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + 'epoch.hdf5')
+        else:
+            self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
+
+        self.initial_epoch = num_epochs
 
         print("These are the losses from the MSE model:")
         print(self.model.losses)
