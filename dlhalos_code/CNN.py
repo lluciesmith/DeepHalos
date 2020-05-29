@@ -521,23 +521,27 @@ class CNNCauchy(CNN):
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
 
         if self.fixed_alpha or self.init_alpha is not None:
+            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
+                     else K.pow(10., self.fixed_alpha)][0]
+
+            def add_conv_reg(index):
+                f = lambda: self.regularizer_conv(alpha)(new_model.layers[index].kernel)
+                return new_model.add_loss(f)
+
+            def add_dense_reg(index):
+                f = lambda: self.regularizer_dense(alpha)(new_model.layers[index].kernel)
+                return new_model.add_loss(f)
+
             names_layers = [layer.name for layer in new_model.layers]
-
             conv_layers = [s for s in names_layers if 'conv3d' in s]
-            for index in [i for i, item in enumerate(names_layers) if item in conv_layers]:
-                alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
-                         else K.pow(10., self.fixed_alpha)][0]
-                # alpha = K.pow(10., loss_params_layer.alpha)
-                new_model.add_loss(lambda: self.regularizer_conv(alpha)(new_model.layers[index].kernel))
-
-            print("here")
+            indices_conv = [i for i, item in enumerate(names_layers) if item in conv_layers]
+            for i in range(len(indices_conv)):
+                add_conv_reg(indices_conv[i])
 
             dense_layers = [s for s in names_layers if 'dense' in s]
-            for index in [i for i, item in enumerate(names_layers) if item in dense_layers]:
-                alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
-                         else K.pow(10., self.fixed_alpha)][0]
-                # alpha = K.pow(10., loss_params_layer.alpha)
-                new_model.add_loss(lambda: self.regularizer_dense(alpha)(new_model.layers[index].kernel))
+            indices_dense = [i for i, item in enumerate(names_layers) if item in dense_layers]
+            for i in range(len(indices_dense)):
+                add_dense_reg(indices_dense[i])
 
         print("These are the losses from the Cauchy model:")
         print(new_model.losses)
