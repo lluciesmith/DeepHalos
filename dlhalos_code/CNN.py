@@ -633,22 +633,31 @@ class CNNCauchy(CNN):
                 keys = [key for key in conv_params.keys()]
 
                 if 'kernel_regularizer' in conv_params[keys[0]]:
-                    print("Convolutional layers already have kernel regularizer")
+                    print("Convolutional layers already have kernel regularizer -- delete them")
+                    for key in conv_params2:
+                        del conv_params2[key]['kernel_regularizer']
+                    for key in fcc_params2:
+                        if 'kernel_regularizer' in fcc_params2[key]:
+                            del fcc_params2[key]['kernel_regularizer']
+
+                    print(conv_params2)
+                    print(fcc_params2)
 
                 else:
-                    print("Adding regularizers to convolutional and dense layers when training on MSE")
-                    if self.fixed_alpha is not None:
-                        alpha = 10.**self.fixed_alpha
-                    else:
-                        alpha = 0.001
-
-                    for key in conv_params2.keys():
-                        conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
-                    for key in fcc_params2.keys():
-                        if key == 'last':
-                            pass
-                        else:
-                           fcc_params2[key]['kernel_regularizer'] = self.regularizer_dense(alpha)
+                    print("No regularizer")
+                    # print("Adding regularizers to convolutional and dense layers when training on MSE")
+                    # if self.fixed_alpha is not None:
+                    #     alpha = 10.**self.fixed_alpha
+                    # else:
+                    #     alpha = 0.001
+                    #
+                    # for key in conv_params2.keys():
+                    #     conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
+                    # for key in fcc_params2.keys():
+                    #     if key == 'last':
+                    #         pass
+                    #     else:
+                    #        fcc_params2[key]['kernel_regularizer'] = self.regularizer_dense(alpha)
 
                 MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                                 training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,

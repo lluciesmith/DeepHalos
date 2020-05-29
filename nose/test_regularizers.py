@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     log_alpha = -4
     alpha = 0.0001
-    path_model = path + "log_alpha_" + str(log_alpha) + "/"
+    path_model = path + "log_alpha_" + str(log_alpha) + "/no_reg_mse_epoch/"
     path_model1 = path_model + "reg_added_layer/"
     path_model2 = path_model + "reg_added_loss/"
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
     Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                           training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=30, validation_freq=1, lr=0.0001, max_queue_size=10,
+                          num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
                           use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model1,
                           compile=True, train=True, load_weights=None,
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                           training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=30, validation_freq=1, lr=0.0001, max_queue_size=10,
+                          num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
                           use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model2,
                           compile=True, train=True, load_weights=None,
