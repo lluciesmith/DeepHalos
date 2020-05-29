@@ -77,7 +77,7 @@ if __name__ == "__main__":
                   #'fixed_alpha': alpha,
                   'init_gamma': 0.2,
                   # 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
-                  # 'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
+                  'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
                   }
 
     # Train for 100 epochs
@@ -89,7 +89,7 @@ if __name__ == "__main__":
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model1,
                           compile=True, train=True, load_weights=None,
                           train_mse=True, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params, reg_mse=True)
+                          **reg_params, reg_mse=True, alpha_mse=0.001)
 
 
     ##################### TEST 2 ######################
@@ -128,7 +128,7 @@ if __name__ == "__main__":
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model2,
                           compile=True, train=True, load_weights=None,
                           train_mse=True, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params, reg_mse=True)
+                          **reg_params, reg_mse=True, alpha_mse=0.001)
 
     # l1 = Model1.model.evaluate(generator_training, verbose=1)
     # l2 = Model2.model.evaluate(generator_training, verbose=1)
