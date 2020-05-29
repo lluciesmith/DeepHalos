@@ -4,6 +4,7 @@ from dlhalos_code import CNN
 from dlhalos_code import custom_regularizers as reg
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
+from dlhalos_code import loss_functions as lf
 import numpy as np
 import os
 
@@ -46,7 +47,6 @@ if __name__ == "__main__":
     path_model1 = path_model + "reg_added_layer/"
     path_model2 = path_model + "reg_added_loss/"
 
-
     ############### TEST 1 ########################
 
     # Add regularizers to the layers and use same MSE model across all epochs
@@ -82,14 +82,14 @@ if __name__ == "__main__":
 
     # Train for 100 epochs
 
-    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
+    Model1 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                           training_generator=generator_training, validation_generator=generator_validation,
                           num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
                           use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model1,
                           compile=True, train=True, load_weights=None,
                           train_mse=True, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params)
+                          **reg_params, reg_mse=False)
 
 
     ##################### TEST 2 ######################
@@ -121,11 +121,25 @@ if __name__ == "__main__":
 
     # Train for 100 epochs
 
-    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
+    Model2 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                           training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
+                          num_epochs=30, validation_freq=1, lr=0.0001, max_queue_size=10,
                           use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model2,
                           compile=True, train=True, load_weights=None,
                           train_mse=True, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params)
+                          **reg_params, reg_mse=False)
+
+    # l1 = Model1.model.evaluate(generator_training, verbose=1)
+    # l2 = Model2.model.evaluate(generator_training, verbose=1)
+    #
+    # y = tf.convert_to_tensor(y_true.reshape(len(y_true), 1), dtype="float32")
+    # yp = tf.convert_to_tensor(y_pred, dtype="float32")
+    #
+    # l2_cauchy = lf.cauchy_selection_loss_fixed_boundary()(y, yp)
+    # l1_cauchy = lf.cauchy_selection_loss_fixed_boundary()(y_true, y_pred)
+    #
+    # lr_reg = [(K.get_value(Model2.model.losses[i])) for i in range(7)]
+    #
+    # Model1.model.layers[indices[0]].losses
+    # Model2.model.layers[indices[0]].losses

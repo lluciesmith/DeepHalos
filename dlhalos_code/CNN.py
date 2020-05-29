@@ -443,7 +443,7 @@ class CNNCauchy(CNN):
     def __init__(self, conv_params, fcc_params, model_type="regression",
                  init_alpha=None, fixed_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0.,
                  init_gamma=0.2, upper_bound_gamma=2., lower_bound_gamma=0.,
-                 regularizer_conv=None, regularizer_dense=None,
+                 regularizer_conv=None, regularizer_dense=None, reg_mse=True,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
                  data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
@@ -467,6 +467,7 @@ class CNNCauchy(CNN):
         self.UB_alpha = upper_bound_alpha
         self.constr_alpha = Between(min_value=self.LB_alpha, max_value=self.UB_alpha)
 
+        self.reg_mse = reg_mse
         self.get_mse_model(train_mse, load_mse_weights, conv_params, fcc_params, model_type=model_type,
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
@@ -636,32 +637,37 @@ class CNNCauchy(CNN):
                 fcc_params2 = fcc_params.copy()
                 keys = [key for key in conv_params.keys()]
 
-                if 'kernel_regularizer' in conv_params[keys[0]]:
-                    print("Convolutional layers already have kernel regularizer -- delete them")
-                    for key in conv_params2:
-                        del conv_params2[key]['kernel_regularizer']
-                    for key in fcc_params2:
-                        if 'kernel_regularizer' in fcc_params2[key]:
-                            del fcc_params2[key]['kernel_regularizer']
+                if self.reg_mse is False:
+                    print("Do not regularize MSE epoch")
 
-                    print(conv_params2)
-                    print(fcc_params2)
+                    if 'kernel_regularizer' in conv_params[keys[0]]:
+                        print("Convolutional layers already have kernel regularizer -- delete them")
+                        for key in conv_params2:
+                            del conv_params2[key]['kernel_regularizer']
+                        for key in fcc_params2:
+                            if 'kernel_regularizer' in fcc_params2[key]:
+                                del fcc_params2[key]['kernel_regularizer']
+
+                        print(conv_params2)
+                        print(fcc_params2)
+
+                    else:
+                        print("No regularizer")
 
                 else:
-                    print("No regularizer")
-                    # print("Adding regularizers to convolutional and dense layers when training on MSE")
-                    # if self.fixed_alpha is not None:
-                    #     alpha = 10.**self.fixed_alpha
-                    # else:
-                    #     alpha = 0.001
-                    #
-                    # for key in conv_params2.keys():
-                    #     conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
-                    # for key in fcc_params2.keys():
-                    #     if key == 'last':
-                    #         pass
-                    #     else:
-                    #        fcc_params2[key]['kernel_regularizer'] = self.regularizer_dense(alpha)
+                    print("Adding regularizers to convolutional and dense layers when training on MSE")
+                    if self.fixed_alpha is not None:
+                        alpha = 10.**self.fixed_alpha
+                    else:
+                        alpha = 0.001
+
+                    for key in conv_params2.keys():
+                        conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
+                    for key in fcc_params2.keys():
+                        if key == 'last':
+                            pass
+                        else:
+                           fcc_params2[key]['kernel_regularizer'] = self.regularizer_conv(alpha)
 
                 MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                                 training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
