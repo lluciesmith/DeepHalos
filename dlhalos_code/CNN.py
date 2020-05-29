@@ -630,7 +630,7 @@ class CNNCauchy(CNN):
 
         if train_bool is False:
             print("Loaded initial weights given by training for one epoch on MSE loss")
-            self.model.load_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + 'epoch.hdf5')
+            self.model.load_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
         else:
             self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
