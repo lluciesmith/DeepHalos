@@ -628,6 +628,9 @@ class CNNCauchy(CNN):
                                         weights=weights, max_queue_size=max_queue_size, train=train_mse, compile=True)
         self.initial_epoch = num_epochs
 
+        print("Trained model for " + str(num_epochs) + " epochs using MSE loss")
+        self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
+
         print("These are the losses from the MSE model:")
         print(self.model.losses)
 
