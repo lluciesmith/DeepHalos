@@ -617,6 +617,14 @@ class CNNCauchy(CNN):
 
         # Define the model from MSE loss
 
+        print("Modify CONV parameters for MSE epoch")
+        conv_params2 = conv_params.copy()
+        conv_keys = [layer for layer in conv_params2.keys()]
+
+        for key in conv_keys:
+            if 'kernel_regularizer' not in conv_params2[key]:
+                conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.0001)
+
         print("Modify FCC parameters for MSE epoch")
         fcc_params2 = fcc_params.copy()
         layer_keys = [layer for layer in fcc_params2.keys() if layer is not 'last']
@@ -628,7 +636,7 @@ class CNNCauchy(CNN):
                 fcc_params2[key]['dropout'] = 0.4
 
         train_bool = not load_mse_weights
-        super(CNNCauchy, self).__init__(conv_params, fcc_params2, model_type=model_type,
+        super(CNNCauchy, self).__init__(conv_params2, fcc_params2, model_type=model_type,
                                         steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim,
                                         loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
                                         data_format=data_format,
