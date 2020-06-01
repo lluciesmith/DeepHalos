@@ -3,9 +3,7 @@ sys.path.append("/home/luisals/DeepHalos")
 from dlhalos_code import CNN
 from dlhalos_code import custom_regularizers as reg
 import dlhalos_code.data_processing as tn
-from pickle import dump, load
-import numpy as np
-import os
+from pickle import load
 
 if __name__ == "__main__":
 
@@ -34,11 +32,37 @@ if __name__ == "__main__":
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
                                             shuffle=True, **params_val)
 
-
     ######### TRAIN THE MODEL ################
 
     path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
            "/cauchy_selec_bound_gamma_train_alpha/l2_conv_l21_l1_dense/"
+
+    ########## First train on MSE loss for one epoch with L2-reg (conv) and dropout (dense) #########
+
+    params_all_conv_mse = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
+                           'regularizer_conv': reg.l2_norm(0.0001)}
+    param_conv_mse = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv_mse},
+                      'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv_mse},
+                      'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv_mse},
+                      'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv_mse},
+                      'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv_mse}
+                       }
+
+    # Dense layers parameters
+
+    params_all_fcc_mse = {'bn': False, 'activation': "linear", 'relu': True, 'dropout': 0.4}
+    param_fcc_mse = {'dense_1': {'neurons': 256, **params_all_fcc_mse},
+                     'dense_2': {'neurons': 128, **params_all_fcc_mse},
+                     'last': {}}
+
+    Model = CNN.CNNCauchy(param_conv_mse, param_fcc_mse, model_type="regression", dim=generator_training.dim,
+                          training_generator=generator_training, validation_generator=generator_validation,
+                          num_epochs=30, validation_freq=1, lr=0.0001, max_queue_size=10,
+                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=1,  save_summary=False,
+                          compile=True, train=False, load_weights=None, path_summary=path,
+                          train_mse=True, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0)
+
+    ########## First train on MSE loss for one epoch with L2-reg (conv) and dropout (dense) #########
 
     # Convolutional layers parameters
 
@@ -58,30 +82,18 @@ if __name__ == "__main__":
 
     # Regularization parameters + Cauchy likelihood
 
-    log_alpha_grid = np.linspace(-3.1, -3.9, 5, endpoint=True)
+    reg_params = {'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
+                  'init_gamma': 0.2, 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
+                  'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
+                  }
 
-    # for i, alpha in enumerate(log_alpha_grid):
-    for alpha in log_alpha_grid[1:]:
-        path_model = path + "log_alpha_" + str(alpha) + "/"
-        try:
-            os.mkdir(path_model)
-            os.mkdir(path_model + "model")
-        except:
-            FileExistsError("File already exists")
+    # Train for 100 epochs
 
-        reg_params = {# 'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
-                      'fixed_alpha': alpha,
-                      'init_gamma': 0.2, 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
-                      'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
-                      }
-
-        # Train for 100 epochs
-
-        Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                              training_generator=generator_training, validation_generator=generator_validation,
-                              num_epochs=100, validation_freq=1, lr=0.0001, max_queue_size=10,
-                              use_multiprocessing=False,
-                              workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
-                              compile=True, train=True, load_weights=None,
-                              train_mse=True, load_mse_weights=False, use_mse_n_epoch=5, use_tanh_n_epoch=0,
-                              **reg_params)
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
+                          training_generator=generator_training, validation_generator=generator_validation,
+                          num_epochs=60, validation_freq=1, lr=0.0001, max_queue_size=10,
+                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=1,
+                          save_summary=True, path_summary=path,
+                          compile=True, train=True, load_weights=None,
+                          train_mse=True, load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0,
+                          **reg_params)
