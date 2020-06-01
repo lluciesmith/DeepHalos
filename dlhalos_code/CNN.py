@@ -443,13 +443,13 @@ class CNNCauchy(CNN):
     def __init__(self, conv_params, fcc_params, model_type="regression",
                  init_alpha=None, fixed_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0.,
                  init_gamma=0.2, upper_bound_gamma=2., lower_bound_gamma=0.,
-                 regularizer_conv=None, regularizer_dense=None, reg_mse=True, alpha_mse=None,
+                 regularizer_conv=None, regularizer_dense=None, alpha_mse=None,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
                  data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5, lr_scheduler=True,
-                 train_mse=True, load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0):
+                 load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0):
 
         self.path_model = path_summary
         self.regularizer_conv = regularizer_conv
@@ -467,9 +467,8 @@ class CNNCauchy(CNN):
         self.UB_alpha = upper_bound_alpha
         self.constr_alpha = Between(min_value=self.LB_alpha, max_value=self.UB_alpha)
 
-        self.reg_mse = reg_mse
         self.alpha_mse = alpha_mse
-        self.get_mse_model(train_mse, load_mse_weights, conv_params, fcc_params, model_type=model_type,
+        self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
                            workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
@@ -610,7 +609,7 @@ class CNNCauchy(CNN):
 
         return model, history, cbk.weights
 
-    def get_mse_model(self, train_mse, load_mse_weights, conv_params, fcc_params, model_type="regression",
+    def get_mse_model(self, load_mse_weights, conv_params, fcc_params, model_type="regression",
                       training_generator=None, steps_per_epoch=None, data_format="channels_last", dim=(51, 51, 51),
                       lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                       max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
@@ -618,11 +617,21 @@ class CNNCauchy(CNN):
 
         # Define the model from MSE loss
 
+        print("Modify FCC parameters for MSE epoch")
+        fcc_params2 = fcc_params.copy()
+        layer_keys = [layer for layer in fcc_params2.keys() if layer is not 'last']
+
+        for key in layer_keys:
+            if 'kernel_regularizer' in fcc_params2[key]:
+                del fcc_params2[key]['kernel_regularizer']
+            if 'dropout' not in fcc_params2[key]:
+                fcc_params2[key]['dropout'] = 0.4
+
         train_bool = not load_mse_weights
-        super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
-                                        steps_per_epoch=steps_per_epoch,
-                                        training_generator=training_generator, dim=dim,
-                                        loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose, data_format=data_format,
+        super(CNNCauchy, self).__init__(conv_params, fcc_params2, model_type=model_type,
+                                        steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim,
+                                        loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
+                                        data_format=data_format,
                                         use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
                                         pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
@@ -639,96 +648,36 @@ class CNNCauchy(CNN):
         print("These are the losses from the MSE model:")
         print(self.model.losses)
 
-        # Define the model from MSE loss
-
-        # super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
-        #                                 steps_per_epoch=steps_per_epoch,
-        #                                 training_generator=training_generator, dim=dim,
-        #                                 loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose, data_format=data_format,
-        #                                 use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
-        #                                 pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
-        #                                 path_summary=path_summary, pretrained_model=pretrained_model,
-        #                                 weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
-        # if train_mse is True:
-        #     train_bool = not load_mse_weights
-        #
-        #     if train_bool is False:
-        #         print("Loaded initial weights given by training for " + str(num_epochs) + " epochs using MSE loss")
-        #         self.model.load_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
-        #
-        #     else:
-        #         conv_params2 = conv_params.copy()
-        #         fcc_params2 = fcc_params.copy()
-        #         keys = [key for key in conv_params.keys()]
-        #
-        #         if self.reg_mse is False:
-        #             print("Do not regularize MSE epoch")
-        #
-        #             if 'kernel_regularizer' in conv_params[keys[0]]:
-        #                 print("Convolutional layers have kernel regularizers -- delete them")
-        #                 conv_params2, fcc_params2 = self.remove_regularizers_to_layer_params(conv_params2, fcc_params2)
-        #             else:
-        #                 print("No regularizer")
-        #
-        #         else:
-        #             if 'kernel_regularizer' in conv_params[keys[0]]:
-        #                 print("Convolutional layers have kernel regularizers -- delete them")
-        #             else:
-        #                 print("Adding regularizers to convolutional and dense layers when training on MSE")
-        #                 conv_params2, fcc_params2 = self.add_regularizers_to_layer_params(conv_params2, fcc_params2)
-        #
-        #         print(conv_params2)
-        #         print(fcc_params2)
-        #
-        #         MSE_model = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
-        #                         training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
-        #                         verbose=verbose, data_format=data_format, use_multiprocessing=use_multiprocessing,
-        #                         workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
-        #                         save_summary=False, path_summary=path_summary, pretrained_model=pretrained_model,
-        #                         weights=weights, compile=True, max_queue_size=max_queue_size, train=train_bool)
-        #
-        #         print("Trained model for " + str(num_epochs) + " epochs using MSE loss")
-        #         MSE_model.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
-        #         self.model.set_weights(MSE_model.model.get_weights())
-        #         del MSE_model
-        #
-        #     self.initial_epoch = num_epochs
-        # else:
-        #     self.initial_epoch = 0
-        #
-        # print("These are the losses from the MSE model:")
-        # print(self.model.losses)
-
-    def remove_regularizers_to_layer_params(self, conv_layers_params, dense_layers_params):
-        for key in conv_layers_params:
-            del conv_layers_params[key]['kernel_regularizer']
-
-        for key in dense_layers_params:
-            # Need an extra 'if' statement because last dense layer probably doesn't have a regularizer
-            if 'kernel_regularizer' in dense_layers_params[key]:
-                del dense_layers_params[key]['kernel_regularizer']
-
-        return conv_layers_params, dense_layers_params
-
-    def add_regularizers_to_layer_params(self, conv_layers_params, dense_layers_params):
-        if self.alpha_mse is None:
-            if self.fixed_alpha is not None:
-                alpha_mse = 10. ** self.fixed_alpha
-            else:
-                alpha_mse = 0.001
-        else:
-            alpha_mse = self.alpha_mse
-
-        for key in conv_layers_params.keys():
-            conv_layers_params[key]['kernel_regularizer'] = self.regularizer_conv(alpha_mse)
-
-        for key in dense_layers_params.keys():
-            if key == 'last':
-                pass
-            else:
-                dense_layers_params[key]['kernel_regularizer'] = self.regularizer_dense(alpha_mse)
-
-        return conv_layers_params, dense_layers_params
+    # def remove_regularizers_to_layer_params(self, conv_layers_params, dense_layers_params):
+    #     for key in conv_layers_params:
+    #         del conv_layers_params[key]['kernel_regularizer']
+    #
+    #     for key in dense_layers_params:
+    #         # Need an extra 'if' statement because last dense layer probably doesn't have a regularizer
+    #         if 'kernel_regularizer' in dense_layers_params[key]:
+    #             del dense_layers_params[key]['kernel_regularizer']
+    #
+    #     return conv_layers_params, dense_layers_params
+    #
+    # def add_regularizers_to_layer_params(self, conv_layers_params, dense_layers_params):
+    #     if self.alpha_mse is None:
+    #         if self.fixed_alpha is not None:
+    #             alpha_mse = 10. ** self.fixed_alpha
+    #         else:
+    #             alpha_mse = 0.001
+    #     else:
+    #         alpha_mse = self.alpha_mse
+    #
+    #     for key in conv_layers_params.keys():
+    #         conv_layers_params[key]['kernel_regularizer'] = self.regularizer_conv(alpha_mse)
+    #
+    #     for key in dense_layers_params.keys():
+    #         if key == 'last':
+    #             pass
+    #         else:
+    #             dense_layers_params[key]['kernel_regularizer'] = self.regularizer_dense(alpha_mse)
+    #
+    #     return conv_layers_params, dense_layers_params
 
     def train_with_tanh_activation(self, model, callbacks=None, num_epochs=0.):
         # Define a different model with different last layer and the load its weights onto current model
