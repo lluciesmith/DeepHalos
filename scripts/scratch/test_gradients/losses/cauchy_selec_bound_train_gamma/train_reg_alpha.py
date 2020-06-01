@@ -40,7 +40,7 @@ if __name__ == "__main__":
     ########## First train on MSE loss for one epoch with L2-reg (conv) and dropout (dense) #########
 
     params_all_conv_mse = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
-                           'regularizer_conv': reg.l2_norm(0.0001)}
+                           'kernel_regularizer': reg.l2_norm(0.0001)}
     param_conv_mse = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv_mse},
                       'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv_mse},
                       'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv_mse},
