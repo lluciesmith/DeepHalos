@@ -656,37 +656,6 @@ class CNNCauchy(CNN):
         print("These are the losses from the MSE model:")
         print(self.model.losses)
 
-    # def remove_regularizers_to_layer_params(self, conv_layers_params, dense_layers_params):
-    #     for key in conv_layers_params:
-    #         del conv_layers_params[key]['kernel_regularizer']
-    #
-    #     for key in dense_layers_params:
-    #         # Need an extra 'if' statement because last dense layer probably doesn't have a regularizer
-    #         if 'kernel_regularizer' in dense_layers_params[key]:
-    #             del dense_layers_params[key]['kernel_regularizer']
-    #
-    #     return conv_layers_params, dense_layers_params
-    #
-    # def add_regularizers_to_layer_params(self, conv_layers_params, dense_layers_params):
-    #     if self.alpha_mse is None:
-    #         if self.fixed_alpha is not None:
-    #             alpha_mse = 10. ** self.fixed_alpha
-    #         else:
-    #             alpha_mse = 0.001
-    #     else:
-    #         alpha_mse = self.alpha_mse
-    #
-    #     for key in conv_layers_params.keys():
-    #         conv_layers_params[key]['kernel_regularizer'] = self.regularizer_conv(alpha_mse)
-    #
-    #     for key in dense_layers_params.keys():
-    #         if key == 'last':
-    #             pass
-    #         else:
-    #             dense_layers_params[key]['kernel_regularizer'] = self.regularizer_dense(alpha_mse)
-    #
-    #     return conv_layers_params, dense_layers_params
-
     def train_with_tanh_activation(self, model, callbacks=None, num_epochs=0.):
         # Define a different model with different last layer and the load its weights onto current model
         _model = keras.Model(inputs=model.input, outputs=model.layers[-2].output)
