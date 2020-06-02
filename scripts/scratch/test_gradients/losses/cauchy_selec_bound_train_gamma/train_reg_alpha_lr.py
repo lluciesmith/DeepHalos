@@ -65,7 +65,7 @@ if __name__ == "__main__":
     path_model = path + "lr/"
 
     # for lr_i in [0.001, 0.01]:
-    for lr_i in [0.005]:
+    for lr_i in [0.0005]:
         p = path_model + str(lr_i) + "/"
 
         # Train for 100 epochs
