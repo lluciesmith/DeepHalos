@@ -476,50 +476,50 @@ class CNNCauchy(CNN):
                                         initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
-        # self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
-        #                    steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
-        #                    verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
-        #                    workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
-        #                    save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
-        #                    weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
-        #
-        # self.optimizer = optimizer
-        #
-        # self.num_epochs = num_epochs
-        # self.load_weights = load_weights
-        # self.use_tanh_n_epoch = use_tanh_n_epoch
-        # self.lr_scheduler = lr_scheduler
-        #
-        # self.validation_generator = validation_generator
-        # self.validation_steps = validation_steps
-        # self.validation_freq = validation_freq
-        #
-        # self.period_model_save = period_model_save
-        #
-        # self.mse_model = self.model
-        # self.compile = compile
-        # self.train = train
-        #
-        # if self.compile is True:
-        #     print("compiling")
-        #     self.model = self.compile_cauchy_model(self.mse_model)
-        #     print("done compiling")
-        #
-        #     if self.load_weights is not None:
-        #         self.model.load_weights(self.load_weights)
-        #
-        #     if self.train is True:
-        #         self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
-        #         np.save(self.path_model + 'trained_loss_params.npy', self.trained_loss_params)
-        #
-        #         if self.init_alpha is not None:
-        #             g = [float(a) for (a, b) in self.trained_loss_params]
-        #             np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
-        #             a = [float(b) for (a, b) in self.trained_loss_params]
-        #             np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
-        #         else:
-        #             g = np.insert(self.trained_loss_params, 0, self.init_gamma)
-        #             np.save(self.path_model + 'trained_loss_gamma.npy', g)
+        self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
+                           steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
+                           verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
+                           workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
+                           save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
+                           weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
+
+        self.optimizer = optimizer
+
+        self.num_epochs = num_epochs
+        self.load_weights = load_weights
+        self.use_tanh_n_epoch = use_tanh_n_epoch
+        self.lr_scheduler = lr_scheduler
+
+        self.validation_generator = validation_generator
+        self.validation_steps = validation_steps
+        self.validation_freq = validation_freq
+
+        self.period_model_save = period_model_save
+
+        self.mse_model = self.model
+        self.compile = compile
+        self.train = train
+
+        if self.compile is True:
+            print("compiling")
+            self.model = self.compile_cauchy_model(self.mse_model)
+            print("done compiling")
+
+            if self.load_weights is not None:
+                self.model.load_weights(self.load_weights)
+
+            if self.train is True:
+                self.model, self.history, self.trained_loss_params = self.train_cauchy_model(self.model)
+                np.save(self.path_model + 'trained_loss_params.npy', self.trained_loss_params)
+
+                if self.init_alpha is not None:
+                    g = [float(a) for (a, b) in self.trained_loss_params]
+                    np.save(self.path_model + 'trained_loss_gamma.npy', np.insert(g, 0, self.init_gamma))
+                    a = [float(b) for (a, b) in self.trained_loss_params]
+                    np.save(self.path_model + 'trained_loss_alpha.npy', np.insert(a, 0, self.init_alpha))
+                else:
+                    g = np.insert(self.trained_loss_params, 0, self.init_gamma)
+                    np.save(self.path_model + 'trained_loss_gamma.npy', g)
 
     def compile_cauchy_model(self, mse_model, tanh=False):
         # Define Cauchy model
@@ -655,14 +655,13 @@ class CNNCauchy(CNN):
                     workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
                     save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
                     weights=weights, max_queue_size=max_queue_size, train=True, compile=True)
-            # self.model.set_weights(m.model.get_weights())
+            self.model.set_weights(m.model.get_weights())
             self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
         self.initial_epoch = num_epochs
 
         print("These are the losses from the MSE model:")
         print(self.model.losses)
-        return m
 
     def train_with_tanh_activation(self, model, callbacks=None, num_epochs=0.):
         # Define a different model with different last layer and the load its weights onto current model
