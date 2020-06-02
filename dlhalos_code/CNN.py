@@ -649,15 +649,12 @@ class CNNCauchy(CNN):
                 if 'dropout' not in fcc_params2[key]:
                     fcc_params2[key]['dropout'] = 0.4
 
-            m = super(CNNCauchy, self).__init__(conv_params2, fcc_params2, model_type=model_type,
-                                                steps_per_epoch=steps_per_epoch, training_generator=training_generator,
-                                                dim=dim, loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
-                                                data_format=data_format, use_multiprocessing=use_multiprocessing,
-                                                workers=workers, num_gpu=num_gpu, pool_size=pool_size,
-                                                initialiser=initialiser, save_summary=save_summary,
-                                                path_summary=path_summary, pretrained_model=pretrained_model,
-                                                weights=weights, max_queue_size=max_queue_size, train=True,
-                                                compile=True)
+            m = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
+                    training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
+                    verbose=verbose, data_format=data_format, use_multiprocessing=use_multiprocessing,
+                    workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
+                    save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
+                    weights=weights, max_queue_size=max_queue_size, train=True, compile=True)
             # self.model.set_weights(m.model.get_weights())
             self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
