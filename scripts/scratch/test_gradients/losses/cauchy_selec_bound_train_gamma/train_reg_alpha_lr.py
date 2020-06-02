@@ -55,33 +55,27 @@ if __name__ == "__main__":
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
+    reg_params = {'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
+                  'init_gamma': 0.2, 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
+                  'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
+                  }
+
     # Regularization parameters + Cauchy likelihood
 
     path_model = path + "lr/"
 
-    for lr_i in [0.001, 0.0001][1:]:
+    for lr_i in [0.001, 0.01]:
         p = path_model + str(lr_i) + "/"
-        try:
-            os.mkdir(p)
-            os.mkdir(p + "model")
-        except:
-            FileExistsError("File already exists")
-
-        reg_params = {'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
-                      # 'fixed_alpha': alpha,
-                      'init_gamma': 0.2, 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
-                      'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
-                      }
 
         # Train for 100 epochs
 
         Model = CNN.CNNCauchy(param_conv, param_fcc,
-                              lr=lr_i, lr_scheduler=False,
+                              lr=lr_i, lr_scheduler=True,
                               model_type="regression", dim=generator_training.dim,
                               training_generator=generator_training, validation_generator=generator_validation,
-                              num_epochs=100, validation_freq=1, max_queue_size=10, use_multiprocessing=False,
+                              num_epochs=60, validation_freq=1, max_queue_size=10, use_multiprocessing=False,
                               workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=p,
                               compile=True, train=True, load_weights=None,
-                              train_mse=True, load_mse_weights=False, use_mse_n_epoch=5, use_tanh_n_epoch=0,
+                              load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
                               **reg_params)
         del Model
