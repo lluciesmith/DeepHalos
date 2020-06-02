@@ -529,12 +529,13 @@ class CNNCauchy(CNN):
                                          tanh=tanh)
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
-        print("These are the losses from the Cauchy model before adding regularizers:")
-        print(new_model.losses)
 
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
 
         if self.fixed_alpha or self.init_alpha is not None:
+            print("These are the losses from the Cauchy model before adding regularizers:")
+            print(new_model.losses)
+
             alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
                      else K.pow(10., self.fixed_alpha)][0]
 
