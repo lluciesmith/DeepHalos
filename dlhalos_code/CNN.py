@@ -449,7 +449,7 @@ class CNNCauchy(CNN):
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5, lr_scheduler=True,
-                 load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0):
+                 load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0, optimizer=None):
 
         self.path_model = path_summary
         self.regularizer_conv = regularizer_conv
@@ -474,6 +474,8 @@ class CNNCauchy(CNN):
                            workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
                            save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
                            weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
+
+        self.optimizer = optimizer
 
         self.num_epochs = num_epochs
         self.load_weights = load_weights
@@ -518,6 +520,8 @@ class CNNCauchy(CNN):
                                          tanh=tanh)
         predictions = last_layer(mse_model.layers[-1].output)
         new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
+        print("These are the losses from the Cauchy model before adding regularizers:")
+        print(new_model.losses)
 
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
 
@@ -544,10 +548,12 @@ class CNNCauchy(CNN):
             for i in range(len(indices_dense)):
                 add_dense_reg(indices_dense[i])
 
-        print("These are the losses from the Cauchy model:")
+        print("These are the final losses from the Cauchy model:")
         print(new_model.losses)
 
-        optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
+        if self.optimizer is None:
+            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
+                                              amsgrad=True)
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
 
@@ -615,40 +621,46 @@ class CNNCauchy(CNN):
                       max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
                       save_summary=False, path_summary=".", num_epochs=0):
 
-        # Define the model from MSE loss
-
-        print("Modify CONV parameters for MSE epoch")
-        conv_params2 = conv_params.copy()
-        conv_keys = [layer for layer in conv_params2.keys()]
-
-        for key in conv_keys:
-            if 'kernel_regularizer' not in conv_params2[key]:
-                conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.0001)
-
-        print("Modify FCC parameters for MSE epoch")
-        fcc_params2 = fcc_params.copy()
-        layer_keys = [layer for layer in fcc_params2.keys() if layer is not 'last']
-
-        for key in layer_keys:
-            if 'kernel_regularizer' in fcc_params2[key]:
-                del fcc_params2[key]['kernel_regularizer']
-            if 'dropout' not in fcc_params2[key]:
-                fcc_params2[key]['dropout'] = 0.4
-
-        train_bool = not load_mse_weights
-        super(CNNCauchy, self).__init__(conv_params2, fcc_params2, model_type=model_type,
-                                        steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim,
-                                        loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
-                                        data_format=data_format,
-                                        use_multiprocessing=use_multiprocessing, workers=workers, num_gpu=num_gpu,
+        super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
+                                        steps_per_epoch=steps_per_epoch, training_generator=training_generator,
+                                        dim=dim, loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
+                                        data_format=data_format, use_multiprocessing=use_multiprocessing,
+                                        workers=workers, num_gpu=num_gpu,
                                         pool_size=pool_size, initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
-                                        weights=weights, max_queue_size=max_queue_size, train=train_bool, compile=True)
+                                        weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
 
-        if train_bool is False:
+        if load_mse_weights is True:
             print("Loaded initial weights given by training for one epoch on MSE loss")
             self.model.load_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
+
         else:
+            print("Modify CONV parameters for MSE epoch")
+            conv_params2 = conv_params.copy()
+            conv_keys = [layer for layer in conv_params2.keys()]
+            for key in conv_keys:
+                if 'kernel_regularizer' not in conv_params2[key]:
+                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.0001)
+
+            print("Modify FCC parameters for MSE epoch")
+            fcc_params2 = fcc_params.copy()
+            layer_keys = [layer for layer in fcc_params2.keys() if layer is not 'last']
+            for key in layer_keys:
+                if 'kernel_regularizer' in fcc_params2[key]:
+                    del fcc_params2[key]['kernel_regularizer']
+                if 'dropout' not in fcc_params2[key]:
+                    fcc_params2[key]['dropout'] = 0.4
+
+            M = super(CNNCauchy, self).__init__(conv_params2, fcc_params2, model_type=model_type,
+                                                steps_per_epoch=steps_per_epoch, training_generator=training_generator,
+                                                dim=dim, loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
+                                                data_format=data_format, use_multiprocessing=use_multiprocessing,
+                                                workers=workers, num_gpu=num_gpu, pool_size=pool_size,
+                                                initialiser=initialiser, save_summary=save_summary,
+                                                path_summary=path_summary, pretrained_model=pretrained_model,
+                                                weights=weights, max_queue_size=max_queue_size, train=True,
+                                                compile=True)
+            self.model.set_weights(M.model.get_weights())
             self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
         self.initial_epoch = num_epochs
