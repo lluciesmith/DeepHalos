@@ -658,13 +658,14 @@ class CNNCauchy(CNN):
                                                 path_summary=path_summary, pretrained_model=pretrained_model,
                                                 weights=weights, max_queue_size=max_queue_size, train=True,
                                                 compile=True)
-            self.model.set_weights(m.model.get_weights())
+            # self.model.set_weights(m.model.get_weights())
             self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
         self.initial_epoch = num_epochs
 
         print("These are the losses from the MSE model:")
         print(self.model.losses)
+        return m
 
     def train_with_tanh_activation(self, model, callbacks=None, num_epochs=0.):
         # Define a different model with different last layer and the load its weights onto current model
