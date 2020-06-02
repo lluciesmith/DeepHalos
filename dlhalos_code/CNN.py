@@ -564,6 +564,7 @@ class CNNCauchy(CNN):
             optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
         else:
+            print("Use loaded optimizer")
             optimiser = self.optimizer
 
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
