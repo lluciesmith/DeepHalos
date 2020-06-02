@@ -583,7 +583,7 @@ class CNNCauchy(CNN):
 
         # learning rate scheduler
         if self.lr_scheduler:
-            lrate = callbacks.LearningRateScheduler(lr_scheduler_half)
+            lrate = callbacks.LearningRateScheduler(self.lr_scheduler_half)
             callbacks_list.append(lrate)
 
         # collect weights last layer
@@ -692,6 +692,16 @@ class CNNCauchy(CNN):
                                        validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
         return _tanh_model
 
+    def lr_scheduler_half(self, epoch):
+        # This function halves the learning rate every ten epochs.
+        init_lr = self.lr
+        if epoch < 10:
+            return init_lr
+        else:
+            drop_rate = 0.5
+            epoch_drop = 10
+            return init_lr * drop_rate ** np.floor(epoch / epoch_drop)
+
 
 class RegularizerCallback(Callback):
     def __init__(self, layer, alpha_check):
@@ -703,17 +713,6 @@ class RegularizerCallback(Callback):
         print("\nUpdated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
         if self.alpha_check is True:
             print("Updated log-alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
-
-
-def lr_scheduler_half(epoch):
-    # This function halves the learning rate every ten epochs.
-    init_lr = 0.0001
-    if epoch < 10:
-        return init_lr
-    else:
-        drop_rate = 0.5
-        epoch_drop = 10
-        return init_lr * drop_rate**np.floor(epoch / epoch_drop)
 
 
 def lr_scheduler(epoch):
