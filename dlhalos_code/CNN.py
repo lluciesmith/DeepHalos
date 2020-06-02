@@ -476,6 +476,7 @@ class CNNCauchy(CNN):
                                         initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
+        print("Get MSE")
         self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
@@ -562,6 +563,9 @@ class CNNCauchy(CNN):
         if self.optimizer is None:
             optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
+        else:
+            optimiser = self.optimizer
+
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
 
