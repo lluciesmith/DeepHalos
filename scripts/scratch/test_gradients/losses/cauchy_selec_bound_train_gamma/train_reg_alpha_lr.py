@@ -66,12 +66,12 @@ if __name__ == "__main__":
 
     # for lr_i in [0.001, 0.01]:
     for lr_i in [0.0005]:
-        p = path_model + str(lr_i) + "/"
+        p = path_model + str(lr_i) + "/no_decay/"
 
         # Train for 100 epochs
 
         Model = CNN.CNNCauchy(param_conv, param_fcc,
-                              lr=lr_i, lr_scheduler=True,
+                              lr=lr_i, lr_scheduler=False,
                               model_type="regression", dim=generator_training.dim,
                               training_generator=generator_training, validation_generator=generator_validation,
                               num_epochs=60, validation_freq=1, max_queue_size=10, use_multiprocessing=False,
