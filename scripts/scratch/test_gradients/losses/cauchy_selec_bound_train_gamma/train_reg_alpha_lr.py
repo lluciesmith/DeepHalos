@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     # for lr_i in [0.001, 0.01]:
     for lr_i in [0.0005]:
-        p = path_model + str(lr_i) + "/no_decay/"
+        p = path_model + str(lr_i) + "/exp_decay/"
 
         # Train for 100 epochs
 

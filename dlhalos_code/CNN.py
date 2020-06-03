@@ -584,7 +584,7 @@ class CNNCauchy(CNN):
 
         # learning rate scheduler
         if self.lr_scheduler:
-            lrate = callbacks.LearningRateScheduler(self.lr_scheduler_half)
+            lrate = callbacks.LearningRateScheduler(self.lr_scheduler_exponential)
             callbacks_list.append(lrate)
 
         # collect weights last layer
@@ -703,6 +703,15 @@ class CNNCauchy(CNN):
             epoch_drop = 10
             return init_lr * drop_rate ** np.floor(epoch / epoch_drop)
 
+    def lr_scheduler_exponential(self, epoch):
+        # This function decays the learning rate exponentially from the 10th epoch onwards.
+        init_lr = self.lr
+        n = 10
+        if epoch < n:
+            return init_lr
+        else:
+            return init_lr * np.math.exp(0.05 * (n - epoch))
+
 
 class RegularizerCallback(Callback):
     def __init__(self, layer, alpha_check):
@@ -716,13 +725,23 @@ class RegularizerCallback(Callback):
             print("Updated log-alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
 
 
-def lr_scheduler(epoch):
-    # This function decays the learning rate exponentially from the 10th epoch onwards.
-    n = 10
-    if epoch < n:
-        return 0.0001
-    else:
-        return 0.0001 * np.math.exp(0.05 * (n - epoch))
+# def lr_scheduler(epoch):
+#     # This function decays the learning rate exponentially from the 10th epoch onwards.
+#     n = 10
+#     if epoch < n:
+#         return 0.0001
+#     else:
+#         return 0.0001 * np.math.exp(0.05 * (n - epoch))
+#
+# def lr_scheduler_half(epoch):
+#     # This function halves the learning rate every ten epochs.
+#     init_lr = 0.0001
+#     if epoch < 10:
+#         return init_lr
+#     else:
+#         drop_rate = 0.5
+#         epoch_drop = 10
+#         return init_lr * drop_rate ** np.floor(epoch / epoch_drop)
 
 
 class CollectWeightCallback(Callback):
