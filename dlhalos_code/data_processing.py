@@ -104,7 +104,8 @@ class SimulationPreparation:
 
 
 class InputsPreparation:
-    def __init__(self, sim_IDs, load_ids=True, ids_filename="random_training_set.txt",
+    def __init__(self, sim_IDs,
+                 load_ids=True, ids_filename="random_training_set.txt",
                  random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None, weights=False,
                  path="/lfstev/deepskies/luisals/", scaler_output=None, scaler_type="standard",
                  return_rescaled_outputs=True, random_style="random", num_per_mass_bin=1000, num_bins=50,
@@ -165,7 +166,8 @@ class InputsPreparation:
         flattened_mass = np.concatenate(masses)
 
         if self.random_style == "uniform":
-            indices = self.get_indices_array_sampled_evenly_in_each_bin(flattened_mass, 50, self.num_per_mass_bin)
+            indices = self.get_indices_array_sampled_evenly_in_each_bin(flattened_mass, self.num_bins,
+                                                                        self.num_per_mass_bin)
             flattened_name = flattened_name[indices]
             flattened_mass = flattened_mass[indices]
 
@@ -228,6 +230,7 @@ class InputsPreparation:
                 ind_bins = np.where((array >= bins[i - 1]) & (array <= bins[i]))[0]
             else:
                 ind_bins = np.where((array >= bins[i - 1]) & (array < bins[i]))[0]
+
             if ind_bins.size != 0:
                 if len(ind_bins) <= number_samples_per_bin:
                     warnings.warn("The number of particles in bin [%.3f, %.3f) is %i. This is smaller than the "

@@ -584,6 +584,7 @@ class CNNCauchy(CNN):
 
         # learning rate scheduler
         if self.lr_scheduler:
+            # lrate = callbacks.LearningRateScheduler(self.lr_scheduler_half)
             lrate = callbacks.LearningRateScheduler(self.lr_scheduler_exponential)
             callbacks_list.append(lrate)
 

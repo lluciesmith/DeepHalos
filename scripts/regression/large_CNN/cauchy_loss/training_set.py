@@ -1,38 +1,74 @@
 import sys
-sys.path.append("/home/luisals/DeepHalos")
+# sys.path.append("/home/luisals/DeepHalos")
+sys.path.append("/mnt/beegfs/home/pearl037/DeepHalos")
 import dlhalos_code.data_processing as tn
 from pickle import dump
 
 if __name__ == "__main__":
 
-    path_data = "/lfstev/deepskies/luisals/regression/large_CNN/cauchy_loss/l2/"
-
     # First you will have to load the simulation
 
     all_sims = ["0", "1", "2", "4", "5", "6"]
-    s = tn.SimulationPreparation(all_sims)
+    s = tn.SimulationPreparation(all_sims, path="/mnt/beegfs/work/ati/pearl037/")
 
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
-    training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", load_ids=False,
-                                        random_subset_each_sim=None, random_style="uniform",
-                                        num_per_mass_bin=10000, num_bins=50)
+    # Save training sets sampled at random from 5 simulations, with n=50,000 and n=500,000
 
-    dump(training_set.particle_IDs, open(path_data + 'training_set.pkl', 'wb'))
-    dump(training_set.labels_particle_IDS, open(path_data + 'labels_training_set.pkl', 'wb'))
-    dump(training_set.scaler_output, open(path_data + 'scaler_output.pkl', 'wb'))
+    path_random = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
 
-    v_set = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False, shuffle=True,
-                                 random_style="random", random_subset_all=5000, random_subset_each_sim=None,
-                                 scaler_output=training_set.scaler_output)
-    dump(v_set.particle_IDs, open(path_data + 'validation_set.pkl', 'wb'))
-    dump(v_set.labels_particle_IDS, open(path_data + 'labels_validation_set.pkl', 'wb'))
+    for n_samples in [50000, 500000]:
 
-    v_set2 = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False,
-                                 random_style="random", random_subset_all=50000, random_subset_each_sim=None,
-                                 scaler_output=training_set.scaler_output)
-    dump(v_set2.particle_IDs, open(path_data + 'larger_validation_set.pkl', 'wb'))
-    dump(v_set2.labels_particle_IDS, open(path_data + 'larger_labels_validation_set.pkl', 'wb'))
+        label = str(n_samples)
+        saving_path = path_random + label + "/"
+
+        training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
+                                            output_range=(-1, 1), load_ids=False, random_subset_each_sim=None,
+                                            random_style="random", random_subset_all=n_samples)
+        dump(training_set.particle_IDs, open(saving_path + 'training_set.pkl', 'wb'))
+        dump(training_set.labels_particle_IDS, open(saving_path + 'labels_training_set.pkl', 'wb'))
+        dump(training_set.scaler_output, open(saving_path + 'scaler_output.pkl', 'wb'))
+
+        v_set = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False, shuffle=True,
+                                     random_style="random", random_subset_all=5000, random_subset_each_sim=None,
+                                     scaler_output=training_set.scaler_output)
+        dump(v_set.particle_IDs, open(saving_path + 'validation_set.pkl', 'wb'))
+        dump(v_set.labels_particle_IDS, open(saving_path + 'labels_validation_set.pkl', 'wb'))
+
+        v_set2 = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False,
+                                     random_style="random", random_subset_all=50000, random_subset_each_sim=None,
+                                     scaler_output=training_set.scaler_output)
+        dump(v_set2.particle_IDs, open(saving_path + 'larger_validation_set.pkl', 'wb'))
+        dump(v_set2.labels_particle_IDS, open(saving_path + 'larger_labels_validation_set.pkl', 'wb'))
+
+    # Save training sets sampled uniformly from 50 bins, with n=1000 or n=10000 per mass bin
+
+    path_uniform = "/mnt/beegfs/work/ati/pearl037/regression/training_set/uniform/"
+
+    for n_samples in [1000, 10000]:
+
+        label = str(n_samples)
+        saving_path = path_uniform + label + "_perbin/"
+
+        training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
+                                            output_range=(-1, 1), load_ids=False, random_subset_each_sim=None,
+                                            random_style="uniform", num_per_mass_bin=n_samples, num_bins=50)
+
+        dump(training_set.particle_IDs, open(saving_path + 'training_set.pkl', 'wb'))
+        dump(training_set.labels_particle_IDS, open(saving_path + 'labels_training_set.pkl', 'wb'))
+        dump(training_set.scaler_output, open(saving_path + 'scaler_output.pkl', 'wb'))
+
+        v_set = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False, shuffle=True,
+                                     random_style="random", random_subset_all=5000, random_subset_each_sim=None,
+                                     scaler_output=training_set.scaler_output)
+        dump(v_set.particle_IDs, open(saving_path + 'validation_set.pkl', 'wb'))
+        dump(v_set.labels_particle_IDS, open(saving_path + 'labels_validation_set.pkl', 'wb'))
+
+        v_set2 = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False,
+                                     random_style="random", random_subset_all=50000, random_subset_each_sim=None,
+                                     scaler_output=training_set.scaler_output)
+        dump(v_set2.particle_IDs, open(saving_path + 'larger_validation_set.pkl', 'wb'))
+        dump(v_set2.labels_particle_IDS, open(saving_path + 'larger_labels_validation_set.pkl', 'wb'))
 
 
