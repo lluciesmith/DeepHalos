@@ -472,7 +472,7 @@ class CNNCauchy(CNN):
                                         dim=dim, loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
                                         data_format=data_format, use_multiprocessing=use_multiprocessing,
                                         workers=workers, num_gpu=num_gpu, pool_size=pool_size,
-                                        initialiser=initialiser, save_summary=False,
+                                        initialiser=initialiser, save_summary=True,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
         print("Get MSE")
