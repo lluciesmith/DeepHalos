@@ -472,7 +472,7 @@ class CNNCauchy(CNN):
                                         steps_per_epoch=steps_per_epoch, training_generator=training_generator,
                                         dim=dim, loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
                                         data_format=data_format, use_multiprocessing=use_multiprocessing,
-                                        workers=workers, num_gpu=num_gpu, pool_size=pool_size,
+                                        workers=workers, num_gpu=1, pool_size=pool_size,
                                         initialiser=initialiser, save_summary=True,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
@@ -480,7 +480,7 @@ class CNNCauchy(CNN):
         self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
-                           workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
+                           workers=workers, num_gpu=1, pool_size=pool_size, initialiser=initialiser,
                            save_summary=False, path_summary=path_summary, pretrained_model=pretrained_model,
                            weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
 
@@ -572,10 +572,11 @@ class CNNCauchy(CNN):
 
         if self.num_gpu > 1:
             parallel_model = multi_gpu_model(new_model, gpus=self.num_gpu, cpu_relocation=True, cpu_merge=True)
-            parallel_model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
-
-        new_model.compile(loss=loss_c, optimizer=optimiser)
-        return new_model
+            parallel_model.compile(loss=loss_c, optimizer=optimiser)
+            return parallel_model
+        else:
+            new_model.compile(loss=loss_c, optimizer=optimiser)
+            return new_model
 
     def get_callbacks(self, layer_loss):
         callbacks_list = []
