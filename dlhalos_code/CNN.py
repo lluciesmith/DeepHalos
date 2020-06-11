@@ -648,7 +648,7 @@ class CNNCauchy(CNN):
             conv_keys = [layer for layer in conv_params2.keys()]
             for key in conv_keys:
                 if 'kernel_regularizer' not in conv_params2[key]:
-                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.0001)
+                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.001)
 
             print("Modify FCC parameters for MSE epoch")
             fcc_params2 = copy.deepcopy(fcc_params)
@@ -657,7 +657,7 @@ class CNNCauchy(CNN):
                 if 'kernel_regularizer' in fcc_params2[key]:
                     del fcc_params2[key]['kernel_regularizer']
                 if 'dropout' not in fcc_params2[key]:
-                    fcc_params2[key]['dropout'] = 0.4
+                    fcc_params2[key]['dropout'] = 0.5
 
             m = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                     training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
