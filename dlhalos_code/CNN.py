@@ -13,6 +13,7 @@ import tensorflow as tf
 from dlhalos_code import evaluation as eval
 from dlhalos_code import loss_functions as lf
 from dlhalos_code import custom_regularizers as custom_reg
+import copy
 from tensorflow.keras.constraints import Constraint
 
 
@@ -569,6 +570,10 @@ class CNNCauchy(CNN):
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
         loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
 
+        if self.num_gpu > 1:
+            parallel_model = multi_gpu_model(new_model, gpus=self.num_gpu, cpu_relocation=True, cpu_merge=True)
+            parallel_model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
+
         new_model.compile(loss=loss_c, optimizer=optimiser)
         return new_model
 
@@ -639,14 +644,14 @@ class CNNCauchy(CNN):
 
         else:
             print("Modify CONV parameters for MSE epoch")
-            conv_params2 = conv_params.copy()
+            conv_params2 = copy.deepcopy(conv_params)
             conv_keys = [layer for layer in conv_params2.keys()]
             for key in conv_keys:
                 if 'kernel_regularizer' not in conv_params2[key]:
-                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.0001)
+                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.001)
 
             print("Modify FCC parameters for MSE epoch")
-            fcc_params2 = fcc_params.copy()
+            fcc_params2 = copy.deepcopy(fcc_params)
             layer_keys = [layer for layer in fcc_params2.keys() if layer is not 'last']
             for key in layer_keys:
                 if 'kernel_regularizer' in fcc_params2[key]:
@@ -667,6 +672,8 @@ class CNNCauchy(CNN):
 
         print("These are the losses from the MSE model:")
         print(self.model.losses)
+        print("These are the parameters of the convolutional and dense layers")
+        print(conv_params, fcc_params)
 
     def train_with_tanh_activation(self, model, callbacks=None, num_epochs=0.):
         # Define a different model with different last layer and the load its weights onto current model
