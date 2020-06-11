@@ -41,7 +41,7 @@ if __name__ == "__main__":
     alpha = 10**-3
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)}
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
@@ -62,7 +62,8 @@ if __name__ == "__main__":
     # Train for one epoch using MSE loss
 
     lr_i = 5*10**-3
-    path_model = "/mnt/beegfs/work/ati/pearl037/regression/run_rand_tr_" + str(num_sample)
+    path_model = "/mnt/beegfs/work/ati/pearl037/regression/run_rand_tr_" + str(num_sample) + "/"
+    # path_model = "/mnt/beegfs/work/ati/pearl037/regression/"
 
     Model = CNN.CNNCauchy(param_conv, param_fcc,
                           lr=lr_i, lr_scheduler=False,
@@ -73,3 +74,6 @@ if __name__ == "__main__":
                           compile=True, train=True, load_weights=None,
                           load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
                           **reg_params)
+
+    # Does param_conv and param_fcc change after calling the MSE model??? The .copy() function is not working as
+    # expected?
