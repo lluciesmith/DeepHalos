@@ -69,7 +69,7 @@ if __name__ == "__main__":
                       lr=lr_i, lr_scheduler=False,
                       model_type="regression", dim=generator_training.dim,
                       training_generator=generator_training, validation_generator=generator_validation,
-                      num_epochs=2, validation_freq=1, max_queue_size=10, use_multiprocessing=False,
+                      num_epochs=60, validation_freq=1, max_queue_size=10, use_multiprocessing=False,
                       workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
                       compile=True, train=True, load_weights=None,
                       load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
