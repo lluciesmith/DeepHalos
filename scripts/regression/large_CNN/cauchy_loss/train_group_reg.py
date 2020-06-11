@@ -61,7 +61,8 @@ if __name__ == "__main__":
 
     # Train for one epoch using MSE loss
 
-    lr_i = 5*10**-4
+    # lr_i = 5*10**-4
+    lr_i = 10**-5
     path_model = "/mnt/beegfs/work/ati/pearl037/regression/run_rand_tr_" + str(num_sample) + "/"
     # path_model = "/mnt/beegfs/work/ati/pearl037/regression/"
 
