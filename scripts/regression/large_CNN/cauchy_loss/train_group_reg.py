@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     # Create the generators for training
 
-    dim = (75, 75, 75)
+    dim = (31, 31, 31)
     params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
@@ -41,12 +41,12 @@ if __name__ == "__main__":
     alpha = 10**-3
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)}
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-                  'conv_6': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+                  #'conv_6': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   }
     # Added conv_6 in going from 31^3 input to 75^3 input
 
@@ -61,19 +61,19 @@ if __name__ == "__main__":
 
     # Train for one epoch using MSE loss
 
-    lr_i = 5*10**-3
+    lr_i = 5*10**-4
     path_model = "/mnt/beegfs/work/ati/pearl037/regression/run_rand_tr_" + str(num_sample) + "/"
     # path_model = "/mnt/beegfs/work/ati/pearl037/regression/"
 
     Model = CNN.CNNCauchy(param_conv, param_fcc,
-                          lr=lr_i, lr_scheduler=False,
-                          model_type="regression", dim=generator_training.dim,
-                          training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=60, validation_freq=1, max_queue_size=10, use_multiprocessing=False,
-                          workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
-                          compile=True, train=True, load_weights=None,
-                          load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params)
+                      lr=lr_i, lr_scheduler=False,
+                      model_type="regression", dim=generator_training.dim,
+                      training_generator=generator_training, validation_generator=generator_validation,
+                      num_epochs=2, validation_freq=1, max_queue_size=10, use_multiprocessing=False,
+                      workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model,
+                      compile=True, train=True, load_weights=None,
+                      load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
+                      **reg_params)
 
     # Does param_conv and param_fcc change after calling the MSE model??? The .copy() function is not working as
     # expected?
