@@ -95,15 +95,15 @@ class SimulationPreparation:
 
         t0 = time.time()
         try:
-            print("Loading density array of simulation ID " + sim_id)
             rho = np.load(path1 + "density_Msol_kpc3_ics.npy")
+            print("Loaded density array of simulation ID " + sim_id)
             snapshot["rho"] = rho
             rho.simulation = snapshot
             rho.units = "Msol kpc**-3"
 
         except FileNotFoundError:
-            print("Saving density array of simulation ID " + sim_id)
             np.save(path1 + "density_Msol_kpc3_ics.npy", snapshot["rho"])
+            print("Saved density array of simulation ID " + sim_id)
 
         rho_m = pynbody.analysis.cosmology.rho_M(snapshot, unit=snapshot["rho"].units)
         snapshot['den_contrast'] = snapshot["rho"] / rho_m
