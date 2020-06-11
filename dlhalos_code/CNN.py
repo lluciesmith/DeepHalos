@@ -441,7 +441,7 @@ class CNNCauchy(CNN):
     """
 
     def __init__(self, conv_params, fcc_params, model_type="regression",
-                 init_alpha=None, fixed_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0.,
+                 init_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0.,
                  init_gamma=0.2, upper_bound_gamma=2., lower_bound_gamma=0.,
                  regularizer_conv=None, regularizer_dense=None, alpha_mse=None,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
@@ -462,7 +462,6 @@ class CNNCauchy(CNN):
         self.constr_gamma = Between(min_value=self.LB_gamma, max_value=self.UB_gamma)
 
         self.init_alpha = init_alpha
-        self.fixed_alpha = fixed_alpha
         self.LB_alpha = lower_bound_alpha
         self.UB_alpha = upper_bound_alpha
         self.constr_alpha = Between(min_value=self.LB_alpha, max_value=self.UB_alpha)
@@ -473,7 +472,7 @@ class CNNCauchy(CNN):
                                         dim=dim, loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
                                         data_format=data_format, use_multiprocessing=use_multiprocessing,
                                         workers=workers, num_gpu=num_gpu, pool_size=pool_size,
-                                        initialiser=initialiser, save_summary=save_summary,
+                                        initialiser=initialiser, save_summary=False,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
         print("Get MSE")
@@ -481,7 +480,7 @@ class CNNCauchy(CNN):
                            steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                            verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
                            workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
-                           save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
+                           save_summary=False, path_summary=path_summary, pretrained_model=pretrained_model,
                            weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
 
         self.optimizer = optimizer
@@ -532,12 +531,11 @@ class CNNCauchy(CNN):
 
         loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
 
-        if self.fixed_alpha or self.init_alpha is not None:
+        if self.init_alpha is not None:
             print("These are the losses from the Cauchy model before adding regularizers:")
             print(new_model.losses)
 
-            alpha = [K.pow(10., loss_params_layer.alpha) if self.init_alpha is not None
-                     else K.pow(10., self.fixed_alpha)][0]
+            alpha = K.pow(10., loss_params_layer.alpha)
 
             def add_conv_reg(index):
                 f = lambda: self.regularizer_conv(alpha)(new_model.layers[index].kernel)
