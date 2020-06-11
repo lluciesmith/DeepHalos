@@ -61,7 +61,7 @@ class SimulationPreparation:
 
         for i, ID in enumerate(sims):
             snapshot_i = self.load_snapshot_from_simulation_ID(ID)
-            snapshot_i = self.prepare_sim(snapshot_i)
+            snapshot_i = self.prepare_sim(snapshot_i, ID)
             sims_dic[ID] = snapshot_i
 
         self.sims_dic = sims_dic
@@ -85,14 +85,30 @@ class SimulationPreparation:
                 snap_sim = pynbody.load(path1 + "IC.gadget2")
         return snap_sim
 
-    def prepare_sim(self, snapshot):
+    def prepare_sim(self, snapshot, sim_id):
         snapshot.physical_units()
 
+        if sim_id == "0":
+            path1 = self.path + "training_simulation/snapshots/"
+        else:
+            path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
+
         t0 = time.time()
+        try:
+            print("Loading density array of simulation ID " + sim_id)
+            rho = np.load(path1 + "density_Msol_kpc3_ics.npy")
+            snapshot["rho"] = rho
+            rho.simulation = snapshot
+            rho.units = "Msol kpc**-3"
+
+        except FileNotFoundError:
+            print("Saving density array of simulation ID " + sim_id)
+            np.save(path1 + "density_Msol_kpc3_ics.npy", snapshot["rho"])
+
         rho_m = pynbody.analysis.cosmology.rho_M(snapshot, unit=snapshot["rho"].units)
-        snapshot['den_contrast'] = snapshot['rho'] / rho_m
+        snapshot['den_contrast'] = snapshot["rho"] / rho_m
         t1 = time.time()
-        print("Loading density contrast in simulation took " + str((t1 - t0)/60) + " minutes.")
+        print("Computing density contrast in simulation took " + str((t1 - t0)/60) + " minutes.")
 
         shape_sim = int(round((snapshot["iord"].shape[0]) ** (1 / 3)))
         i, j, k = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
