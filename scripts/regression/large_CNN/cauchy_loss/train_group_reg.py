@@ -63,8 +63,8 @@ if __name__ == "__main__":
 
     lr_i = 5*10**-4
     # lr_i = 10**-5
-    # path_model = "/mnt/beegfs/work/ati/pearl037/regression/run_rand_tr_" + str(num_sample) + "/"
-    path_model = "/mnt/beegfs/work/ati/pearl037/regression/"
+    path_model = "/mnt/beegfs/work/ati/pearl037/regression/run_rand_tr_" + str(num_sample) + "/"
+    # path_model = "/mnt/beegfs/work/ati/pearl037/regression/"
 
     Model = CNN.CNNCauchy(param_conv, param_fcc,
                       lr=lr_i, lr_scheduler=False,
