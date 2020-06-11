@@ -7,9 +7,9 @@ from pickle import dump
 if __name__ == "__main__":
 
     # First you will have to load the simulation
-
+    path_sims = "/mnt/beegfs/work/ati/pearl037/"
     all_sims = ["0", "1", "2", "4", "5", "6"]
-    s = tn.SimulationPreparation(all_sims, path="/mnt/beegfs/work/ati/pearl037/")
+    s = tn.SimulationPreparation(all_sims, path=path_sims)
 
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
@@ -25,20 +25,20 @@ if __name__ == "__main__":
 
         training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
                                             output_range=(-1, 1), load_ids=False, random_subset_each_sim=None,
-                                            random_style="random", random_subset_all=n_samples)
+                                            random_style="random", random_subset_all=n_samples, path=path_sims)
         dump(training_set.particle_IDs, open(saving_path + 'training_set.pkl', 'wb'))
         dump(training_set.labels_particle_IDS, open(saving_path + 'labels_training_set.pkl', 'wb'))
         dump(training_set.scaler_output, open(saving_path + 'scaler_output.pkl', 'wb'))
 
         v_set = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False, shuffle=True,
                                      random_style="random", random_subset_all=5000, random_subset_each_sim=None,
-                                     scaler_output=training_set.scaler_output)
+                                     scaler_output=training_set.scaler_output, path=path_sims)
         dump(v_set.particle_IDs, open(saving_path + 'validation_set.pkl', 'wb'))
         dump(v_set.labels_particle_IDS, open(saving_path + 'labels_validation_set.pkl', 'wb'))
 
         v_set2 = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False,
                                      random_style="random", random_subset_all=50000, random_subset_each_sim=None,
-                                     scaler_output=training_set.scaler_output)
+                                     scaler_output=training_set.scaler_output, path=path_sims)
         dump(v_set2.particle_IDs, open(saving_path + 'larger_validation_set.pkl', 'wb'))
         dump(v_set2.labels_particle_IDS, open(saving_path + 'larger_labels_validation_set.pkl', 'wb'))
 
@@ -53,7 +53,8 @@ if __name__ == "__main__":
 
         training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
                                             output_range=(-1, 1), load_ids=False, random_subset_each_sim=None,
-                                            random_style="uniform", num_per_mass_bin=n_samples, num_bins=50)
+                                            random_style="uniform", num_per_mass_bin=n_samples, num_bins=50,
+                                            path=path_sims)
 
         dump(training_set.particle_IDs, open(saving_path + 'training_set.pkl', 'wb'))
         dump(training_set.labels_particle_IDS, open(saving_path + 'labels_training_set.pkl', 'wb'))
@@ -61,13 +62,13 @@ if __name__ == "__main__":
 
         v_set = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False, shuffle=True,
                                      random_style="random", random_subset_all=5000, random_subset_each_sim=None,
-                                     scaler_output=training_set.scaler_output)
+                                     scaler_output=training_set.scaler_output, path=path_sims)
         dump(v_set.particle_IDs, open(saving_path + 'validation_set.pkl', 'wb'))
         dump(v_set.labels_particle_IDS, open(saving_path + 'labels_validation_set.pkl', 'wb'))
 
         v_set2 = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False,
                                      random_style="random", random_subset_all=50000, random_subset_each_sim=None,
-                                     scaler_output=training_set.scaler_output)
+                                     scaler_output=training_set.scaler_output, path=path_sims)
         dump(v_set2.particle_IDs, open(saving_path + 'larger_validation_set.pkl', 'wb'))
         dump(v_set2.labels_particle_IDS, open(saving_path + 'larger_labels_validation_set.pkl', 'wb'))
 
