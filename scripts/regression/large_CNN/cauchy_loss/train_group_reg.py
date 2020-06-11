@@ -1,14 +1,9 @@
 import sys
 sys.path.append("/home/luisals/DeepHalos")
 from dlhalos_code import CNN
-from dlhalos_code import loss_functions as lf
-import tensorflow.keras.callbacks as callbacks
-from tensorflow.keras.callbacks import CSVLogger
 from dlhalos_code import custom_regularizers as reg
 import dlhalos_code.data_processing as tn
-from pickle import dump, load
-import tensorflow.keras as keras
-import numpy as np
+from pickle import load
 
 
 if __name__ == "__main__":
@@ -21,7 +16,7 @@ if __name__ == "__main__":
     # Load data
 
     path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
-    num_sample = 5000
+    num_sample = 50000
     saving_path = path_data + str(num_sample) + "/"
 
     scaler_output = load(open(saving_path + 'scaler_output.pkl', 'rb'))
