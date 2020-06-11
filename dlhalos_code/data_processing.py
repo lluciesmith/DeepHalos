@@ -98,8 +98,8 @@ class SimulationPreparation:
             rho = np.load(path1 + "density_Msol_kpc3_ics.npy")
             print("Loaded density array of simulation ID " + sim_id)
             snapshot["rho"] = rho
-            rho.simulation = snapshot
-            rho.units = "Msol kpc**-3"
+            snapshot["rho"].simulation = snapshot
+            snapshot["rho"].units = "Msol kpc**-3"
 
         except FileNotFoundError:
             np.save(path1 + "density_Msol_kpc3_ics.npy", snapshot["rho"])
