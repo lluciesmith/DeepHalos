@@ -650,7 +650,7 @@ class CNNCauchy(CNN):
             conv_keys = [layer for layer in conv_params2.keys()]
             for key in conv_keys:
                 if 'kernel_regularizer' not in conv_params2[key]:
-                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.0001)
+                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.00001)
 
             print("Modify FCC parameters for MSE epoch")
             fcc_params2 = copy.deepcopy(fcc_params)
