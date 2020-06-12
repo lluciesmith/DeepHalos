@@ -473,7 +473,7 @@ class CNNCauchy(CNN):
                                         dim=dim, loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
                                         data_format=data_format, use_multiprocessing=use_multiprocessing,
                                         workers=workers, num_gpu=1, pool_size=pool_size,
-                                        initialiser=initialiser, save_summary=True,
+                                        initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
         print("Get MSE")
@@ -490,6 +490,7 @@ class CNNCauchy(CNN):
         self.load_weights = load_weights
         self.use_tanh_n_epoch = use_tanh_n_epoch
         self.lr_scheduler = lr_scheduler
+        self.num_gpu = num_gpu
 
         self.validation_generator = validation_generator
         self.validation_steps = validation_steps
@@ -649,7 +650,7 @@ class CNNCauchy(CNN):
             conv_keys = [layer for layer in conv_params2.keys()]
             for key in conv_keys:
                 if 'kernel_regularizer' not in conv_params2[key]:
-                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.001)
+                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.0001)
 
             print("Modify FCC parameters for MSE epoch")
             fcc_params2 = copy.deepcopy(fcc_params)
@@ -671,10 +672,10 @@ class CNNCauchy(CNN):
 
         self.initial_epoch = num_epochs
 
-        print("These are the losses from the MSE model:")
-        print(self.model.losses)
-        print("These are the parameters of the convolutional and dense layers")
-        print(conv_params, fcc_params)
+        # print("These are the losses from the MSE model:")
+        # print(self.model.losses)
+        # print("These are the parameters of the convolutional and dense layers")
+        # print(conv_params, fcc_params)
 
     def train_with_tanh_activation(self, model, callbacks=None, num_epochs=0.):
         # Define a different model with different last layer and the load its weights onto current model
