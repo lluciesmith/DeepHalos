@@ -15,7 +15,7 @@ if __name__ == "__main__":
     # Create the generators for training
 
     path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-           "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/500k_training_samples/"
+           "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/200k_training_samples/"
     path_sims = "/lfstev/deepskies/luisals/"
     # path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3/"
     # path_sims = "/mnt/beegfs/work/ati/pearl037/"
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     if train:
         training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
                                             output_range=(-1, 1), load_ids=False,
-                                            random_style="random", random_subset_all=500000,
+                                            random_style="random", random_subset_all=200000,
                                             random_subset_each_sim=None,
                                             # random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000,
                                             path=path_sims)
