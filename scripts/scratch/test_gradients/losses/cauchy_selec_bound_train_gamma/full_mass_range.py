@@ -17,7 +17,7 @@ if __name__ == "__main__":
     # path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
     #        "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/"
     # path_sims = "/lfstev/deepskies/luisals/"
-    path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/"
+    path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3/"
     path_sims = "/mnt/beegfs/work/ati/pearl037/"
 
     all_sims = ["0", "1", "2", "4", "5", "6"]
