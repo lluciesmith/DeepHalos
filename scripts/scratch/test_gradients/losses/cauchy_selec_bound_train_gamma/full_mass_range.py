@@ -14,11 +14,11 @@ if __name__ == "__main__":
 
     # Create the generators for training
 
-    # path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-    #        "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/"
-    # path_sims = "/lfstev/deepskies/luisals/"
-    path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3/"
-    path_sims = "/mnt/beegfs/work/ati/pearl037/"
+    path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
+           "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/500k_training_samples/"
+    path_sims = "/lfstev/deepskies/luisals/"
+    # path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3/"
+    # path_sims = "/mnt/beegfs/work/ati/pearl037/"
 
     all_sims = ["0", "1", "2", "4", "5", "6"]
     s = tn.SimulationPreparation(all_sims, path=path_sims)
@@ -29,14 +29,18 @@ if __name__ == "__main__":
 
     if train:
         training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
-                                            output_range=(-1, 1), load_ids=False, random_subset_each_sim=None,
-                                            random_style="random", random_subset_all=50000, path=path_sims)
+                                            output_range=(-1, 1), load_ids=False,
+                                            random_style="random", random_subset_all=500000,
+                                            random_subset_each_sim=None,
+                                            # random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000,
+                                            path=path_sims)
+
         dump(training_set.particle_IDs, open(path + 'training_set.pkl', 'wb'))
         dump(training_set.labels_particle_IDS, open(path + 'labels_training_set.pkl', 'wb'))
         dump(training_set.scaler_output, open(path + 'scaler_output.pkl', 'wb'))
 
         v_set = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False, shuffle=True,
-                                     random_style="random", random_subset_all=5000, random_subset_each_sim=None,
+                                     random_style="random", random_subset_all=10000, random_subset_each_sim=None,
                                      scaler_output=training_set.scaler_output, path=path_sims)
         dump(v_set.particle_IDs, open(path + 'validation_set.pkl', 'wb'))
         dump(v_set.labels_particle_IDS, open(path + 'labels_validation_set.pkl', 'wb'))
