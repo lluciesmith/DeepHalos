@@ -87,6 +87,22 @@ def predict_model(simulation_id, model_path,
     return h_m_pred, true
 
 
+def predict_from_model(model, epoch, gen_train, gen_val, training_IDs, training_labels_IDS,
+                       val_IDs, val_labels_IDs, scaler, path_model):
+    pred = model.predict_generator(gen_train, use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10)
+    truth_rescaled = np.array([training_labels_IDS[ID] for ID in training_IDs])
+    h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
+    true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    np.save(path_model + "predicted_training_"+ epoch + ".npy", h_m_pred)
+    np.save(path_model + "true_training_"+ epoch + ".npy", true)
+    pred = model.predict_generator(gen_val, use_multiprocessing=False, workers=0, verbose=1, max_queue_size=10)
+    truth_rescaled = np.array([val_labels_IDs[ID] for ID in val_IDs])
+    h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
+    true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    np.save(path_model + "predicted_val_"+ epoch + ".npy", h_m_pred)
+    np.save(path_model + "true_val_" + epoch + ".npy", true)
+
+
 def plot_true_vs_predict(true, predicted):
     f = plt.figure()
     plt.plot(true, true, color="dimgrey")
