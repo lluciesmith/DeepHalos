@@ -14,13 +14,14 @@ if __name__ == "__main__":
 
     # Create the generators for training
 
-    path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-           "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/9_sims_200k/"
-    path_sims = "/lfstev/deepskies/luisals/"
-    # path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3/"
-    # path_sims = "/mnt/beegfs/work/ati/pearl037/"
+    # path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
+    #        "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/9_sims_200k/"
+    # path_sims = "/lfstev/deepskies/luisals/"
+    path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3/"
+    path_sims = "/mnt/beegfs/work/ati/pearl037/"
 
-    all_sims = ["0", "1", "2", "4", "5", "7", "8", "9", "10", "6"]
+    # all_sims = ["0", "1", "2", "4", "5", "7", "8", "9", "10", "6"]
+    all_sims = ["0", "1", "2", "4", "5", "6"]
     s = tn.SimulationPreparation(all_sims, path=path_sims)
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     if train:
         training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
                                             output_range=(-1, 1), load_ids=False,
-                                            random_style="random", random_subset_all=200000,
+                                            random_style="random", random_subset_all=50000,
                                             random_subset_each_sim=None,
                                             # random_style="uniform", random_subset_each_sim=1000000, num_per_mass_bin=10000,
                                             path=path_sims)
@@ -45,6 +46,12 @@ if __name__ == "__main__":
         dump(v_set.particle_IDs, open(path + 'validation_set.pkl', 'wb'))
         dump(v_set.labels_particle_IDS, open(path + 'labels_validation_set.pkl', 'wb'))
 
+        # v_set_L = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False, shuffle=True,
+        #                              random_style="random", random_subset_all=50000, random_subset_each_sim=None,
+        #                              scaler_output=training_set.scaler_output, path=path_sims)
+        # dump(v_set_L.particle_IDs, open(path + 'larger_validation_set.pkl', 'wb'))
+        # dump(v_set_L.labels_particle_IDS, open(path + 'larger_labels_validation_set.pkl', 'wb'))
+
         dim = (51, 51, 51)
         params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
         generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
@@ -58,8 +65,8 @@ if __name__ == "__main__":
         scaler_output = load(open(path + 'scaler_output.pkl', "rb"))
         training_particle_IDs = load(open(path + 'training_set.pkl', 'rb'))
         training_labels_particle_IDS = load(open(path + 'labels_training_set.pkl', 'rb'))
-        val_particle_IDs = load(open(path + 'validation_set.pkl', 'rb'))
-        val_labels_particle_IDS = load(open(path + 'labels_validation_set.pkl', 'rb'))
+        val_particle_IDs = load(open(path + 'larger_validation_set.pkl', 'rb'))
+        val_labels_particle_IDS = load(open(path + 'larger_labels_validation_set.pkl', 'rb'))
 
         dim = (51, 51, 51)
         params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
@@ -111,7 +118,7 @@ if __name__ == "__main__":
                               **reg_params)
 
     else:
-        weights = path + "model/weights.10.h5"
+        weights = path + "model/weights.45.h5"
         Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                               training_generator=generator_training, validation_generator=generator_validation,
                               num_epochs=60, validation_freq=1, lr=0.0001, max_queue_size=10,
