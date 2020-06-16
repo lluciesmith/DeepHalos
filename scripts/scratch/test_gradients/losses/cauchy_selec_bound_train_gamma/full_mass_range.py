@@ -15,12 +15,12 @@ if __name__ == "__main__":
     # Create the generators for training
 
     path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-           "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/200k_training_samples/"
+           "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/9_sims_200k/"
     path_sims = "/lfstev/deepskies/luisals/"
     # path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3/"
     # path_sims = "/mnt/beegfs/work/ati/pearl037/"
 
-    all_sims = ["0", "1", "2", "4", "5", "6"]
+    all_sims = ["0", "1", "2", "4", "5", "7", "8", "9", "10", "6"]
     s = tn.SimulationPreparation(all_sims, path=path_sims)
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
@@ -120,6 +120,6 @@ if __name__ == "__main__":
                               compile=True, train=False, load_weights=weights,
                               load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0,
                               **reg_params)
-        evalu.predict_from_model(Model.model, "10", generator_training, generator_validation, training_particle_IDs,
+        evalu.predict_from_model(Model.model, "12", generator_training, generator_validation, training_particle_IDs,
                                  training_labels_particle_IDS,  val_particle_IDs, val_labels_particle_IDS,
-                                 scaler_output, path)
+                                 scaler_output, path, predict_train=False)
