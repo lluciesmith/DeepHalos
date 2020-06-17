@@ -25,12 +25,12 @@ if __name__ == "__main__":
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
-    p_ids = load(open(path + 'training_set.pkl', 'rb'))
-    l_ids = load(open(path + 'labels_training_set.pkl', 'rb'))
-    scaler_out = load(open(path + 'scaler_output.pkl', 'rb'))
+    p_ids = load(open(path + '../training_set.pkl', 'rb'))
+    l_ids = load(open(path + '../labels_training_set.pkl', 'rb'))
+    scaler_out = load(open(path + '../scaler_output.pkl', 'rb'))
 
-    vset_p_ids = load(open(path + 'validation_set.pkl', 'rb'))
-    vset_label_ids = load(open(path + 'labels_validation_set.pkl', 'rb'))
+    vset_p_ids = load(open(path + '../validation_set.pkl', 'rb'))
+    vset_label_ids = load(open(path + '../labels_validation_set.pkl', 'rb'))
 
     dim = (51, 51, 51)
     params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
