@@ -71,5 +71,5 @@ if __name__ == "__main__":
                           use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
                           compile=True, train=True, load_weights=None,
-                          load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
+                          load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0,
                           **reg_params)
