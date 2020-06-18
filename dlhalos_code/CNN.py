@@ -449,7 +449,7 @@ class CNNCauchy(CNN):
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
                  data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
-                 max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
+                 max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1, seed=None,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5, lr_scheduler=True,
                  load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0, optimizer=None):
 
@@ -475,7 +475,7 @@ class CNNCauchy(CNN):
                                         data_format=data_format, use_multiprocessing=use_multiprocessing,
                                         workers=workers, num_gpu=1, pool_size=pool_size,
                                         initialiser=initialiser, save_summary=save_summary,
-                                        path_summary=path_summary, pretrained_model=pretrained_model,
+                                        path_summary=path_summary, pretrained_model=pretrained_model, seed=seed,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
         if use_mse_n_epoch > 0:
             print("Get MSE")
