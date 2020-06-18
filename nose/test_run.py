@@ -15,10 +15,10 @@ import random as python_random
 pearl = False
 
 #for i in range(2):
-seed_value = 123
-np.random.seed(seed_value)
-python_random.seed(seed_value)
-tf.compat.v1.set_random_seed(seed_value)
+#seed_value = 123
+np.random.seed(123)
+python_random.seed(123)
+tf.compat.v1.set_random_seed(1234)
 
 if pearl:
     path = "/mnt/beegfs/work/ati/pearl037/regression/test/"
@@ -44,19 +44,23 @@ generator_validation = tn.DataGenerator(v_ids, l_v_ids, s.sims_dic, shuffle=Fals
 
 # Convolutional layers parameters
 
+log_alpha = -3.5
+alpha = 10 ** log_alpha
+
 params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
-                   'kernel_regularizer': reg.l2_norm(10**-3.5)}
-param_conv = {'conv_1': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
-              'conv_2': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-              'conv_3': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-              'conv_4': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-              'conv_5': {'num_kernels': 2, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+                   'kernel_regularizer': reg.l2_norm(alpha)}
+param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
+              'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+              'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+              'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+              'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+              'conv_6': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv}
               }
 
 # Dense layers parameters
 
 params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True,
-                  'kernel_regularizer': reg.l2_norm(10**-3.5)}
+                  'kernel_regularizer': reg.l2_norm(alpha)}
 param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
              'last': {}}
 
@@ -74,10 +78,22 @@ reg_params = {'init_gamma': 0.2}
 #     except:
 #         pass
 #     path1 = path + 'run_' + str(i) + '/'
-Model = CNN.CNN(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
+
+# Train for 100 epochs
+
+Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
+                      training_generator=generator_training, validation_generator=generator_validation,
+                      num_epochs=60, validation_freq=1, lr=0.0001, max_queue_size=10,
+                      use_multiprocessing=False,
+                      workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
+                      compile=True, train=True, load_weights=None,
+                      load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
+                      **reg_params)
+
+Model1 = CNN.CNN(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                 training_generator=generator_training, validation_generator=generator_validation,
                 num_epochs=5, validation_freq=1, lr=0.0001, max_queue_size=10,
-                use_multiprocessing=False, seed=seed_value,
+                use_multiprocessing=False, seed=1234,
                 workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
                 compile=True, train=True,
                 # load_weights=None, load_mse_weights=False, use_mse_n_epoch=10, use_tanh_n_epoch=0,
@@ -88,7 +104,7 @@ Model = CNN.CNN(param_conv, param_fcc, model_type="regression", dim=generator_tr
 Model2 = CNN.CNN(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                 training_generator=generator_training, validation_generator=generator_validation,
                 num_epochs=5, validation_freq=1, lr=0.0001, max_queue_size=10,
-                use_multiprocessing=False, seed=seed_value,
+                use_multiprocessing=False, seed=1234,
                 workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
                 compile=True, train=True,
                 # load_weights=None, load_mse_weights=False, use_mse_n_epoch=10, use_tanh_n_epoch=0,
