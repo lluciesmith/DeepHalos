@@ -287,7 +287,7 @@ class CNN:
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
 
         if dropout is not None:
-            x = keras.layers.Dropout(dropout)(x)
+            x = keras.layers.Dropout(dropout, seed=self.seed)(x)
 
         if alpha_dropout is not None:
             x = keras.layers.AlphaDropout(alpha_dropout)(x)
