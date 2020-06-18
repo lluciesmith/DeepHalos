@@ -7,35 +7,35 @@ from dlhalos_code import evaluation as evalu
 from pickle import dump, load
 import numpy as np
 import os
+import gc
 import numpy as np
 import tensorflow as tf
 import random as python_random
 
-np.random.seed(123)
-python_random.seed(123)
-tf.compat.v1.set_random_seed(1234)
-
-pearl = False
-
-if pearl:
-    path = "/mnt/beegfs/work/ati/pearl037/regression/test/"
-    path_sims = "/mnt/beegfs/work/ati/pearl037/"
-else:
-    path = "/home/luisals/test/"
-    path_sims = "/lfstev/deepskies/luisals/"
-
-
-all_sims = ["0", "1", "2", "4", "5", "6"]
-s = tn.SimulationPreparation(all_sims, path=path_sims)
-train_sims = all_sims[:-1]
-val_sim = all_sims[-1]
-
-p_ids = load(open(path + 'training_set.pkl', 'rb'))
-l_ids = load(open(path + 'labels_training_set.pkl', 'rb'))
-v_ids = load(open(path + 'validation_set.pkl', 'rb'))
-l_v_ids = load(open(path + 'labels_validation_set.pkl', 'rb'))
+pearl = True
 
 for i in range(2):
+    np.random.seed(123)
+    python_random.seed(123)
+    tf.compat.v1.set_random_seed(1234)
+
+    if pearl:
+        path = "/mnt/beegfs/work/ati/pearl037/regression/test/"
+        path_sims = "/mnt/beegfs/work/ati/pearl037/"
+    else:
+        path = "/home/luisals/test/"
+        path_sims = "/lfstev/deepskies/luisals/"
+
+    all_sims = ["0", "1", "2", "4", "5", "6"]
+    s = tn.SimulationPreparation(all_sims, path=path_sims)
+    train_sims = all_sims[:-1]
+    val_sim = all_sims[-1]
+
+    p_ids = load(open(path + 'training_set.pkl', 'rb'))
+    l_ids = load(open(path + 'labels_training_set.pkl', 'rb'))
+    v_ids = load(open(path + 'validation_set.pkl', 'rb'))
+    l_v_ids = load(open(path + 'labels_validation_set.pkl', 'rb'))
+
     dim = (51, 51, 51)
     params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
     generator_training = tn.DataGenerator(p_ids, l_ids, s.sims_dic, shuffle=False, **params_tr)
@@ -83,6 +83,7 @@ for i in range(2):
                     # reg_params
                     )
     # del Model
+    gc.collect()
 
 
 
