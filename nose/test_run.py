@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 import random as python_random
 
-pearl = sys.argv(1)
+pearl = sys.argv[1]
 
 #for i in range(2):
 #seed_value = 123
