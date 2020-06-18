@@ -22,8 +22,11 @@ if __name__ == "__main__":
 
     # Load data
 
-    path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
+    # path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
+    # saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
+    path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/" \
+                "lr_decay/cauchy_selec_bound_gamma_train_alpha/full_mass_range/"
+    saving_path = path_data + "test/"
 
     # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
     # num_sample = 50000
