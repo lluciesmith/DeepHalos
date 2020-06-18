@@ -23,6 +23,7 @@ if __name__ == "__main__":
     # Load data
 
     path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
 
     # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
     # num_sample = 50000
@@ -74,7 +75,7 @@ if __name__ == "__main__":
                       dim=generator_training.dim, training_generator=generator_training,
                       validation_generator=generator_validation, num_epochs=60, validation_freq=1,
                       max_queue_size=10, use_multiprocessing=False,  workers=0, verbose=1, num_gpu=1,
-                      save_summary=True, path_summary=path_data,
+                      save_summary=True, path_summary=saving_path, seed=1234,
                       compile=True, train=True, load_weights=None,
                       load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0, **reg_params)
 
