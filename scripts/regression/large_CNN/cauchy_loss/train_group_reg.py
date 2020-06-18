@@ -17,21 +17,24 @@ if __name__ == "__main__":
     python_random.seed(123)
     tf.compat.v1.set_random_seed(1234)
 
-    all_sims = ["0", "1", "2", "4", "5", "6"]
-    s = tn.SimulationPreparation(all_sims, path="/mnt/beegfs/work/ati/pearl037/")
-
     # Load data
 
     # path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
     # saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
+    # path_sims = "/mnt/beegfs/work/ati/pearl037/"
     path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/" \
                 "lr_decay/cauchy_selec_bound_gamma_train_alpha/full_mass_range/"
     saving_path = path_data + "test/"
+    path_sims = "/lfstev/deepskies/luisals/"
+
 
     # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
     # num_sample = 50000
     # saving_path = path_data + str(num_sample) + "/"
     # scaler_output = load(open(saving_path + 'scaler_output.pkl', 'rb'))
+
+    all_sims = ["0", "1", "2", "4", "5", "6"]
+    s = tn.SimulationPreparation(all_sims, path=path_sims)
 
     training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
     training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
