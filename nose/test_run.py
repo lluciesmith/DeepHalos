@@ -84,7 +84,7 @@ reg_params = {'init_gamma': 0.2}
 
 Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                       training_generator=generator_training, validation_generator=generator_validation,
-                      num_epochs=10, validation_freq=1, lr=0.0001, max_queue_size=10,
+                      num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
                       use_multiprocessing=False, seed=1234,
                       workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
                       compile=True, train=True, load_weights=None,
