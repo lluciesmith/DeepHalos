@@ -24,7 +24,7 @@ class CNN:
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
                  lr=0.0001, loss='mse', save_summary=False, path_summary=".", validation_freq=1, train=True,
                  skip_connector=False, compile=True, validation_steps=None, steps_per_epoch=None,
-                 initial_epoch=0, pretrained_model=None, weights=None):
+                 initial_epoch=0, pretrained_model=None, weights=None, seed=None):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -56,6 +56,7 @@ class CNN:
         self.initial_epoch = initial_epoch
         self.pretrained_model = pretrained_model
         self.weights=weights
+        self.seed = seed
 
         self.save = save_model
         self.model_name = model_name
@@ -77,7 +78,7 @@ class CNN:
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
-                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
+                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=False,
                                       callbacks=self.callbacks, validation_freq=self.val_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
         t1 = time.time()
@@ -313,17 +314,17 @@ class CNN:
                 if shape == (3, 3, 3, 1, 4):
                     weight_matrix = np.ones(shape) * 0.001
                     weight_matrix[ind, ind, ind] = 1
-                    return K.random_normal(shape, dtype=dtype) * weight_matrix
+                    return K.random_normal(shape, dtype=dtype, seed=self.seed) * weight_matrix
                 else:
-                    return K.random_normal(shape, dtype=dtype)
+                    return K.random_normal(shape, dtype=dtype, seed=self.seed)
 
             initialiser = my_init
 
         elif self.initialiser == "lecun_normal":
-            initialiser = keras.initializers.lecun_normal()
+            initialiser = keras.initializers.lecun_normal(seed=self.seed)
 
         else:
-            initialiser = keras.initializers.he_uniform()
+            initialiser = keras.initializers.he_uniform(seed=self.seed)
             print("Initialiser is he uniform")
 
         if conv_params == {}:
