@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 import random as python_random
 
-pearl = True
+pearl = False
 
 for i in range(2):
     np.random.seed(123)
