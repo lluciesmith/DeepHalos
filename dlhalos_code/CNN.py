@@ -631,7 +631,7 @@ class CNNCauchy(CNN):
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
-                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=True,
+                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=False,
                                       callbacks=callbacks_list, validation_freq=self.val_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
 
@@ -699,7 +699,7 @@ class CNNCauchy(CNN):
                                        validation_data=self.validation_generator,
                                        use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                        max_queue_size=self.max_queue_size, verbose=self.verbose, epochs=num_epochs,
-                                       shuffle=True, callbacks=callbacks, validation_freq=self.val_freq,
+                                       shuffle=False, callbacks=callbacks, validation_freq=self.val_freq,
                                        validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
         return _tanh_model
 
