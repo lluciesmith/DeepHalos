@@ -477,13 +477,14 @@ class CNNCauchy(CNN):
                                         initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
-        print("Get MSE")
-        self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
-                           steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
-                           verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
-                           workers=workers, num_gpu=1, pool_size=pool_size, initialiser=initialiser,
-                           save_summary=False, path_summary=path_summary, pretrained_model=pretrained_model,
-                           weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
+        if use_mse_n_epoch > 0:
+            print("Get MSE")
+            self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
+                               steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
+                               verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
+                               workers=workers, num_gpu=1, pool_size=pool_size, initialiser=initialiser,
+                               save_summary=False, path_summary=path_summary, pretrained_model=pretrained_model,
+                               weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
 
         self.optimizer = optimizer
 
@@ -620,7 +621,7 @@ class CNNCauchy(CNN):
             tanh_model = self.train_with_tanh_activation(model, callbacks=callbacks_list,
                                                          num_epochs=self.use_tanh_n_epoch)
             model.set_weights(tanh_model.get_weights())
-            self.initial_epoch = 1
+            self.initial_epoch = self.use_tanh_n_epoch
 
         if self.init_alpha is not None:
             print("Initial value of log-alpha is %.5f" % float(K.get_value(loss_layer.alpha)))
