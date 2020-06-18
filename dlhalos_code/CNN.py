@@ -18,7 +18,7 @@ from tensorflow.keras.constraints import Constraint
 
 
 class CNN:
-    def __init__(self, conv_params, fcc_params, model_type="regression", training_generator=None,
+    def __init__(self, conv_params, fcc_params, model_type="regression", training_generator=None, shuffle=True,
                  validation_generator=None, callbacks=None, metrics=None, num_epochs=5, dim=(51, 51, 51),
                  pool_size=(2, 2, 2), initialiser=None, max_queue_size=10, data_format="channels_last",
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
@@ -62,6 +62,7 @@ class CNN:
         self.model_name = model_name
         self.save_summary = save_summary
         self.path_summary = path_summary
+        self.shuffle = shuffle
 
         if train is True:
             self.model, self.history = self.compile_and_fit_model()
@@ -78,7 +79,7 @@ class CNN:
         history = Model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
-                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=False,
+                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=self.shuffle,
                                       callbacks=self.callbacks, validation_freq=self.val_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
         t1 = time.time()
@@ -445,7 +446,7 @@ class CNNCauchy(CNN):
     def __init__(self, conv_params, fcc_params, model_type="regression",
                  init_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0.,
                  init_gamma=0.2, upper_bound_gamma=2., lower_bound_gamma=0.,
-                 regularizer_conv=None, regularizer_dense=None, alpha_mse=None,
+                 regularizer_conv=None, regularizer_dense=None, alpha_mse=None, shuffle=True,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
                  data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
@@ -456,6 +457,7 @@ class CNNCauchy(CNN):
         self.path_model = path_summary
         self.regularizer_conv = regularizer_conv
         self.regularizer_dense = regularizer_dense
+        self.shuffle = shuffle
 
         self.path_model = path_summary
         self.init_gamma = init_gamma
@@ -631,7 +633,7 @@ class CNNCauchy(CNN):
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
-                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=False,
+                                      verbose=self.verbose, epochs=self.num_epochs, shuffle=self.shuffle,
                                       callbacks=callbacks_list, validation_freq=self.val_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
 
@@ -666,6 +668,7 @@ class CNNCauchy(CNN):
             m = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                     training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
                     verbose=verbose, data_format=data_format, use_multiprocessing=use_multiprocessing,
+                    shuffle=self.shuffle,
                     workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser, seed=self.seed,
                     save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
                     weights=weights, max_queue_size=max_queue_size, train=True, compile=True)
@@ -684,8 +687,8 @@ class CNNCauchy(CNN):
         _model = keras.Model(inputs=model.input, outputs=model.layers[-2].output)
 
         _last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
-                                          gamma_constraint=self.constr_gamma, alpha_constraint=self.constr_alpha,
-                                          model=_model, tanh=True)
+                                         gamma_constraint=self.constr_gamma, alpha_constraint=self.constr_alpha,
+                                         tanh=True)
         _predictions = _last_layer(_model.layers[-1].output)
         _tanh_model = keras.Model(inputs=_model.input, outputs=_predictions)
 
@@ -699,7 +702,7 @@ class CNNCauchy(CNN):
                                        validation_data=self.validation_generator,
                                        use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                        max_queue_size=self.max_queue_size, verbose=self.verbose, epochs=num_epochs,
-                                       shuffle=False, callbacks=callbacks, validation_freq=self.val_freq,
+                                       shuffle=self.shuffle, callbacks=callbacks, validation_freq=self.val_freq,
                                        validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
         return _tanh_model
 
