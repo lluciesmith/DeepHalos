@@ -446,7 +446,7 @@ class CNNCauchy(CNN):
     def __init__(self, conv_params, fcc_params, model_type="regression",
                  init_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0.,
                  init_gamma=0.2, upper_bound_gamma=2., lower_bound_gamma=0.,
-                 regularizer_conv=None, regularizer_dense=None, alpha_mse=None, shuffle=True,
+                 regularizer_conv=None, regularizer_dense=None, alpha_mse=0.0001, shuffle=True,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
                  data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
@@ -478,7 +478,7 @@ class CNNCauchy(CNN):
                                         workers=workers, num_gpu=1, pool_size=pool_size,
                                         initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model, seed=seed,
-                                        weights=weights, max_queue_size=max_queue_size, train=False, compile=True)
+                                        weights=weights, max_queue_size=max_queue_size, train=False, compile=False)
         if use_mse_n_epoch > 0:
             print("Get MSE")
             self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
@@ -654,7 +654,7 @@ class CNNCauchy(CNN):
             conv_keys = [layer for layer in conv_params2.keys()]
             for key in conv_keys:
                 if 'kernel_regularizer' not in conv_params2[key]:
-                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(0.0001)
+                    conv_params2[key]['kernel_regularizer'] = self.regularizer_conv(self.alpha_mse)
 
             print("Modify FCC parameters for MSE epoch")
             fcc_params2 = copy.deepcopy(fcc_params)
