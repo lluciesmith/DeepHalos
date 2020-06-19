@@ -11,6 +11,7 @@ import random as python_random
 
 if __name__ == "__main__":
 
+    pearl = sys.argv[1]
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     # np.random.seed(123)
@@ -18,14 +19,16 @@ if __name__ == "__main__":
     # tf.compat.v1.set_random_seed(1234)
 
     # Load data
+    if pearl is True:
+        path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
+        saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/diff_seeds/"
+        path_sims = "/mnt/beegfs/work/ati/pearl037/"
 
-    # path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
-    # saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/diff_seeds/"
-    # path_sims = "/mnt/beegfs/work/ati/pearl037/"
-    path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/" \
-                "lr_decay/cauchy_selec_bound_gamma_train_alpha/full_mass_range/"
-    saving_path = path_data + "test/diff_seeds/"
-    path_sims = "/lfstev/deepskies/luisals/"
+    else:
+        path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/" \
+                    "lr_decay/cauchy_selec_bound_gamma_train_alpha/full_mass_range/"
+        saving_path = path_data + "test/diff_seeds/"
+        path_sims = "/lfstev/deepskies/luisals/"
 
 
     # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
