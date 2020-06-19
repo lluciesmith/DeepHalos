@@ -12,6 +12,7 @@ import random as python_random
 if __name__ == "__main__":
 
     pearl = sys.argv[1]
+    print(pearl)
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     # np.random.seed(123)
@@ -19,7 +20,7 @@ if __name__ == "__main__":
     # tf.compat.v1.set_random_seed(1234)
 
     # Load data
-    if pearl == "0":
+    if pearl == "pearl":
         path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
         saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/diff_seeds/"
         path_sims = "/mnt/beegfs/work/ati/pearl037/"
@@ -80,12 +81,12 @@ if __name__ == "__main__":
 
     # Train for one epoch using MSE loss
 
-    Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression",
+    Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
                       dim=generator_training.dim, training_generator=generator_training,
                       validation_generator=generator_validation, num_epochs=60, validation_freq=1,
                       max_queue_size=10, use_multiprocessing=False,  workers=0, verbose=1, num_gpu=1,
                       save_summary=True, path_summary=saving_path, seed=None,
                       compile=True, train=True, load_weights=None,
-                      load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0, **reg_params)
+                      load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0, **reg_params)
 
 
