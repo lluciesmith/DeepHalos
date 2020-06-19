@@ -19,7 +19,7 @@ if __name__ == "__main__":
     # tf.compat.v1.set_random_seed(1234)
 
     # Load data
-    if pearl is True:
+    if pearl == "0":
         path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
         saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/diff_seeds/"
         path_sims = "/mnt/beegfs/work/ati/pearl037/"
