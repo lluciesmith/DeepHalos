@@ -15,7 +15,7 @@ if __name__ == "__main__":
     # Create the generators for training
 
     path = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/lr_decay" \
-           "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/9_sims_200k/lr_5_10-4/"
+           "/cauchy_selec_bound_gamma_train_alpha/full_mass_range/9_sims_200k/lr_10-3/"
     path_sims = "/lfstev/deepskies/luisals/"
     # path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3/"
     # path_sims = "/mnt/beegfs/work/ati/pearl037/"
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                           training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=60, validation_freq=1, lr=0.0005, max_queue_size=10,
+                          num_epochs=60, validation_freq=1, lr=0.001, max_queue_size=10,
                           use_multiprocessing=False,
                           workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
                           compile=True, train=True, load_weights=None,
