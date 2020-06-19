@@ -13,19 +13,19 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    np.random.seed(123)
-    python_random.seed(123)
-    tf.compat.v1.set_random_seed(1234)
+    # np.random.seed(123)
+    # python_random.seed(123)
+    # tf.compat.v1.set_random_seed(1234)
 
     # Load data
 
-    # path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
-    # saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
-    # path_sims = "/mnt/beegfs/work/ati/pearl037/"
-    path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/" \
-                "lr_decay/cauchy_selec_bound_gamma_train_alpha/full_mass_range/"
-    saving_path = path_data + "test/"
-    path_sims = "/lfstev/deepskies/luisals/"
+    path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/diff_seeds/"
+    path_sims = "/mnt/beegfs/work/ati/pearl037/"
+    # path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/" \
+    #             "lr_decay/cauchy_selec_bound_gamma_train_alpha/full_mass_range/"
+    # saving_path = path_data + "test/diff_seeds/"
+    # path_sims = "/lfstev/deepskies/luisals/"
 
 
     # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
@@ -81,7 +81,7 @@ if __name__ == "__main__":
                       dim=generator_training.dim, training_generator=generator_training,
                       validation_generator=generator_validation, num_epochs=60, validation_freq=1,
                       max_queue_size=10, use_multiprocessing=False,  workers=0, verbose=1, num_gpu=1,
-                      save_summary=True, path_summary=saving_path, seed=1234,
+                      save_summary=True, path_summary=saving_path, seed=None,
                       compile=True, train=True, load_weights=None,
                       load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0, **reg_params)
 
