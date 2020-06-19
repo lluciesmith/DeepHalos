@@ -22,13 +22,13 @@ if __name__ == "__main__":
     # Load data
     if pearl == "pearl":
         path_data = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/"
-        saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/diff_seeds/"
+        saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range_51_3_fermi/diff_seeds2/"
         path_sims = "/mnt/beegfs/work/ati/pearl037/"
 
     else:
         path_data = "/lfstev/deepskies/luisals/regression/large_CNN/test_lowmass/reg_10000_perbin/larger_net/" \
                     "lr_decay/cauchy_selec_bound_gamma_train_alpha/full_mass_range/"
-        saving_path = path_data + "test/diff_seeds/"
+        saving_path = path_data + "test/diff_seeds2/"
         path_sims = "/lfstev/deepskies/luisals/"
 
 
@@ -87,6 +87,6 @@ if __name__ == "__main__":
                       max_queue_size=10, use_multiprocessing=False,  workers=0, verbose=1, num_gpu=1,
                       save_summary=True, path_summary=saving_path, seed=None,
                       compile=True, train=True, load_weights=None,
-                      load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0, **reg_params)
+                      load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0, **reg_params)
 
 
