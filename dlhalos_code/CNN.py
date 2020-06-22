@@ -445,7 +445,7 @@ class CNNCauchy(CNN):
 
     def __init__(self, conv_params, fcc_params, model_type="regression",
                  init_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0.,
-                 init_gamma=0.2, upper_bound_gamma=2., lower_bound_gamma=0.,
+                 train_gamma=True, init_gamma=0.2, upper_bound_gamma=2., lower_bound_gamma=0.,
                  regularizer_conv=None, regularizer_dense=None, alpha_mse=0.0001, shuffle=True,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
                  data_format="channels_last", validation_freq=1, period_model_save=1, dim=(51, 51, 51),
@@ -460,6 +460,7 @@ class CNNCauchy(CNN):
         self.shuffle = shuffle
 
         self.path_model = path_summary
+        self.train_gamma = train_gamma
         self.init_gamma = init_gamma
         self.LB_gamma = lower_bound_gamma
         self.UB_gamma = upper_bound_gamma
@@ -528,43 +529,6 @@ class CNNCauchy(CNN):
                     np.save(self.path_model + 'trained_loss_gamma.npy', g)
 
     def compile_cauchy_model(self, mse_model, tanh=False):
-        # Define Cauchy model
-        last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
-                                         gamma_constraint=self.constr_gamma, alpha_constraint=self.constr_alpha,
-                                         tanh=tanh)
-        predictions = last_layer(mse_model.layers[-1].output)
-        new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
-
-        loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
-
-        if self.init_alpha is not None:
-            print("These are the losses from the Cauchy model before adding regularizers:")
-            print(new_model.losses)
-
-            alpha = K.pow(10., loss_params_layer.alpha)
-
-            def add_conv_reg(index):
-                f = lambda: self.regularizer_conv(alpha)(new_model.layers[index].kernel)
-                return new_model.add_loss(f)
-
-            def add_dense_reg(index):
-                f = lambda: self.regularizer_dense(alpha)(new_model.layers[index].kernel)
-                return new_model.add_loss(f)
-
-            names_layers = [layer.name for layer in new_model.layers]
-            conv_layers = [s for s in names_layers if 'conv3d' in s]
-            indices_conv = [i for i, item in enumerate(names_layers) if item in conv_layers]
-            for i in range(len(indices_conv)):
-                add_conv_reg(indices_conv[i])
-
-            dense_layers = [s for s in names_layers if 'dense' in s]
-            indices_dense = [i for i, item in enumerate(names_layers) if item in dense_layers]
-            for i in range(len(indices_dense)):
-                add_dense_reg(indices_dense[i])
-
-        print("These are the final losses from the Cauchy model:")
-        print(new_model.losses)
-
         if self.optimizer is None:
             optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
                                               amsgrad=True)
@@ -572,18 +536,61 @@ class CNNCauchy(CNN):
             print("Use loaded optimizer")
             optimiser = self.optimizer
 
-        loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
-        loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
+        if self.train_gamma is False:
+            loss_c = lf.cauchy_selection_loss_fixed_boundary(gamma=self.init_gamma)
+            mse_model.compile(loss=loss_c, optimizer=optimiser)
+            return mse_model
 
-        if self.num_gpu > 1:
-            parallel_model = multi_gpu_model(new_model, gpus=self.num_gpu, cpu_relocation=True, cpu_merge=True)
-            parallel_model.compile(loss=loss_c, optimizer=optimiser)
-            return parallel_model
         else:
-            new_model.compile(loss=loss_c, optimizer=optimiser)
-            return new_model
+            # Define Cauchy model
+            last_layer = LossTrainableParams(init_gamma=self.init_gamma, init_alpha=self.init_alpha,
+                                             gamma_constraint=self.constr_gamma, alpha_constraint=self.constr_alpha,
+                                             tanh=tanh)
+            predictions = last_layer(mse_model.layers[-1].output)
+            new_model = keras.Model(inputs=mse_model.input, outputs=predictions)
 
-    def get_callbacks(self, layer_loss):
+            loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
+
+            if self.init_alpha is not None:
+                print("These are the losses from the Cauchy model before adding regularizers:")
+                print(new_model.losses)
+
+                alpha = K.pow(10., loss_params_layer.alpha)
+
+                def add_conv_reg(index):
+                    f = lambda: self.regularizer_conv(alpha)(new_model.layers[index].kernel)
+                    return new_model.add_loss(f)
+
+                def add_dense_reg(index):
+                    f = lambda: self.regularizer_dense(alpha)(new_model.layers[index].kernel)
+                    return new_model.add_loss(f)
+
+                names_layers = [layer.name for layer in new_model.layers]
+                conv_layers = [s for s in names_layers if 'conv3d' in s]
+                indices_conv = [i for i, item in enumerate(names_layers) if item in conv_layers]
+                for i in range(len(indices_conv)):
+                    add_conv_reg(indices_conv[i])
+
+                dense_layers = [s for s in names_layers if 'dense' in s]
+                indices_dense = [i for i, item in enumerate(names_layers) if item in dense_layers]
+                for i in range(len(indices_dense)):
+                    add_dense_reg(indices_dense[i])
+
+            print("These are the final losses from the Cauchy model:")
+            print(new_model.losses)
+
+            loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
+            loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
+
+            if self.num_gpu > 1:
+                parallel_model = multi_gpu_model(new_model, gpus=self.num_gpu, cpu_relocation=True, cpu_merge=True)
+                parallel_model.compile(loss=loss_c, optimizer=optimiser)
+                return parallel_model
+            else:
+                new_model.compile(loss=loss_c, optimizer=optimiser)
+                return new_model
+
+    def get_callbacks(self, layer_loss=None):
         callbacks_list = []
 
         # checkpoint
@@ -597,37 +604,46 @@ class CNNCauchy(CNN):
             lrate = callbacks.LearningRateScheduler(self.lr_scheduler_exponential)
             callbacks_list.append(lrate)
 
-        # collect weights last layer
-        cbk = CollectWeightCallback(layer_index=-1)
-        callbacks_list.append(cbk)
+        if self.train_gamma is True:
+            # collect weights last layer
+            cbk = CollectWeightCallback(layer_index=-1)
+            callbacks_list.append(cbk)
+
+            # Alpha logger
+            alpha_logger = RegularizerCallback(layer_loss, alpha_check=[True if self.init_alpha is not None else False][0])
+            callbacks_list.append(alpha_logger)
+
+        else:
+            cbk = None
 
         # Record training history in log file
         csv_logger = callbacks.CSVLogger(self.path_model + "training.log", separator=',', append=True)
         callbacks_list.append(csv_logger)
 
-        # Alpha logger
-        alpha_logger = RegularizerCallback(layer_loss, alpha_check=[True if self.init_alpha is not None else False][0])
-        callbacks_list.append(alpha_logger)
         return callbacks_list, cbk
 
     def train_cauchy_model(self, model):
-        # callbacks
-        loss_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
-        callbacks_list, cbk = self.get_callbacks(loss_layer)
+        if self.train_gamma is False:
+            callbacks_list, cbk = self.get_callbacks()
 
-        # Train model
-        if self.use_tanh_n_epoch > 0:
-            print("Training for " + str(self.use_tanh_n_epoch) + " epoch with a tanh activation in the last layer")
+        else:
+            # callbacks
+            loss_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
+            callbacks_list, cbk = self.get_callbacks(loss_layer)
 
-            # Define a different model with different last layer and the load its weights onto current model
-            tanh_model = self.train_with_tanh_activation(model, callbacks=callbacks_list,
-                                                         num_epochs=self.use_tanh_n_epoch)
-            model.set_weights(tanh_model.get_weights())
-            self.initial_epoch = self.use_tanh_n_epoch
+            # Train model
+            if self.use_tanh_n_epoch > 0:
+                print("Training for " + str(self.use_tanh_n_epoch) + " epoch with a tanh activation in the last layer")
 
-        if self.init_alpha is not None:
-            print("Initial value of log-alpha is %.5f" % float(K.get_value(loss_layer.alpha)))
-        print("Initial value of gamma is %.5f" % float(K.get_value(loss_layer.gamma)))
+                # Define a different model with different last layer and the load its weights onto current model
+                tanh_model = self.train_with_tanh_activation(model, callbacks=callbacks_list,
+                                                             num_epochs=self.use_tanh_n_epoch)
+                model.set_weights(tanh_model.get_weights())
+                self.initial_epoch = self.use_tanh_n_epoch
+
+            if self.init_alpha is not None:
+                print("Initial value of log-alpha is %.5f" % float(K.get_value(loss_layer.alpha)))
+            print("Initial value of gamma is %.5f" % float(K.get_value(loss_layer.gamma)))
 
         print("Start training with a linear activation in the last layer")
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
@@ -637,7 +653,7 @@ class CNNCauchy(CNN):
                                       callbacks=callbacks_list, validation_freq=self.val_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
 
-        return model, history, cbk.weights
+        return model, history, [cbk.weights if self.train_gamma is True else None][0]
 
     def get_mse_model(self, load_mse_weights, conv_params, fcc_params, model_type="regression",
                       training_generator=None, steps_per_epoch=None, data_format="channels_last", dim=(51, 51, 51),
@@ -668,10 +684,10 @@ class CNNCauchy(CNN):
             m = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
                     training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
                     verbose=verbose, data_format=data_format, use_multiprocessing=use_multiprocessing,
-                    shuffle=self.shuffle,
-                    workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser, seed=self.seed,
-                    save_summary=save_summary, path_summary=path_summary, pretrained_model=pretrained_model,
-                    weights=weights, max_queue_size=max_queue_size, train=True, compile=True)
+                    shuffle=self.shuffle, seed=self.seed, workers=workers, num_gpu=num_gpu, pool_size=pool_size,
+                    initialiser=initialiser, save_summary=save_summary, path_summary=path_summary,
+                    pretrained_model=pretrained_model, weights=weights, max_queue_size=max_queue_size,
+                    train=True, compile=True)
             self.model.set_weights(m.model.get_weights())
             self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
