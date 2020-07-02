@@ -73,8 +73,15 @@ param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons
 reg_params = {'init_gamma': 0.2}
 
 path1 = path + 'run_' + str(run) + '/'
-os.mkdir(path1)
-os.mkdir(path1 + "/model")
+try:
+    os.mkdir(path1)
+except:
+    pass
+
+try:
+    os.mkdir(path1 + "/model")
+except:
+    pass
 
 # Train for 100 epochs
 
