@@ -13,19 +13,22 @@ import tensorflow as tf
 import random as python_random
 
 pearl = sys.argv[1]
-print(pearl)
+run = sys.argv[2]
 
-#for i in range(2):
-#seed_value = 123
-np.random.seed(123)
-python_random.seed(123)
-tf.compat.v1.set_random_seed(1234)
+print(pearl)
+print(run)
+
+# for i in range(2):
+# seed_value = 123
+# np.random.seed(123)
+# python_random.seed(123)
+# tf.compat.v1.set_random_seed(1234)
 
 if pearl:
-    path = "/mnt/beegfs/work/ati/pearl037/regression/test/"
+    path = "/mnt/beegfs/work/ati/pearl037/regression/test/fermi_training/"
     path_sims = "/mnt/beegfs/work/ati/pearl037/"
 else:
-    path = "/home/luisals/test/"
+    path = "/home/luisals/test2/"
     path_sims = "/lfstev/deepskies/luisals/"
 
 all_sims = ["0", "1", "2", "4", "5", "6"]
@@ -69,92 +72,17 @@ param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons
 
 reg_params = {'init_gamma': 0.2}
 
-# for i in range(10):
-#     np.random.seed(123)
-#     python_random.seed(123)
-#     tf.compat.v1.set_random_seed(1234)
-#
-#     try:
-#         os.mkdir(path + 'run_' + str(i))
-#     except:
-#         pass
-#     path1 = path + 'run_' + str(i) + '/'
+path1 = path + 'run_' + str(run) + '/'
+os.mkdir(path1)
+os.mkdir(path1 + "/model")
 
 # Train for 100 epochs
 
 Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
                       training_generator=generator_training, validation_generator=generator_validation,
                       num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
-                      use_multiprocessing=False, seed=1234,
+                      use_multiprocessing=False,
                       workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
                       compile=True, train=True, load_weights=None,
-                      load_mse_weights=True, use_mse_n_epoch=10, use_tanh_n_epoch=0,
+                      load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
                       **reg_params)
-
-# Model1 = CNN.CNN(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-#                 training_generator=generator_training, validation_generator=generator_validation,
-#                 num_epochs=5, validation_freq=1, lr=0.0001, max_queue_size=10,
-#                 use_multiprocessing=False, seed=1234,
-#                 workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
-#                 compile=True, train=True,
-#                 # load_weights=None, load_mse_weights=False, use_mse_n_epoch=10, use_tanh_n_epoch=0,
-#                 # reg_params
-#                 )
-#
-#
-# Model2 = CNN.CNN(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-#                 training_generator=generator_training, validation_generator=generator_validation,
-#                 num_epochs=5, validation_freq=1, lr=0.0001, max_queue_size=10,
-#                 use_multiprocessing=False, seed=1234,
-#                 workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
-#                 compile=True, train=True,
-#                 # load_weights=None, load_mse_weights=False, use_mse_n_epoch=10, use_tanh_n_epoch=0,
-#                 # reg_params
-#                 )
-
-# del tn
-# from dlhalos_code import data_processing as tn
-# import importlib
-# importlib.reload(tn)
-# s = tn.SimulationPreparation(all_sims, path=path_sims)
-# generator_training = tn.DataGenerator(p_ids, l_ids, s.sims_dic, shuffle=False, **params_tr)
-# generator_validation = tn.DataGenerator(v_ids, l_v_ids, s.sims_dic, shuffle=False, **params_tr)
-#
-# Model = CNN.CNN(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-#                 training_generator=generator_training, validation_generator=generator_validation,
-#                 num_epochs=5, validation_freq=1, lr=0.0001, max_queue_size=10,
-#                 use_multiprocessing=False,
-#                 workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path,
-#                 compile=True, train=True,
-#                 # load_weights=None, load_mse_weights=False, use_mse_n_epoch=10, use_tanh_n_epoch=0,
-#                 # reg_params
-#                 )
-
-# del Model
-# gc.collect()
-
-
-
-# training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax",
-#                                     return_rescaled_outputs=True, output_range=(-1, 1), load_ids=False,
-#                                     random_style="random", random_subset_all=1000, random_subset_each_sim=1000,
-#                                     path=path_sims)
-#
-# dump(training_set.particle_IDs, open(path + 'training_set.pkl', 'wb'))
-# dump(training_set.labels_particle_IDS, open(path + 'labels_training_set.pkl', 'wb'))
-# dump(training_set.scaler_output, open(path + 'scaler_output.pkl', 'wb'))
-#
-# v_set = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False, shuffle=True,
-#                              random_style="random", random_subset_all=200, random_subset_each_sim=None,
-#                              scaler_output=training_set.scaler_output, path=path_sims)
-# dump(v_set.particle_IDs, open(path + 'validation_set.pkl', 'wb'))
-# dump(v_set.labels_particle_IDS, open(path + 'labels_validation_set.pkl', 'wb'))
-#
-# dim = (51, 51, 51)
-# params_tr = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
-# generator_training = tn.DataGenerator(training_set.particle_IDs, training_set.labels_particle_IDS, s.sims_dic,
-#                                       shuffle=True, **params_tr)
-#
-# params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
-# generator_validation = tn.DataGenerator(v_set.particle_IDs, v_set.labels_particle_IDS, s.sims_dic,
-#                                         shuffle=True, **params_val)
