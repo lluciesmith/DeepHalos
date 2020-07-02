@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 import random as python_random
 
-pearl = sys.argv[1]
+pearl = bool(sys.argv[1])
 run = sys.argv[2]
 
 print(pearl)
