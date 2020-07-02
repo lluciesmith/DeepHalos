@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 import random as python_random
 
-pearl = bool(sys.argv[1])
+pearl = sys.argv[1]
 run = sys.argv[2]
 
 print(pearl)
@@ -24,12 +24,12 @@ print(run)
 # python_random.seed(123)
 # tf.compat.v1.set_random_seed(1234)
 
-if pearl:
-    path = "/mnt/beegfs/work/ati/pearl037/regression/test/fermi_training/"
-    path_sims = "/mnt/beegfs/work/ati/pearl037/"
-else:
+if pearl == "fermi":
     path = "/home/luisals/test2/"
     path_sims = "/lfstev/deepskies/luisals/"
+else:
+    path = "/mnt/beegfs/work/ati/pearl037/regression/test/fermi_training/"
+    path_sims = "/mnt/beegfs/work/ati/pearl037/"
 
 all_sims = ["0", "1", "2", "4", "5", "6"]
 s = tn.SimulationPreparation(all_sims, path=path_sims)
