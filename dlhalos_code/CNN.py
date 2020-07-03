@@ -476,7 +476,7 @@ class CNNCauchy(CNN):
                                         steps_per_epoch=steps_per_epoch, training_generator=training_generator,
                                         dim=dim, loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
                                         data_format=data_format, use_multiprocessing=use_multiprocessing,
-                                        workers=workers, num_gpu=1, pool_size=pool_size,
+                                        workers=workers, num_gpu=num_gpu, pool_size=pool_size,
                                         initialiser=initialiser, save_summary=save_summary,
                                         path_summary=path_summary, pretrained_model=pretrained_model, seed=seed,
                                         weights=weights, max_queue_size=max_queue_size, train=False, compile=False)
@@ -485,7 +485,7 @@ class CNNCauchy(CNN):
             self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
                                steps_per_epoch=steps_per_epoch, training_generator=training_generator, dim=dim, lr=lr,
                                verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
-                               workers=workers, num_gpu=1, pool_size=pool_size, initialiser=initialiser,
+                               workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
                                save_summary=False, path_summary=path_summary, pretrained_model=pretrained_model,
                                weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
 

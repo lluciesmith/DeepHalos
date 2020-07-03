@@ -31,11 +31,7 @@ if __name__ == "__main__":
         saving_path = path_data + "test/diff_seeds2/"
         path_sims = "/lfstev/deepskies/luisals/"
 
-
-    # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
-    # num_sample = 50000
-    # saving_path = path_data + str(num_sample) + "/"
-    # scaler_output = load(open(saving_path + 'scaler_output.pkl', 'rb'))
+    path = "/mnt/beegfs/work/ati/pearl037/regression/test/fermi_training/"
 
     all_sims = ["0", "1", "2", "4", "5", "6"]
     s = tn.SimulationPreparation(all_sims, path=path_sims)
@@ -61,7 +57,7 @@ if __name__ == "__main__":
     alpha = 10**(-3.5)
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)}
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
