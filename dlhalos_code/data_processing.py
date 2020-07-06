@@ -385,7 +385,7 @@ class DataGenerator(Sequence):
 
         self.rescale_mean = rescale_mean
         self.rescale_std = rescale_std
-        # self.preprocess_density_contrasts()
+        self.preprocess_density_contrasts()
 
         self.on_epoch_end()
 
@@ -408,11 +408,6 @@ class DataGenerator(Sequence):
                 return X, y, w
         else:
             raise IndexError("Batch " + str(index) + " is empty.")
-
-    @pynbody.derived_array
-    def rescaled_density_contrast_3d(self, sim):
-        d = (sim['den_contrast'] - self.rescale_mean) / self.rescale_std
-        return d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
 
     def on_epoch_end(self):
         self.indexes = np.arange(len(self.list_IDs))
@@ -492,6 +487,16 @@ class DataGenerator(Sequence):
             w[i] = self.weights[ID]
 
         return X, y, w
+
+    def preprocess_density_contrasts(self):
+        for simulation in self.sims.keys():
+            self.rescaled_density_contrast_3d(simulation)
+
+    def rescaled_density_contrast_3d(self, sim):
+        d = (sim['den_contrast'] - self.rescale_mean) / self.rescale_std
+        d = d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
+        sim['rescaled_density_contrast_3d'] = d
+
 
 
 @njit(parallel=True)
