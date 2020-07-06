@@ -385,7 +385,7 @@ class DataGenerator(Sequence):
 
         self.rescale_mean = rescale_mean
         self.rescale_std = rescale_std
-        self.preprocess_density_contrasts()
+        # self.preprocess_density_contrasts()
 
         self.on_epoch_end()
 
