@@ -416,7 +416,7 @@ class DataGenerator(Sequence):
             np.random.shuffle(self.indexes)
 
     def preprocess_density_contrasts(self):
-        for simulation_index in self.sims:
+        for simulation_index in self.sims.keys():
             sim_snapshot = self.sims[simulation_index]
             den_contrast = sim_snapshot['den_contrast']
             s_rescaled = (den_contrast - self.rescale_mean) / self.rescale_std
