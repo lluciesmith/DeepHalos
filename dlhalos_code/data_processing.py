@@ -385,7 +385,8 @@ class DataGenerator(Sequence):
 
         self.rescale_mean = rescale_mean
         self.rescale_std = rescale_std
-        # self.preprocess_density_contrasts()
+        self.sims_rescaled_density = OrderedDict()
+        self.preprocess_density_contrasts()
 
         self.on_epoch_end()
 
@@ -422,9 +423,8 @@ class DataGenerator(Sequence):
         return s.reshape((*self.dim, self.n_channels))
 
     def generate_input(self, simulation_index, particle_id):
-        sim_snapshot = self.sims[simulation_index]
-        i0, j0, k0 = sim_snapshot['coords'][particle_id]
-        delta_sim = sim_snapshot['rescaled_density_contrast_3d']
+        i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
+        delta_sim = self.sims_rescaled_density[simulation_index]
 
         output_matrix = np.zeros((self.res, self.res, self.res))
         s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
@@ -490,15 +490,11 @@ class DataGenerator(Sequence):
 
     def preprocess_density_contrasts(self):
         for i, simulation in self.sims.items():
-            self.rescaled_density_contrast_3d(simulation)
+            self.sims_rescaled_density[i] = self.rescaled_density_contrast_3d(simulation)
 
     def rescaled_density_contrast_3d(self, sim):
-        try:
-            sim['rescaled_density_contrast_3d']
-        except KeyError:
-            d = (sim['den_contrast'] - self.rescale_mean) / self.rescale_std
-            d = d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
-            sim['rescaled_density_contrast_3d'] = d
+        d = (sim['den_contrast'] - self.rescale_mean) / self.rescale_std
+        return d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
 
 
 
