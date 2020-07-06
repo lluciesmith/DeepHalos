@@ -132,7 +132,7 @@ class CNN:
         else:
             raise NameError("Choose either regression or binary classification as model type")
 
-        print(Model.summary())
+        # print(Model.summary())
         return parallel_model
 
     def compile_model_single_gpu(self):
@@ -166,7 +166,7 @@ class CNN:
         else:
             raise NameError("Choose either regression or binary classification as model type")
 
-        print(Model.summary())
+        # print(Model.summary())
         return Model
 
     def uncompiled_model(self):
@@ -185,7 +185,7 @@ class CNN:
         else:
             raise NameError("Choose either regression or binary classification as model type")
 
-        print(Model.summary())
+        # print(Model.summary())
         return Model
 
     def regression_model_w_layers(self, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
