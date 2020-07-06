@@ -409,18 +409,16 @@ class DataGenerator(Sequence):
         else:
             raise IndexError("Batch " + str(index) + " is empty.")
 
+    @pynbody.derived_array
+    def rescaled_density_contrast_3d(self, sim):
+        d = (sim['den_contrast'] - self.rescale_mean) / self.rescale_std
+        return d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
+
     def on_epoch_end(self):
         self.indexes = np.arange(len(self.list_IDs))
         if self.shuffle is True:
             print("Be very aware of setting shuffle=True! I think there is a bug here")
             np.random.shuffle(self.indexes)
-
-    def preprocess_density_contrasts(self):
-        for simulation_index in self.sims.keys():
-            sim_snapshot = self.sims[simulation_index]
-            den_contrast = sim_snapshot['den_contrast']
-            s_rescaled = (den_contrast - self.rescale_mean) / self.rescale_std
-            sim_snapshot['den_contrast'] = s_rescaled.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
 
     def _process_input(self, s):
         # s_t = np.transpose(s, axes=(1, 0, 2))
@@ -431,8 +429,7 @@ class DataGenerator(Sequence):
     def generate_input(self, simulation_index, particle_id):
         sim_snapshot = self.sims[simulation_index]
         i0, j0, k0 = sim_snapshot['coords'][particle_id]
-        # delta_sim = sim_snapshot['den_contrast'].reshape(self.shape_sim, self.shape_sim, self.shape_sim)
-        delta_sim = sim_snapshot['den_contrast']
+        delta_sim = sim_snapshot['rescaled_density_contrast_3d']
 
         output_matrix = np.zeros((self.res, self.res, self.res))
         s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
