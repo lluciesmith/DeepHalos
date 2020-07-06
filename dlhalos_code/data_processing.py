@@ -489,13 +489,16 @@ class DataGenerator(Sequence):
         return X, y, w
 
     def preprocess_density_contrasts(self):
-        for simulation in self.sims.keys():
+        for i, simulation in self.sims.items():
             self.rescaled_density_contrast_3d(simulation)
 
     def rescaled_density_contrast_3d(self, sim):
-        d = (sim['den_contrast'] - self.rescale_mean) / self.rescale_std
-        d = d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
-        sim['rescaled_density_contrast_3d'] = d
+        try:
+            sim['rescaled_density_contrast_3d']
+        except KeyError:
+            d = (sim['den_contrast'] - self.rescale_mean) / self.rescale_std
+            d = d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
+            sim['rescaled_density_contrast_3d'] = d
 
 
 
