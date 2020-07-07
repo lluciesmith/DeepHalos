@@ -452,7 +452,8 @@ class CNNCauchy(CNN):
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1, seed=None,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5, lr_scheduler=True,
-                 load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0, optimizer=None):
+                 load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0, optimizer=None,
+                 initial_epoch=None):
 
         self.path_model = path_summary
         self.regularizer_conv = regularizer_conv
@@ -506,6 +507,9 @@ class CNNCauchy(CNN):
         self.mse_model = self.model
         self.compile = compile
         self.train = train
+
+        if initial_epoch is not None:
+            self.initial_epoch = initial_epoch
 
         if self.compile is True:
             print("compiling")
