@@ -416,20 +416,6 @@ class DataGenerator(Sequence):
             print("Be very aware of setting shuffle=True! I think there is a bug here")
             np.random.shuffle(self.indexes)
 
-    def _process_input(self, s):
-        # s_t = np.transpose(s, axes=(1, 0, 2))
-        # Rescale inputs
-        # s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
-        return s.reshape((*self.dim, self.n_channels))
-
-    def generate_input(self, simulation_index, particle_id):
-        i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
-        delta_sim = self.sims_rescaled_density[simulation_index]
-
-        output_matrix = np.zeros((self.res, self.res, self.res))
-        s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
-        return s
-
     def __data_generation(self, list_IDs_temp):
         """ Loads data containing batch_size samples """
 
@@ -444,24 +430,6 @@ class DataGenerator(Sequence):
 
             particle_ID = int(ID[9:])
             s = self.generate_input(sim_index, particle_ID)
-
-            # load box
-
-            # particle_ID = ID[9:]
-            #
-            # if self.res == 51:
-            #     path_midddle = "training_set/"
-            # elif self.res == 75:
-            #     path_midddle = "training_set_res75/"
-            # else:
-            #     raise (ValueError, "I have subboxes only for 51 or 75 cubed resolution.")
-            #
-            # if sim_index == "0":
-            #     s = np.load('/lfstev/deepskies/luisals/training_simulation/' + path_midddle + particle_ID +
-            #                 '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
-            # else:
-            #     s = np.load("/lfstev/deepskies/luisals/reseed" + sim_index + "_simulation/" + path_midddle +
-            #                 particle_ID + '/subbox_' + str(self.res) + '_particle_' + particle_ID + '.npy')
 
             X[i] = self._process_input(s)
             y[i] = self.labels[ID]
@@ -487,6 +455,20 @@ class DataGenerator(Sequence):
             w[i] = self.weights[ID]
 
         return X, y, w
+
+    def _process_input(self, s):
+        # s_t = np.transpose(s, axes=(1, 0, 2))
+        # Rescale inputs
+        # s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
+        return s.reshape((*self.dim, self.n_channels))
+
+    def generate_input(self, simulation_index, particle_id):
+        i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
+        delta_sim = self.sims_rescaled_density[simulation_index]
+
+        output_matrix = np.zeros((self.res, self.res, self.res))
+        s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+        return s
 
     def preprocess_density_contrasts(self):
         for i, simulation in self.sims.items():
