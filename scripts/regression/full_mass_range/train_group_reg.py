@@ -5,13 +5,15 @@ from pickle import load
 import numpy as np
 import tensorflow as tf
 import random as python_random
+import sys
 
 
 if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
+    runi = sys.argv[1]
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/" + str(runi)
 
     seed = 123
     np.random.seed(seed)
@@ -64,15 +66,15 @@ if __name__ == "__main__":
 
     # Train for one epoch using MSE loss and the rest using a Cauchy loss
 
-    weights = saving_path + "model/weights.03.h5"
+    # weights = saving_path + "model/weights.03.h5"
     Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
                           dim=generator_training.dim, training_generator=generator_training,
                           validation_generator=generator_validation, validation_freq=1,
                           num_epochs=100, verbose=1, seed=seed, init_gamma=0.2,
                           max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
                           save_summary=True,  path_summary=saving_path, compile=True, train=True,
-                          load_weights=weights, initial_epoch=3,
-                          alpha_mse=10**-4, load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0
+                          # load_weights=weights, initial_epoch=3,
+                          alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0
                           )
 
     # Model = CNN.CNN(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
