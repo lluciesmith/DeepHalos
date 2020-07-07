@@ -69,9 +69,9 @@ if __name__ == "__main__":
                           validation_generator=generator_validation, validation_freq=1,
                           num_epochs=100, verbose=1, seed=seed, init_gamma=0.2,
                           max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
-                          save_summary=True,  path_summary=saving_path, compile=True, train=False,
+                          save_summary=True,  path_summary=saving_path, compile=True, train=True,
                           load_weights=None, initial_epoch=None,
-                          alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0
+                          alpha_mse=10**-4, load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0
                           )
 
 # Model = CNN.CNN(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
