@@ -479,7 +479,6 @@ class DataGenerator(Sequence):
         return d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
 
 
-
 @njit(parallel=True)
 def compute_subbox(i0, j0, k0, width, input_matrix, output_matrix, shape_input):
     i0 -= width // 2

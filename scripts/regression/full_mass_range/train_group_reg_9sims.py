@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/"
 
     seed = 123
     np.random.seed(seed)
@@ -21,10 +21,10 @@ if __name__ == "__main__":
     # Load data
 
     path_sims = "/mnt/beegfs/work/ati/pearl037/"
-    all_sims = ["0", "1", "2", "4", "5", "6"]
+    all_sims = ["0", "1", "2", "4", "5", "7", "8", "9", "10", "6"]
     s = tn.SimulationPreparation(all_sims, path=path_sims)
 
-    path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/200k/"
+    path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set/9sims/random/200k/"
     training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
     training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
     val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
@@ -64,23 +64,22 @@ if __name__ == "__main__":
 
     # Train for one epoch using MSE loss and the rest using a Cauchy loss
 
-    weights = saving_path + "model/weights.03.h5"
     Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
                           dim=generator_training.dim, training_generator=generator_training,
                           validation_generator=generator_validation, validation_freq=1,
                           num_epochs=100, verbose=1, seed=seed, init_gamma=0.2,
                           max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
-                          save_summary=True,  path_summary=saving_path, compile=True, train=True,
-                          load_weights=weights, initial_epoch=3,
-                          alpha_mse=10**-4, load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0
+                          save_summary=True,  path_summary=saving_path, compile=True, train=False,
+                          load_weights=None, initial_epoch=None,
+                          alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0
                           )
 
-    # Model = CNN.CNN(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
-    #                   dim=generator_training.dim, training_generator=generator_training,
-    #                   validation_generator=generator_validation, num_epochs=100, validation_freq=1,
-    #                   max_queue_size=10, use_multiprocessing=True,  workers=0, verbose=1, num_gpu=2,
-    #                   save_summary=True, path_summary=saving_path, seed=seed,
-    #                   compile=True, train=True, loss="mse")
+# Model = CNN.CNN(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
+#                   dim=generator_training.dim, training_generator=generator_training,
+#                   validation_generator=generator_validation, num_epochs=100, validation_freq=1,
+#                   max_queue_size=10, use_multiprocessing=True,  workers=0, verbose=1, num_gpu=2,
+#                   save_summary=True, path_summary=saving_path, seed=seed,
+#                   compile=True, train=True, loss="mse")
 
 
 

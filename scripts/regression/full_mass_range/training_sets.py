@@ -2,18 +2,24 @@ import dlhalos_code.data_processing as tn
 from pickle import dump
 
 if __name__ == "__main__":
-
-    # First you will have to load the simulation
     path_sims = "/mnt/beegfs/work/ati/pearl037/"
-    all_sims = ["0", "1", "2", "4", "5", "6"]
-    s = tn.SimulationPreparation(all_sims, path=path_sims)
+    num_sims = 9
 
+    if num_sims == 9:
+        all_sims = ["0", "1", "2", "4", "5", "7", "8", "9", "10", "6"]
+        path_random = "/mnt/beegfs/work/ati/pearl037/regression/training_set/9sims/random/"
+        path_uniform = "/mnt/beegfs/work/ati/pearl037/regression/training_set/9sims/uniform/"
+    else:
+        all_sims = ["0", "1", "2", "4", "5", "6"]
+        path_random = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
+        path_uniform = "/mnt/beegfs/work/ati/pearl037/regression/training_set/uniform/"
+
+    s = tn.SimulationPreparation(all_sims, path=path_sims)
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
 
     # Save training sets sampled at random from 5 simulations, with n=50,000 and n=500,000
 
-    path_random = "/mnt/beegfs/work/ati/pearl037/regression/training_set/random/"
     paths = [path_random + "200k/", path_random + "500k/"]
     samples = [200000, 500000]
 
@@ -42,7 +48,6 @@ if __name__ == "__main__":
 
     # Save training sets sampled uniformly from 50 bins, with n=1000 or n=10000 per mass bin
 
-    path_uniform = "/mnt/beegfs/work/ati/pearl037/regression/training_set/uniform/"
     paths = [path_uniform + "4k_perbin/", path_uniform + "10k_perbin/"]
     samples = [4000, 10000]
 
