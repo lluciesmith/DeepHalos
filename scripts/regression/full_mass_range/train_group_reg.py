@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/test/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/"
 
     seed = 123
     np.random.seed(seed)
