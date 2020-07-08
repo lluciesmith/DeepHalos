@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     # Train for one epoch using MSE loss and the rest using a Cauchy loss
 
-    weights = saving_path + "model/weights." + num_epoch + ".hf"
+    weights = saving_path + "model/weights." + num_epoch + ".h5"
     Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
                           dim=generator_validation.dim, training_generator={},
                           validation_generator=generator_validation, validation_freq=1,
