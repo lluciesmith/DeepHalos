@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     num_epoch = sys.argv[1]
     saving_path = sys.argv[2]
-    
+
     # num_epoch = "10"
     # saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/"
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
                           dim=generator_validation.dim, training_generator={},
                           validation_generator=generator_validation, validation_freq=1,
-                          num_epochs=100, verbose=1, seed=seed, init_gamma=0.2,
+                          num_epochs=100, verbose=1, init_gamma=0.2,
                           max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
                           save_summary=False,  path_summary=saving_path,
                           compile=True, train=False,
