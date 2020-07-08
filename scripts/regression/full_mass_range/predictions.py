@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     # Create the generators for training
 
-    params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (75, 75, 75)}
+    params_tr = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (75, 75, 75)}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, **params_tr)
 
