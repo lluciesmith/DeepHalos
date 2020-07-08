@@ -73,5 +73,5 @@ if __name__ == "__main__":
     truth_rescaled = np.array([val_labels_particle_IDS[ID] for ID in val_particle_IDs])
     h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
     true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    np.save(saving_path + "predicted_" + val_sim + "_" + num_epoch + ".npy", h_m_pred)
-    np.save(saving_path + "true_" + val_sim + "_" + num_epoch + ".npy", true)
+    np.save(saving_path + "predicted_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", h_m_pred)
+    np.save(saving_path + "true_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", true)
