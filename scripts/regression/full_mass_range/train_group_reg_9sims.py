@@ -36,8 +36,9 @@ if __name__ == "__main__":
     params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
+    params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, **params_tr)
+                                            shuffle=False, **params_val)
 
 
     ######### TRAIN THE MODEL ################
@@ -70,7 +71,7 @@ if __name__ == "__main__":
                           max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
                           save_summary=False,  path_summary=saving_path, compile=True, train=True,
                           load_weights=None, initial_epoch=None,
-                          alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
+                          alpha_mse=10**-4, load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0,
                           initialiser="Xavier_uniform"
                           )
 
