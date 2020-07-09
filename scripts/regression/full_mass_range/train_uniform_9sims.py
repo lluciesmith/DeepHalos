@@ -69,13 +69,14 @@ if __name__ == "__main__":
 
     # Train for one epoch using MSE loss and the rest using a Cauchy loss
 
+    weights = saving_path + "model/weights.02.h5"
     Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
                           dim=generator_training.dim, training_generator=generator_training,
                           validation_generator=generator_validation, validation_freq=1,
                           num_epochs=100, verbose=1, seed=seed, init_gamma=0.2,
-                          max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
+                          max_queue_size=10, use_multiprocessing=False,  workers=0, num_gpu=1,
                           save_summary=True,  path_summary=saving_path, compile=True, train=True,
-                          load_weights=None, initial_epoch=None,
+                          load_weights=weights, initial_epoch=2,
                           alpha_mse=10**-4, load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0
                           )
 
