@@ -324,6 +324,10 @@ class CNN:
         elif self.initialiser == "lecun_normal":
             initialiser = keras.initializers.lecun_normal(seed=self.seed)
 
+        elif self.initialiser == "Xavier_uniform":
+            initialiser = keras.initializers.glorot_uniform(seed=self.seed)
+            print("Initialiser is Xavier uniform")
+
         else:
             initialiser = keras.initializers.he_uniform(seed=self.seed)
             print("Initialiser is he uniform")
@@ -444,7 +448,7 @@ class CNNCauchy(CNN):
     """
 
     def __init__(self, conv_params, fcc_params, model_type="regression",
-                 init_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0.,
+                 init_alpha=None, upper_bound_alpha=2., lower_bound_alpha=0., metrics=None,
                  train_gamma=True, init_gamma=0.2, upper_bound_gamma=2., lower_bound_gamma=0.,
                  regularizer_conv=None, regularizer_dense=None, alpha_mse=0.0001, shuffle=True,
                  training_generator=None, validation_generator=None, validation_steps=None, steps_per_epoch=None,
@@ -491,6 +495,7 @@ class CNNCauchy(CNN):
                                weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
 
         self.optimizer = optimizer
+        self.metrics = metrics
 
         self.num_epochs = num_epochs
         self.load_weights = load_weights
