@@ -64,14 +64,14 @@ if __name__ == "__main__":
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
-    weights = saving_path + "model/weights.07.h5"
+
     Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
                           dim=generator_training.dim, training_generator=generator_training,
                           validation_generator=generator_validation, validation_freq=1,
                           num_epochs=100, verbose=1, seed=seed, init_gamma=0.2,
                           max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
-                          save_summary=False,  path_summary=saving_path, compile=True, train=False,
-                          load_weights=weights, initial_epoch=None,
+                          save_summary=False,  path_summary=saving_path, compile=True, train=True,
+                          load_weights=None, initial_epoch=None,
                           alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=0, use_tanh_n_epoch=0,
                           initialiser="Xavier_uniform", train_gamma=False
                           )
