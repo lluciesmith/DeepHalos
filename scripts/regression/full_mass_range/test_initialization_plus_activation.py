@@ -79,17 +79,76 @@ if __name__ == "__main__":
 
     w = Model.model.trainable_weights
     out = Model.model.output
-    loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(Model.model.layers[-1])
-    # loss_mse = tf.keras.losses.mean_squared_error()
+    # loss_func = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(Model.model.layers[-1])
+    loss_func = tf.keras.losses.mean_squared_error()
 
     g = g_val[0]
     labels = np.float32(g[1].reshape(len(g[1]), 1))
-    l = loss_c(labels, out)
+    l = loss_func(labels, out)
     gradients = k.gradients(l, w)
 
     sess = k.get_session()
     evaluated_gradients = sess.run(gradients, feed_dict={Model.model.input: np.float32(g[0])})
-    np.save(saving_path + "gradients_" + initialiser + "_" + activation_choice + "_epoch0.npy", evaluated_gradients)
-    np.save(saving_path + "weights_" + initialiser + "_" + activation_choice + "_epoch0.npy", Model.model.get_weights())
+    np.save(saving_path + "mse_gradients_" + initialiser + "_" + activation_choice + "_epoch0.npy", evaluated_gradients)
+    np.save(saving_path + "mse_weights_" + initialiser + "_" + activation_choice + "_epoch0.npy",
+            Model.model.get_weights())
+
+
+
+# # PLots
+# import matplotlib.pyplot as plt
+#
+# p = "/Users/lls/Documents/deep_halos_files/full_mass_range/test_init_activation/"
+#
+# init = ["Xavier_uniform", "Gaussian"]
+# titles = ["Xavier", "Gaussian"]
+# act = ["Lrelu", "tanh", "linear"]
+#
+# conv_layers = [0, 2, 4, 6, 8, 10]
+# dense_layers = [12, 14, 16]
+#
+# for i, init_i in enumerate(init):
+#     title = titles[i]
+#
+#     for layers in [conv_layers, dense_layers]:
+#         if layers == conv_layers:
+#             positions = [1, 2, 3, 4, 5, 6]
+#             label="Convolutional layers"
+#
+#             title_plot = p + "plots/" + title + "_conv_layers.png"
+#         else:
+#             positions = [1, 2, 3]
+#             label = "Fully-connected layers"
+#
+#             title_plot = p + "plots/" + title + "_dense_layers.png"
+#
+#         f, axes = plt.subplots(2, 3, figsize=(13, 8), sharex=True)
+#
+#         w = np.load(p + "weights_" + init_i + "_" + act[0] + "_epoch0.npy", allow_pickle=True)
+#         axes[0, 1].violinplot([w[k].flatten() for k in layers], positions=positions)
+#         title = titles[i]
+#         axes[0, 1].set_title(title)
+#
+#         axes[0,0].set_visible(False)
+#         axes[0, 2].set_visible(False)
+#
+#         for j, act_i in enumerate(act):
+#             g = np.load(p + "gradients_" + init_i + "_" + act_i + "_epoch0.npy", allow_pickle=True)
+#             axes[1, j].violinplot([g[k].flatten() for k in layers], positions=positions)
+#             axes[1, j].set_title(act_i)
+#
+#         # y_lims = np.array([axes[1, 0].get_ylim(), axes[1, 1].get_ylim()]).flatten()
+#         # [axes[y_lims.min(), y_lims.max()].set_ylim(axes[1, jj]) for jj in [0, 1, 2]]
+#         axes[1, 1].set_xlabel(label)
+#         axes[0, 1].set_ylabel("Weights")
+#         axes[1, 0].set_ylabel("Gradients")
+#
+#         # [axes[1, jj].set_yticks([]) for jj in [1, 2]]
+#
+#         # [axes[ii, jj].set_xlabel("Fully-connected layers") for ii in [2, 3] for jj in [0, 1, 2]]
+#         # [axes[ii, 0].set_ylabel("Gradients") for ii in [1, 3]]
+#         plt.subplots_adjust(top=0.9, left=0.14)
+#         plt.savefig(title_plot)
+
 
 
