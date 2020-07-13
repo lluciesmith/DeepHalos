@@ -10,7 +10,7 @@ import random as python_random
 import sys
 
 
-def get_data():
+def get_data(batch_size=64):
     path_sims = "/mnt/beegfs/work/ati/pearl037/"
     all_sims = ["6"]
     s = tn.SimulationPreparation(all_sims, path=path_sims)
@@ -18,7 +18,7 @@ def get_data():
     val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
     val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
     dim = (75, 75, 75)
-    params_val = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
+    params_val = {'batch_size': batch_size, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, **params_val)
     return generator_validation
@@ -39,9 +39,6 @@ if __name__ == "__main__":
 
     initialiser = sys.argv[1]
     activation_choice = sys.argv[2]
-
-    initialiser = "Xavier_uniform"
-    activation_choice = "Lrelu"
 
     if activation_choice == "Lrelu":
         p_act = {'activation': "linear", 'relu': True}
