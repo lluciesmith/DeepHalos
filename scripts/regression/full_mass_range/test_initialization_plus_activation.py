@@ -45,6 +45,8 @@ if __name__ == "__main__":
 
     if activation_choice == "Lrelu":
         p_act = {'activation': "linear", 'relu': True}
+    elif activation_choice == "relu":
+        p_act = {'activation': "relu", 'relu': False}
     elif activation_choice == "tanh":
         p_act = {'activation': "tanh", 'relu': False}
     elif activation_choice == "linear":
@@ -121,6 +123,7 @@ if __name__ == "__main__":
 
 
 # # PLots
+# import matplotlib.ticker as mtick
 # import matplotlib.pyplot as plt
 #
 # p = "/Users/lls/Documents/deep_halos_files/full_mass_range/test_init_activation/"
@@ -131,39 +134,39 @@ if __name__ == "__main__":
 #
 # conv_layers = [0, 2, 4, 6, 8, 10]
 # dense_layers = [12, 14, 16]
-# conv_layers_g = [0, 1, 2, 3, 4, 5]
-# dense_layers_g = [6, 7, 8]
+# # conv_layers_g = [0, 1, 2, 3, 4, 5]
+# # dense_layers_g = [6, 7, 8]
 #
 # for i, init_i in enumerate(init):
-#     title = "MSE loss, " + titles[i]
+#     title = titles[i]
+#     title_plot = "MSE loss, " + title
+#     # title_plot = title
 #
 #     for layers in [conv_layers, dense_layers]:
 #         if layers == conv_layers:
 #             positions = [1, 2, 3, 4, 5, 6]
 #             label="Convolutional layers"
-#             layers_g = conv_layers_g
 #
-#             title_plot = p + "plots/" + title + "_conv_layers.png"
+#             name_plot = p + "plots/MSE_loss_" + title + "_conv_layers.png"
 #         else:
 #             positions = [1, 2, 3]
 #             label = "Fully-connected layers"
-#             layers_g = dense_layers_g
 #
-#             title_plot = p + "plots/" + title + "_dense_layers.png"
+#             name_plot = p + "plots/MSE_loss_" + title + "_dense_layers.png"
 #
 #         f, axes = plt.subplots(2, 3, figsize=(13, 8), sharex=True)
 #
-#         w = np.load(p + "optimizer_weights_" + init_i + "_" + act[0] + "_epoch0.npy", allow_pickle=True)
+#         w = np.load(p + "mse_weights_" + init_i + "_" + act[0] + "_epoch0.npy", allow_pickle=True)
 #         axes[0, 1].violinplot([w[k].flatten() for k in layers], positions=positions)
 #         title = titles[i]
-#         axes[0, 1].set_title(title)
+#         axes[0, 1].set_title(title_plot)
 #
 #         axes[0,0].set_visible(False)
 #         axes[0, 2].set_visible(False)
 #
 #         for j, act_i in enumerate(act):
-#             g = np.load(p + "optimizer_gradients_" + init_i + "_" + act_i + "_epoch0.npy", allow_pickle=True)
-#             axes[1, j].violinplot([g[k].flatten() for k in layers_g], positions=positions)
+#             g = np.load(p + "mse_gradients_" + init_i + "_" + act_i + "_epoch0.npy", allow_pickle=True)
+#             axes[1, j].violinplot([g[k].flatten() for k in layers], positions=positions)
 #             axes[1, j].set_title(act_i)
 #
 #         # y_lims = np.array([axes[1, 0].get_ylim(), axes[1, 1].get_ylim()]).flatten()
@@ -172,12 +175,15 @@ if __name__ == "__main__":
 #         axes[0, 1].set_ylabel("Weights")
 #         axes[1, 0].set_ylabel("Gradients")
 #
+#         if init_i == "Gaussian":
+#             [axes[1, jj].yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e')) for jj in [0,1,2]]
+#
 #         # [axes[1, jj].set_yticks([]) for jj in [1, 2]]
 #
 #         # [axes[ii, jj].set_xlabel("Fully-connected layers") for ii in [2, 3] for jj in [0, 1, 2]]
 #         # [axes[ii, 0].set_ylabel("Gradients") for ii in [1, 3]]
-#         plt.subplots_adjust(top=0.9, left=0.14)
-#         # plt.savefig(title_plot)
+#         plt.subplots_adjust(top=0.9, left=0.12, wspace=0.4)
+#         plt.savefig(name_plot)
 #
-
+#
 
