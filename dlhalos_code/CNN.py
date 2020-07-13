@@ -328,7 +328,7 @@ class CNN:
             initialiser = keras.initializers.glorot_uniform(seed=self.seed)
             print("Initialiser is Xavier uniform")
         elif self.initialiser == "Gaussian":
-            initialiser = keras.initializers.RandomNormal(mean=0.0, stddev=0.05, seed=self.seed)
+            initialiser = keras.initializers.RandomNormal(mean=0.0, stddev=0.005, seed=self.seed)
             print("Initialiser is Gaussian")
         else:
             initialiser = keras.initializers.he_uniform(seed=self.seed)
