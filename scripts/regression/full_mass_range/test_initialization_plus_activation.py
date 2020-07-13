@@ -80,7 +80,7 @@ if __name__ == "__main__":
     w = Model.model.trainable_weights
     out = Model.model.output
     # loss_func = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(Model.model.layers[-1])
-    loss_func = tf.keras.losses.mean_squared_error()
+    loss_func = tf.keras.losses.mean_squared_error
 
     g = g_val[0]
     labels = np.float32(g[1].reshape(len(g[1]), 1))
