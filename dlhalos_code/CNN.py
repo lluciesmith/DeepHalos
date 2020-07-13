@@ -194,9 +194,9 @@ class CNN:
         if self.skip_connector is True:
             x = self._model_skip_connection(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
         else:
-            x = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
+            x, init_w = self._model(input_data, input_shape_box, conv_params, fcc_params, data_format=data_format)
 
-        predictions = Dense(1, **fcc_params['last'], name='prediction_layer')(x)
+        predictions = Dense(1, **fcc_params['last'], kernel_initializer=init_w, name='prediction_layer')(x)
 
         model = keras.Model(inputs=input_data, outputs=predictions)
         return model
@@ -327,9 +327,11 @@ class CNN:
         elif self.initialiser == "Xavier_uniform":
             initialiser = keras.initializers.glorot_uniform(seed=self.seed)
             print("Initialiser is Xavier uniform")
+
         elif self.initialiser == "Gaussian":
             initialiser = keras.initializers.RandomNormal(mean=0.0, stddev=0.005, seed=self.seed)
             print("Initialiser is Gaussian")
+
         else:
             initialiser = keras.initializers.he_uniform(seed=self.seed)
             print("Initialiser is he uniform")
@@ -342,7 +344,7 @@ class CNN:
             x = self._conv_layers(input_data, input_shape_box, conv_params, initialiser)
             x = Flatten(data_format=data_format)(x)
             x = self._fcc_layers(x, fcc_params, initialiser)
-        return x
+        return x, initialiser
 
     def _model_skip_connection(self, input_data, input_shape_box, conv_params, fcc_params, data_format="channels_last"):
         print("model with skip connectior")
