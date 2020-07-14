@@ -79,8 +79,7 @@ if __name__ == "__main__":
     w = model.get_weights
     model.layers[1].trainable = False
 
-    loss_params_layer = [layer for layer in model.layers if 'loss_trainable_params' in layer.name][0]
-    loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
+    loss_c = lf.cauchy_selection_loss_fixed_boundary(gamma=0.2)
     optimiser = keras.optimizers.Adam(lr=Model.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
     model.compile(loss=loss_c, optimizer=optimiser)
 
