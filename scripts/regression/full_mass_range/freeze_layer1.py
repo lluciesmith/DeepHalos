@@ -13,7 +13,7 @@ if __name__ == "__main__":
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/Xavier" \
-                  "/fixed_gamma/freeze_layer1/"
+                  "/fixed_gamma/freeze_layer1_noreg/"
 
     seed = 123
     np.random.seed(seed)
@@ -61,7 +61,8 @@ if __name__ == "__main__":
     # Dense layers parameters
 
     params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True,
-                      'kernel_regularizer': reg.l1_and_l21_group(alpha)}
+                      #'kernel_regularizer': reg.l1_and_l21_group(alpha)
+                       'dropout':0.4}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
