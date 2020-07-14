@@ -76,7 +76,7 @@ if __name__ == "__main__":
                           alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=0, use_tanh_n_epoch=0,
                           initialiser="Xavier_uniform", train_gamma=False)
     model = Model.model
-    w = model.get_weights
+    w = model.get_weights()
     model.layers[1].trainable = False
 
     loss_c = lf.cauchy_selection_loss_fixed_boundary(gamma=0.2)
