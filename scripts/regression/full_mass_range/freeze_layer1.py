@@ -82,8 +82,9 @@ if __name__ == "__main__":
     loss_c = lf.cauchy_selection_loss_fixed_boundary(gamma=0.2)
     optimiser = keras.optimizers.Adam(lr=Model.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
     model.compile(loss=loss_c, optimizer=optimiser)
+    w2 = model.get_weights()
 
-    assert np.allclose(w, model.get_weights())
+    assert all([np.allclose(w[i], w2[i]) for i in range(len(w))])
 
     callbacks_list, cbk = Model.get_callbacks()
     h = model.fit(generator_training, validation_data=generator_validation, initial_epoch=3, epochs=30,
