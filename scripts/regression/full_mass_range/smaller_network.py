@@ -9,7 +9,7 @@ import random as python_random
 
 if __name__ == "__main__":
 
-########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
+    ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/Xavier" \
                   "/fixed_gamma/smaller_net/"
@@ -44,9 +44,9 @@ if __name__ == "__main__":
 
     ######### TRAIN THE MODEL ################
 
-    alpha = 10**(-3.5)
+    # alpha = 10**(-3.5)
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
-                       'kernel_regularizer': reg.l2_norm(alpha)
+                       'kernel_regularizer': reg.l2_norm(10**(-3.5))
                        }
 
     param_conv = {'conv_1': {'num_kernels': 16, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     # Dense layers parameters
 
     params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True,
-                      'kernel_regularizer': reg.l1_and_l21_group(alpha)}
+                      'kernel_regularizer': reg.l1_and_l21_group(10**-3.5)}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
@@ -70,8 +70,13 @@ if __name__ == "__main__":
                           validation_generator=generator_validation, validation_freq=1,
                           num_epochs=30, verbose=1, seed=seed, init_gamma=0.2,
                           max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
-                          save_summary=True,  path_summary=saving_path, compile=True, train=True,
+                          save_summary=True,  path_summary=saving_path, compile=True, train=False,
                           load_weights=weights, initial_epoch=14, metrics=[CNN.likelihood_metric],
                           alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=0, use_tanh_n_epoch=0,
                           initialiser="Xavier_uniform", train_gamma=False
                           )
+
+    h = Model.model.fit_generator(generator=generator_training, validation_data=generator_validation, initial_epoch=14,
+                                  epochs=30, callbacks=Model.get_callbacks()[0], verbose=1, shuffle=True,
+                                  max_queue_size=80, use_multiprocessing=False, workers=40,
+                                  validation_steps=len(generator_validation), steps_per_epoch=len(generator_training))
