@@ -12,7 +12,7 @@ if __name__ == "__main__":
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/Xavier" \
-                  "/fixed_gamma/smaller_net/"
+                  "/fixed_gamma/smaller_net_less_l1/"
 
     seed = 123
     np.random.seed(seed)
