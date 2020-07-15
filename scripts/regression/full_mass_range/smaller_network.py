@@ -69,14 +69,9 @@ if __name__ == "__main__":
                           dim=generator_training.dim, training_generator=generator_training,
                           validation_generator=generator_validation, validation_freq=1,
                           num_epochs=30, verbose=1, seed=seed, init_gamma=0.2,
-                          max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
-                          save_summary=True,  path_summary=saving_path, compile=True, train=False,
+                          max_queue_size=10, use_multiprocessing=False,  workers=0, num_gpu=1,
+                          save_summary=True,  path_summary=saving_path, compile=True, train=True,
                           load_weights=weights, initial_epoch=14, metrics=[CNN.likelihood_metric],
                           alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=0, use_tanh_n_epoch=0,
                           initialiser="Xavier_uniform", train_gamma=False
                           )
-
-    h = Model.model.fit_generator(generator=generator_training, validation_data=generator_validation, initial_epoch=14,
-                                  epochs=30, callbacks=Model.get_callbacks()[0], verbose=1, shuffle=True,
-                                  max_queue_size=80, use_multiprocessing=False, workers=40,
-                                  validation_steps=len(generator_validation), steps_per_epoch=len(generator_training))
