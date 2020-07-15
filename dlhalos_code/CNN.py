@@ -551,7 +551,7 @@ class CNNCauchy(CNN):
 
         if self.train_gamma is False:
             loss_c = lf.cauchy_selection_loss_fixed_boundary(gamma=self.init_gamma)
-            mse_model.compile(loss=loss_c, optimizer=optimiser)
+            mse_model.compile(loss=loss_c, optimizer=optimiser, metrics=self.metrics)
             return mse_model
 
         else:
@@ -600,7 +600,7 @@ class CNNCauchy(CNN):
                 parallel_model.compile(loss=loss_c, optimizer=optimiser)
                 return parallel_model
             else:
-                new_model.compile(loss=loss_c, optimizer=optimiser)
+                new_model.compile(loss=loss_c, optimizer=optimiser, metrics=self.metrics)
                 return new_model
 
     def get_callbacks(self, layer_loss=None):
@@ -754,6 +754,10 @@ class CNNCauchy(CNN):
         else:
             return init_lr * np.math.exp(0.05 * (n - epoch))
 
+
+def likelihood_metric(y_true, y_pred):
+    log_lik = lf.cauchy_selection_loss_fixed_boundary(0.2)(y_true, y_pred)
+    return log_lik
 
 class RegularizerCallback(Callback):
     def __init__(self, layer, alpha_check):
