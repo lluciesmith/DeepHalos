@@ -12,7 +12,7 @@ if __name__ == "__main__":
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/Xavier" \
-                  "/fixed_gamma/smaller_net/"
+                  "/fixed_gamma/smaller_net_more_fc_neurons/"
 
     seed = 123
     np.random.seed(seed)
@@ -53,25 +53,27 @@ if __name__ == "__main__":
                   'conv_2': {'num_kernels': 16, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_3': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
                   'conv_4': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-                  # 'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
+                  'conv_5': {'num_kernels': 8, 'dim_kernel': (1, 1, 1), 'pool': None, **params_all_conv},
                   # 'conv_6': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv}
                   }
 
     # Dense layers parameters
 
     params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True,
-                      'kernel_regularizer': reg.l1_and_l21_group(10**-3.5)}
-    param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
+                      'kernel_regularizer': reg.l1_and_l21_group(10**-4.5),
+                      'dropout': 0.5}
+    param_fcc = {'dense_1': {'neurons': 1000, **params_all_fcc}, 'dense_2': {'neurons': 1000, **params_all_fcc},
                  'last': {}}
 
-    weights = saving_path + "model/weights.14.h5"
     Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
                           dim=generator_training.dim, training_generator=generator_training,
                           validation_generator=generator_validation, validation_freq=1,
                           num_epochs=30, verbose=1, seed=seed, init_gamma=0.2,
-                          max_queue_size=10, use_multiprocessing=False,  workers=0, num_gpu=1,
+                          max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
                           save_summary=True,  path_summary=saving_path, compile=True, train=True,
-                          load_weights=weights, initial_epoch=14, metrics=[CNN.likelihood_metric],
+                          load_weights=None, initial_epoch=None, metrics=[CNN.likelihood_metric],
                           alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=0, use_tanh_n_epoch=0,
                           initialiser="Xavier_uniform", train_gamma=False
                           )
+
+    
