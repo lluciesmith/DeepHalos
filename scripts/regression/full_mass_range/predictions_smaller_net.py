@@ -66,7 +66,7 @@ if __name__ == "__main__":
                           save_summary=False,  path_summary=saving_path,
                           compile=True, train=False,
                           load_weights=weights, initial_epoch=None,
-                          alpha_mse=10**-4, load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0
+                          alpha_mse=10**-4, load_mse_weights=True, use_mse_n_epoch=0, use_tanh_n_epoch=0
                           )
 
     pred = Model.model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
