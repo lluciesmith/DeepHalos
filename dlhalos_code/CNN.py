@@ -344,7 +344,7 @@ class CNN:
         else:
             x = self._conv_layers(input_data, input_shape_box, conv_params, initialiser)
             if self.global_average is True:
-                x = keras.layers.GlobalAveragePooling3D(data_format=self.data_format)
+                x = keras.layers.GlobalAveragePooling3D(data_format=self.data_format)(x)
             else:
                 x = Flatten(data_format=data_format)(x)
             x = self._fcc_layers(x, fcc_params, initialiser)
