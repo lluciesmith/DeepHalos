@@ -24,7 +24,7 @@ class CNN:
                  use_multiprocessing=False, workers=1, verbose=1, save_model=False, model_name="my_model.h5", num_gpu=1,
                  lr=0.0001, loss='mse', save_summary=False, path_summary=".", validation_freq=1, train=True,
                  skip_connector=False, compile=True, validation_steps=None, steps_per_epoch=None,
-                 initial_epoch=0, pretrained_model=None, weights=None, seed=None):
+                 initial_epoch=0, pretrained_model=None, weights=None, seed=None, global_average=False):
 
         self.training_generator = training_generator
         self.validation_generator = validation_generator
@@ -36,6 +36,7 @@ class CNN:
         self.val_freq = validation_freq
         self.initialiser = initialiser
         self.pool_size = pool_size
+        self.global_average = global_average
 
         self.validation_steps = validation_steps
         self.steps_per_epoch = steps_per_epoch
@@ -342,7 +343,10 @@ class CNN:
 
         else:
             x = self._conv_layers(input_data, input_shape_box, conv_params, initialiser)
-            x = Flatten(data_format=data_format)(x)
+            if self.global_average is True:
+                x = keras.layers.GlobalAveragePooling3D(data_format=self.data_format)
+            else:
+                x = Flatten(data_format=data_format)(x)
             x = self._fcc_layers(x, fcc_params, initialiser)
         return x, initialiser
 
@@ -461,7 +465,7 @@ class CNNCauchy(CNN):
                  max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1, seed=None,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5, lr_scheduler=True,
                  load_mse_weights=False, load_weights=None, use_tanh_n_epoch=0, use_mse_n_epoch=0, optimizer=None,
-                 initial_epoch=None):
+                 initial_epoch=None, global_average=False):
 
         self.path_model = path_summary
         self.regularizer_conv = regularizer_conv
@@ -482,13 +486,14 @@ class CNNCauchy(CNN):
 
         self.alpha_mse = alpha_mse
         super(CNNCauchy, self).__init__(conv_params, fcc_params, model_type=model_type,
-                                        steps_per_epoch=steps_per_epoch, training_generator=training_generator,
-                                        dim=dim, loss='mse', num_epochs=num_epochs, lr=lr, verbose=verbose,
+                                        training_generator=training_generator, num_epochs=num_epochs, dim=dim,
+                                        pool_size=pool_size, initialiser=initialiser, max_queue_size=max_queue_size,
                                         data_format=data_format, use_multiprocessing=use_multiprocessing,
-                                        workers=workers, num_gpu=num_gpu, pool_size=pool_size,
-                                        initialiser=initialiser, save_summary=save_summary,
-                                        path_summary=path_summary, pretrained_model=pretrained_model, seed=seed,
-                                        weights=weights, max_queue_size=max_queue_size, train=False, compile=False)
+                                        workers=workers, verbose=verbose, num_gpu=num_gpu, lr=lr, loss='mse',
+                                        save_summary=save_summary, path_summary=path_summary, train=False,
+                                        compile=False, steps_per_epoch=steps_per_epoch,
+                                        pretrained_model=pretrained_model, weights=weights, seed=seed,
+                                        global_average=global_average)
         if use_mse_n_epoch > 0:
             print("Get MSE")
             self.get_mse_model(load_mse_weights, conv_params, fcc_params, model_type=model_type,
@@ -496,7 +501,8 @@ class CNNCauchy(CNN):
                                verbose=verbose,  data_format=data_format, use_multiprocessing=use_multiprocessing,
                                workers=workers, num_gpu=num_gpu, pool_size=pool_size, initialiser=initialiser,
                                save_summary=False, path_summary=path_summary, pretrained_model=pretrained_model,
-                               weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch)
+                               weights=weights, max_queue_size=max_queue_size, num_epochs=use_mse_n_epoch,
+                               global_average=global_average)
 
         self.optimizer = optimizer
         self.metrics = metrics
@@ -672,7 +678,7 @@ class CNNCauchy(CNN):
                       training_generator=None, steps_per_epoch=None, data_format="channels_last", dim=(51, 51, 51),
                       lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None, weights=None,
                       max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1,
-                      save_summary=False, path_summary=".", num_epochs=0):
+                      save_summary=False, path_summary=".", num_epochs=0, global_average=False):
         if load_mse_weights is True:
             print("Loaded initial weights given by training for one epoch on MSE loss")
             self.model.load_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
@@ -694,13 +700,12 @@ class CNNCauchy(CNN):
                 if 'dropout' not in fcc_params2[key]:
                     fcc_params2[key]['dropout'] = 0.5
 
-            m = CNN(conv_params2, fcc_params2, model_type=model_type, steps_per_epoch=steps_per_epoch,
-                    training_generator=training_generator, dim=dim, loss='mse', num_epochs=num_epochs, lr=lr,
-                    verbose=verbose, data_format=data_format, use_multiprocessing=use_multiprocessing,
-                    shuffle=self.shuffle, seed=self.seed, workers=workers, num_gpu=num_gpu, pool_size=pool_size,
-                    initialiser=initialiser, save_summary=save_summary, path_summary=path_summary,
-                    pretrained_model=pretrained_model, weights=weights, max_queue_size=max_queue_size,
-                    train=True, compile=True)
+            m = CNN(conv_params2, fcc_params2, model_type=model_type, training_generator=training_generator,
+                    shuffle=self.shuffle, num_epochs=num_epochs, dim=dim, pool_size=pool_size, initialiser=initialiser,
+                    max_queue_size=max_queue_size, data_format=data_format, use_multiprocessing=use_multiprocessing,
+                    workers=workers, verbose=verbose, num_gpu=num_gpu, lr=lr, loss='mse', save_summary=save_summary,
+                    path_summary=path_summary, train=True, compile=True, steps_per_epoch=steps_per_epoch,
+                    pretrained_model=pretrained_model, weights=weights, seed=self.seed)
             self.model.set_weights(m.model.get_weights())
             self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
