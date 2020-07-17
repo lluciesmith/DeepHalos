@@ -70,7 +70,7 @@ if __name__ == "__main__":
                           num_epochs=50, dim=generator_training.dim,
                           initialiser="Xavier_uniform", max_queue_size=80,
                           use_multiprocessing=False, workers=0, verbose=1, num_gpu=1,
-                          lr=0.0001, save_summary=True, steps_per_epoch=5,
+                          lr=0.0001, save_summary=True,
                           path_summary=saving_path, validation_freq=1, train=True, compile=True,
                           seed=seed, global_average=True,
                           use_mse_n_epoch=1, load_mse_weights=False)
