@@ -69,7 +69,7 @@ if __name__ == "__main__":
                           shuffle=True, validation_generator=generator_validation, metrics=[CNN.likelihood_metric],
                           num_epochs=30, dim=generator_training.dim,
                           initialiser="Xavier_uniform", max_queue_size=80,
-                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=1,
+                          use_multiprocessing=True, workers=40, verbose=1, num_gpu=1,
                           lr=0.0001, save_summary=True,
                           path_summary=saving_path, validation_freq=1, train=False, compile=True,
                           initial_epoch=6, #weights=saving_path + "model/weights.06.h5",
@@ -82,6 +82,6 @@ if __name__ == "__main__":
                                           max_queue_size=Model.max_queue_size, initial_epoch=Model.initial_epoch,
                                           verbose=Model.verbose, epochs=Model.num_epochs, shuffle=Model.shuffle,
                                           callbacks=c, validation_freq=Model.val_freq,
-                                          validation_steps=Model.validation_steps, steps_per_epoch=5)
+                                          validation_steps=Model.validation_steps, steps_per_epoch=Model.steps_per_epoch)
 
 
