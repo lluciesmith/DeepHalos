@@ -14,7 +14,7 @@ if __name__ == "__main__":
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/Xavier" \
                   "/fixed_gamma/smaller_net_glob_avg_lr5e-3/"
 
-    seed = 123
+    seed = 12
     np.random.seed(seed)
     python_random.seed(seed)
     tf.compat.v1.set_random_seed(seed)
@@ -69,10 +69,10 @@ if __name__ == "__main__":
                           shuffle=True, validation_generator=generator_validation, metrics=[CNN.likelihood_metric],
                           num_epochs=50, dim=generator_training.dim,
                           initialiser="Xavier_uniform", max_queue_size=80,
-                          use_multiprocessing=True, workers=40, verbose=1, num_gpu=1,
+                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=1,
                           lr=0.005, save_summary=True,
                           path_summary=saving_path, validation_freq=1, train=True, compile=True,
                           seed=seed, global_average=True,
-                          use_mse_n_epoch=1, load_mse_weights=True)
+                          use_mse_n_epoch=1, load_mse_weights=False)
 
 
