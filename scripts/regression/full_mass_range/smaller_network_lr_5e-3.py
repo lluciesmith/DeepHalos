@@ -73,6 +73,6 @@ if __name__ == "__main__":
                           lr=0.005, save_summary=True,
                           path_summary=saving_path, validation_freq=1, train=True, compile=True,
                           seed=seed, global_average=True,
-                          use_mse_n_epoch=1, load_mse_weights=False)
+                          use_mse_n_epoch=1, load_mse_weights=True)
 
 
