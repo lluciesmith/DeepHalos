@@ -69,18 +69,19 @@ if __name__ == "__main__":
                           shuffle=True, validation_generator=generator_validation, metrics=[CNN.likelihood_metric],
                           num_epochs=30, dim=generator_training.dim,
                           initialiser="Xavier_uniform", max_queue_size=80,
-                          use_multiprocessing=True, workers=40, verbose=1, num_gpu=1,
+                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=1,
                           lr=0.0001, save_summary=True,
                           path_summary=saving_path, validation_freq=1, train=False, compile=True,
                           initial_epoch=6, #weights=saving_path + "model/weights.06.h5",
                           seed=seed, global_average=True)
 
     Model.model.load_weights(saving_path + "model/weights.06.h5")
+    c = Model.get_callbacks(layer_loss=Model.model.layers[-1])[0]
     Model.model.fit_generator(generator=Model.training_generator, validation_data=Model.validation_generator,
                                           use_multiprocessing=Model.use_multiprocessing, workers=Model.workers,
                                           max_queue_size=Model.max_queue_size, initial_epoch=Model.initial_epoch,
                                           verbose=Model.verbose, epochs=Model.num_epochs, shuffle=Model.shuffle,
-                                          callbacks=Model.get_callbacks()[0], validation_freq=Model.val_freq,
-                                          validation_steps=Model.validation_steps, steps_per_epoch=Model.steps_per_epoch)
+                                          callbacks=c, validation_freq=Model.val_freq,
+                                          validation_steps=Model.validation_steps, steps_per_epoch=5)
 
 
