@@ -12,7 +12,7 @@ if __name__ == "__main__":
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/Xavier" \
-                  "/fixed_gamma/smaller_net_glob_avg/"
+                  "/fixed_gamma/smaller_net_glob_avg_01_drop/"
 
     seed = 123
     np.random.seed(seed)
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True,
                       'kernel_regularizer': reg.l1_and_l21_group(10**-4.5),
-                      'dropout': 0.4}
+                      'dropout': 0.1}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc},
                  'dense_2': {'neurons': 128, **params_all_fcc},
                  'dense_3': {'neurons': 20, **params_all_fcc},
@@ -71,17 +71,17 @@ if __name__ == "__main__":
                           initialiser="Xavier_uniform", max_queue_size=80,
                           use_multiprocessing=True, workers=40, verbose=1, num_gpu=1,
                           lr=0.0001, save_summary=True,
-                          path_summary=saving_path, validation_freq=1, train=False, compile=True,
-                          initial_epoch=6, #weights=saving_path + "model/weights.06.h5",
+                          path_summary=saving_path, validation_freq=1, train=True, compile=True,
+                          #initial_epoch=6, #weights=saving_path + "model/weights.06.h5",
                           seed=seed, global_average=True)
 
-    Model.model.load_weights(saving_path + "model/weights.06.h5")
-    c = Model.get_callbacks(layer_loss=Model.model.layers[-1])[0]
-    Model.model.fit_generator(generator=Model.training_generator, validation_data=Model.validation_generator,
-                                          use_multiprocessing=Model.use_multiprocessing, workers=Model.workers,
-                                          max_queue_size=Model.max_queue_size, initial_epoch=Model.initial_epoch,
-                                          verbose=Model.verbose, epochs=Model.num_epochs, shuffle=Model.shuffle,
-                                          callbacks=c, validation_freq=Model.val_freq,
-                                          validation_steps=Model.validation_steps, steps_per_epoch=Model.steps_per_epoch)
+    # Model.model.load_weights(saving_path + "model/weights.06.h5")
+    # c = Model.get_callbacks(layer_loss=Model.model.layers[-1])[0]
+    # Model.model.fit_generator(generator=Model.training_generator, validation_data=Model.validation_generator,
+    #                                       use_multiprocessing=Model.use_multiprocessing, workers=Model.workers,
+    #                                       max_queue_size=Model.max_queue_size, initial_epoch=Model.initial_epoch,
+    #                                       verbose=Model.verbose, epochs=Model.num_epochs, shuffle=Model.shuffle,
+    #                                       callbacks=c, validation_freq=Model.val_freq,
+    #                                       validation_steps=Model.validation_steps, steps_per_epoch=Model.steps_per_epoch)
 
 
