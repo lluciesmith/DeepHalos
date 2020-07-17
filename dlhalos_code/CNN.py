@@ -705,7 +705,7 @@ class CNNCauchy(CNN):
                     max_queue_size=max_queue_size, data_format=data_format, use_multiprocessing=use_multiprocessing,
                     workers=workers, verbose=verbose, num_gpu=num_gpu, lr=lr, loss='mse', save_summary=save_summary,
                     path_summary=path_summary, train=True, compile=True, steps_per_epoch=steps_per_epoch,
-                    pretrained_model=pretrained_model, weights=weights, seed=self.seed)
+                    pretrained_model=pretrained_model, weights=weights, seed=self.seed, global_average=global_average)
             self.model.set_weights(m.model.get_weights())
             self.model.save_weights(self.path_model + 'model/mse_weights_' + str(num_epochs) + '_epoch.hdf5')
 
@@ -763,6 +763,7 @@ class CNNCauchy(CNN):
 def likelihood_metric(y_true, y_pred):
     log_lik = lf.cauchy_selection_loss_fixed_boundary(0.2)(y_true, y_pred)
     return log_lik
+
 
 class RegularizerCallback(Callback):
     def __init__(self, layer, alpha_check):
