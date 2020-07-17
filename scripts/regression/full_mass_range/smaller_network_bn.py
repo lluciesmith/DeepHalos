@@ -20,7 +20,7 @@ if __name__ == "__main__":
     tf.compat.v1.set_random_seed(seed)
 
     # Load data
-    
+
     path_sims = "/mnt/beegfs/work/ati/pearl037/"
     all_sims = ["0", "1", "2", "4", "5", "7", "8", "9", "10", "6"]
     s = tn.SimulationPreparation(all_sims, path=path_sims)
@@ -73,6 +73,7 @@ if __name__ == "__main__":
                           lr=0.0001, save_summary=True,
                           path_summary=saving_path, validation_freq=1, train=True, compile=True,
                           seed=seed, global_average=True,
-                          use_mse_n_epoch=1, load_mse_weights=False)
+                          use_mse_n_epoch=1, load_mse_weights=True)
+
 
 
