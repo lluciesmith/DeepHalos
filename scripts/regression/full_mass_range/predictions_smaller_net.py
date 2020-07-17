@@ -58,16 +58,11 @@ if __name__ == "__main__":
     # Train for one epoch using MSE loss and the rest using a Cauchy loss
 
     weights = saving_path + "model/weights." + num_epoch + ".h5"
-    Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
-                          dim=generator_validation.dim, training_generator={},
-                          validation_generator=generator_validation, validation_freq=1,
-                          num_epochs=100, verbose=1, init_gamma=0.2, train_gamma=False,
-                          max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
-                          save_summary=False,  path_summary=saving_path,
-                          compile=True, train=False,
-                          load_weights=weights, initial_epoch=None,
-                          alpha_mse=10**-4, load_mse_weights=True, use_mse_n_epoch=0, use_tanh_n_epoch=0
-                          )
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator={}, shuffle=True,
+                          validation_generator=generator_validation, metrics=[CNN.likelihood_metric], num_epochs=30,
+                          dim=(75, 75, 75), initialiser="Xavier_uniform", max_queue_size=10, use_multiprocessing=False,
+                          workers=0, verbose=1, num_gpu=1, lr=0.0001, save_summary=True, path_summary=saving_path,
+                          validation_freq=1, train=False, compile=True, initial_epoch=14, seed=None)
 
     pred = Model.model.predict_generator(generator_validation, use_multiprocessing=False, workers=1, verbose=1)
     truth_rescaled = np.array([val_labels_particle_IDS[ID] for ID in val_particle_IDs])
