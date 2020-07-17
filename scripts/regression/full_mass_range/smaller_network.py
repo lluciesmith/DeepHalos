@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/Xavier" \
                   "/fixed_gamma/smaller_net_glob_avg/"
-    
+
     seed = 123
     np.random.seed(seed)
     python_random.seed(seed)
@@ -71,7 +71,8 @@ if __name__ == "__main__":
                           initialiser="Xavier_uniform", max_queue_size=80,
                           use_multiprocessing=True, workers=40, verbose=1, num_gpu=1,
                           lr=0.0001, save_summary=True,
-                          path_summary=saving_path, validation_freq=1, train=True, compile=True, initial_epoch=None,
+                          path_summary=saving_path, validation_freq=1, train=True, compile=True,
+                          initial_epoch=7, weights=saving_path + "model/weights.07.h5",
                           seed=seed, global_average=True)
 
 
