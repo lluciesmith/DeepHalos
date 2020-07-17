@@ -75,7 +75,7 @@ if __name__ == "__main__":
                           initial_epoch=6, #weights=saving_path + "model/weights.06.h5",
                           seed=seed, global_average=True)
 
-    Model.model.load_weight(saving_path + "model/weights.06.h5")
+    Model.model.load_weights(saving_path + "model/weights.06.h5")
     Model.model.fit_generator(generator=Model.training_generator, validation_data=Model.validation_generator,
                                           use_multiprocessing=Model.use_multiprocessing, workers=Model.workers,
                                           max_queue_size=Model.max_queue_size, initial_epoch=Model.initial_epoch,
