@@ -66,7 +66,7 @@ if __name__ == "__main__":
                           shuffle=True, validation_generator=generator_validation, num_epochs=30,
                           metrics=[CNN.likelihood_metric],
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=80,
-                          use_multiprocessing=True, workers=40, verbose=1, num_gpu=1, lr=0.0001, save_summary=False,
+                          use_multiprocessing=True, workers=40, verbose=1, num_gpu=1, lr=0.0001, save_summary=True,
                           path_summary=saving_path, validation_freq=1, train=True, compile=True,
                           initial_epoch=None, seed=seed)
 
