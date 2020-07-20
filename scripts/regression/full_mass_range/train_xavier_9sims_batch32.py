@@ -64,6 +64,7 @@ if __name__ == "__main__":
 
     Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
                           shuffle=True, validation_generator=generator_validation, num_epochs=30,
+                          metrics=[CNN.likelihood_metric],
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=80,
                           use_multiprocessing=True, workers=40, verbose=1, num_gpu=1, lr=0.0001, save_summary=False,
                           path_summary=saving_path, validation_freq=1, train=True, compile=True,
