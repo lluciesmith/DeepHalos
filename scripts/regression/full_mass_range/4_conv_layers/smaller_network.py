@@ -59,21 +59,21 @@ if __name__ == "__main__":
 
     params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True,
                       'kernel_regularizer': reg.l1_and_l21_group(10**-4.5),
-                      'dropout': 0.1}
+                      'dropout': }
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc},
                  'dense_2': {'neurons': 128, **params_all_fcc},
                  'dense_3': {'neurons': 20, **params_all_fcc},
                  'last': {}}
 
-    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
-                          shuffle=True, validation_generator=generator_validation, metrics=[CNN.likelihood_metric],
-                          num_epochs=30, dim=generator_training.dim,
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator={},
+                          shuffle=True, validation_generator={}, metrics=[CNN.likelihood_metric],
+                          num_epochs=30, dim=dim,
                           initialiser="Xavier_uniform", max_queue_size=80,
                           use_multiprocessing=True, workers=40, verbose=1, num_gpu=1,
                           lr=0.0001, save_summary=True,
-                          path_summary=saving_path, validation_freq=1, train=True, compile=True,
+                          path_summary="", validation_freq=1, train=True, compile=False,
                           #initial_epoch=6, #weights=saving_path + "model/weights.06.h5",
-                          seed=seed, global_average=True)
+                          seed=seed, global_average=False)
 
     # Model.model.load_weights(saving_path + "model/weights.06.h5")
     # c = Model.get_callbacks(layer_loss=Model.model.layers[-1])[0]

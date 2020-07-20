@@ -64,13 +64,9 @@ if __name__ == "__main__":
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
-    Model = CNN.CNNCauchy(param_conv, param_fcc, lr=0.0001, model_type="regression", shuffle=True,
-                          dim=generator_training.dim, training_generator=generator_training,
-                          validation_generator=generator_validation, validation_freq=1,
-                          num_epochs=30, verbose=1, seed=seed, init_gamma=0.2,
-                          max_queue_size=80, use_multiprocessing=True,  workers=40, num_gpu=1,
-                          save_summary=True,  path_summary=saving_path, compile=True, train=True,
-                          load_weights=None, initial_epoch=None, metrics=[CNN.likelihood_metric],
-                          alpha_mse=10**-4, load_mse_weights=False, use_mse_n_epoch=0, use_tanh_n_epoch=0,
-                          initialiser="Xavier_uniform", train_gamma=False
-                          )
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                          shuffle=True, validation_generator=generator_validation, metrics=[CNN.likelihood_metric],
+                          num_epochs=30, dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=80,
+                          use_multiprocessing=True, workers=40, verbose=1, num_gpu=1, lr=0.0001, save_summary=True,
+                          path_summary=saving_path, validation_freq=1, train=True, compile=True, initial_epoch=None,
+                          seed=seed)
