@@ -506,6 +506,7 @@ class CNNCauchy(CNN):
 
         self.optimizer = optimizer
         self.metrics = metrics
+        self.save_summary = save_summary
 
         self.num_epochs = num_epochs
         self.load_weights = load_weights
@@ -530,6 +531,10 @@ class CNNCauchy(CNN):
             print("compiling")
             self.model = self.compile_cauchy_model(self.mse_model)
             print("done compiling")
+
+            if self.save_summary is True:
+                with open(self.path_summary + 'model_summary.txt', 'w') as fh:
+                    self.model.summary(print_fn=lambda x: fh.write(x + '\n'))
 
             if self.load_weights is not None:
                 self.model.load_weights(self.load_weights)
