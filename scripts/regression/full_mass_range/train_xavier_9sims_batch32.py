@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/Xavier/batch32/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/full_mass_range/200k_random_training/9sims/Xavier/more_l2/"
 
     seed = 123
     np.random.seed(seed)
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # Create the generators for training
 
     dim = (75, 75, 75)
-    params_tr = {'batch_size': 32, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
+    params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr)
     params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     ######### TRAIN THE MODEL ################
 
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
-                       'kernel_regularizer': reg.l2_norm(10**(-3.5))
+                       'kernel_regularizer': reg.l2_norm(10**(-2.5))
                        }
     param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
                   'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
