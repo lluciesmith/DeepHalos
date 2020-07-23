@@ -29,7 +29,6 @@ if __name__ == "__main__":
     s = tn.SimulationPreparation(all_sims, path=path_sims)
 
     path_data = "/mnt/beegfs/work/ati/pearl037/regression/restricted_mass_range/"
-    scaler_output = load(open(path_data + 'scaler_output.pkl', 'rb'))
     training_particle_IDs = load(open(path_data + 'training_set_50000.pkl', 'rb'))
     training_labels_particle_IDS = load(open(path_data + 'labels_training_set_50000.pkl', 'rb'))
     val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
