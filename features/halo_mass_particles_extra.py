@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
         def get_mass_with_pool(num_halos):
             ids = list(np.arange(num_halos))
-            pool = Pool(40)
+            pool = Pool(80)
             masses = pool.map(get_halo_mass, ids)
             pool.close()
             return masses
