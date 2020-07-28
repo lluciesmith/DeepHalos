@@ -7,7 +7,8 @@ from multiprocessing import Pool
 
 if __name__ == "__main__":
     # sims = ["6", "7", "8", "9", "10"]
-    sims = ["13", "14", "15", "16", "17", "18", "19", "20", "21"]
+    # sims = ["13", "14", "15", "16", "17", "18", "19", "20", "21"]
+    sims = ["15", "16", "17", "18", "19", "20", "21"]
     # sims = ["11", "12"]
     for i in range(len(sims)):
         sim = sims[i]
@@ -60,12 +61,28 @@ if __name__ == "__main__":
         print("Loading halo masses took " + str((t1 - t0)/60) + " minutes.")
         np.save(saving_path + "mass_Msol_each_halo_sim_" + sim + ".npy", masses)
 
-        # get halo masses each particles
-
-        halo_mass_ids = np.zeros(len(f),)
-        for i, hid in enumerate(h):
-            halo_mass_ids[hid["iord"]] = masses[i]
-
-        np.save(saving_path + "reseed" + sim + "_halo_mass_particles.npy", halo_mass_ids)
-
-        del h
+        # def get_mass_particles_with_pool(num_halos):
+        #     ids = list(np.arange(num_halos))
+        #     pool = Pool(80)
+        #     masses = pool.map(get_halo_mass, ids)
+        #     pool.close()
+        #     return masses
+        #
+        # def get_halo_mass(halo_id):
+        #     halo = h[halo_id]
+        #     particle_ids = halo["iord"]
+        #     halo_mass_ids[particle_ids] = masses[halo_id]
+        #     return halo_mass_ids
+        #
+        # # get halo masses each particles
+        #
+        # # halo_mass_ids = np.zeros(len(f),)
+        # # for i, hid in enumerate(h):
+        # #     halo_mass_ids[hid["iord"]] = masses[i]
+        #
+        # halo_mass_ids = np.zeros(len(f), )
+        # halo_mass_ids = get_mass_particles_with_pool(len(h))
+        #
+        # np.save(saving_path + "reseed" + sim + "_halo_mass_particles.npy", halo_mass_ids)
+        #
+        # del h
