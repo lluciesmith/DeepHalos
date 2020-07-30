@@ -424,11 +424,11 @@ class DataGenerator(Sequence):
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            sim_index = ID[4]
+            sim_index = ID[ID.find('sim-') + 4: ID.find('-id')]
 
             # generate box
 
-            particle_ID = int(ID[9:])
+            particle_ID = int(ID[ID.find('-id-') + 4:])
             s = self.generate_input(sim_index, particle_ID)
 
             X[i] = self._process_input(s)
@@ -443,11 +443,11 @@ class DataGenerator(Sequence):
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            sim_index = ID[4]
+            sim_index = ID[ID.find('sim-') + 4 : ID.find('-id')]
 
             # generate box
 
-            particle_ID = int(ID[9:])
+            particle_ID = int(ID[ID.find('-id-') + 4 :])
             s = self.generate_input(sim_index, particle_ID)
 
             X[i] = self._process_input(s)
