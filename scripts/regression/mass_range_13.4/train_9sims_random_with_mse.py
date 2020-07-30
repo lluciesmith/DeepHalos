@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     ######### TRAIN THE MODEL ################
 
-    alpha = 10**-2.5
+    alpha = 10**-3
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)
                        }
@@ -65,45 +65,45 @@ if __name__ == "__main__":
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
-    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
-                          shuffle=True, validation_generator=generator_validation, num_epochs=30,
-                          metrics=[CNN.likelihood_metric],
-                          steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
-                          dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=8,
-                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001, save_summary=True,
-                          path_summary=saving_path, validation_freq=1, train=True, compile=True,
-                          initial_epoch=None,
-                          seed=seed)
-
     # Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
     #                       shuffle=True, validation_generator=generator_validation, num_epochs=30,
     #                       metrics=[CNN.likelihood_metric],
     #                       steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
     #                       dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=8,
-    #                       use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001, save_summary=False,
-    #                       path_summary=saving_path, validation_freq=1, train=False, compile=True,
+    #                       use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001, save_summary=True,
+    #                       path_summary=saving_path, validation_freq=1, train=True, compile=True,
     #                       initial_epoch=None,
     #                       seed=seed)
-    #
-    # num_epoch = '04'
-    # weights = saving_path + "all_cauchy/model/weights." + num_epoch + ".h5"
-    # Model.model.load_weights(weights)
-    #
-    # model2 = keras.Model(inputs=Model.model.input, outputs=Model.model.layers[-2].output)
-    # optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
-    # model2.compile(loss="mse", optimizer=optimiser)
-    #
-    # callbacks_list = []
-    # filepath = saving_path + "model/weights.{epoch:02d}.h5"
-    # checkpoint_call = callbacks.ModelCheckpoint(filepath, period=1, save_weights_only=True)
-    # callbacks_list.append(checkpoint_call)
-    # csv_logger = callbacks.CSVLogger(saving_path + "training.log", separator=',', append=True)
-    # callbacks_list.append(csv_logger)
-    #
-    # history = model2.fit_generator(generator=generator_training, validation_data=generator_validation,
-    #                           use_multiprocessing=True, workers=0,
-    #                           max_queue_size=10, initial_epoch=4,
-    #                           verbose=1, epochs=10, shuffle=True,
-    #                           callbacks=callbacks_list,
-    #                           validation_steps=len(generator_validation), steps_per_epoch=len(generator_training))
+
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                          shuffle=True, validation_generator=generator_validation, num_epochs=30,
+                          metrics=[CNN.likelihood_metric],
+                          steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
+                          dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=8,
+                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001, save_summary=False,
+                          path_summary=saving_path, validation_freq=1, train=False, compile=True,
+                          initial_epoch=None,
+                          seed=seed)
+
+    num_epoch = '04'
+    weights = saving_path + "all_cauchy/model/weights." + num_epoch + ".h5"
+    Model.model.load_weights(weights)
+
+    model2 = keras.Model(inputs=Model.model.input, outputs=Model.model.layers[-2].output)
+    optimiser = keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, amsgrad=True)
+    model2.compile(loss="mse", optimizer=optimiser)
+
+    callbacks_list = []
+    filepath = saving_path + "model/weights.{epoch:02d}.h5"
+    checkpoint_call = callbacks.ModelCheckpoint(filepath, period=1, save_weights_only=True)
+    callbacks_list.append(checkpoint_call)
+    csv_logger = callbacks.CSVLogger(saving_path + "training.log", separator=',', append=True)
+    callbacks_list.append(csv_logger)
+
+    history = model2.fit_generator(generator=generator_training, validation_data=generator_validation,
+                              use_multiprocessing=True, workers=0,
+                              max_queue_size=10, initial_epoch=4,
+                              verbose=1, epochs=10, shuffle=True,
+                              callbacks=callbacks_list,
+                              validation_steps=len(generator_validation), steps_per_epoch=len(generator_training))
 

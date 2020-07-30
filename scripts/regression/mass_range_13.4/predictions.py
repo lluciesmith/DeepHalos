@@ -65,7 +65,7 @@ if __name__ == "__main__":
                           validation_generator=generator_validation, num_epochs=100, dim=generator_validation.dim,
                           max_queue_size=80, use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001,
                           save_summary=False, path_summary=saving_path, validation_freq=1, train=False, compile=True,
-                          initial_epoch=None)
+                          initial_epoch=None, initialiser="Xavier_uniform")
     Model.model.load_weights(weights)
 
     pred = Model.model.predict_generator(generator_validation, use_multiprocessing=False, workers=0, verbose=1)
