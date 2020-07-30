@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_9sims/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_9sims/alpha-3"
 
     seed = 123
     np.random.seed(seed)
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     ######### TRAIN THE MODEL ################
 
-    alpha = 10**-2.5
+    alpha = 10**-3
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)
                        }
