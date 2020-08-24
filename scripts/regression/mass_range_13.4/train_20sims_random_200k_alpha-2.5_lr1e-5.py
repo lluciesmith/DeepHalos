@@ -16,7 +16,7 @@ if __name__ == "__main__":
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_10-5/"
 
     # seed = 123
-    seed = sys.argv[1]
+    seed = int(sys.argv[1])
     np.random.seed(seed)
     python_random.seed(seed)
     tf.compat.v1.set_random_seed(seed)
