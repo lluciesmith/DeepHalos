@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_10-5/"
+    saving_path_ = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_10-5/"
 
     # seed = 123
     seed_str = sys.argv[1]
@@ -22,8 +22,7 @@ if __name__ == "__main__":
     python_random.seed(seed)
     tf.compat.v1.set_random_seed(seed)
 
-    os.mkdir(saving_path + "seed_" + seed_str)
-    os.mkdir(saving_path + "seed_" + seed_str + "/model")
+    saving_path = saving_path_ + "seed_" + seed_str + "/"
 
     # Load data
 
