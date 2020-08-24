@@ -5,6 +5,8 @@ from pickle import load
 import numpy as np
 import tensorflow as tf
 import random as python_random
+import sys
+import os
 
 
 if __name__ == "__main__":
@@ -13,10 +15,14 @@ if __name__ == "__main__":
 
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_10-5/"
 
-    seed = 123
+    # seed = 123
+    seed = sys.argv[1]
     np.random.seed(seed)
     python_random.seed(seed)
     tf.compat.v1.set_random_seed(seed)
+
+    os.mkdir(saving_path + "seed_" + str(seed))
+    os.mkdir(saving_path + "seed_" + str(seed) + "/model")
 
     # Load data
 
