@@ -75,7 +75,7 @@ if __name__ == "__main__":
                           metrics=[CNN.likelihood_metric],
                           steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=10,
-                          use_multiprocessing=True, workers=10, verbose=1, num_gpu=1, lr=lr, save_summary=True,
+                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=lr, save_summary=True,
                           path_summary=saving_path, validation_freq=1, train=True, compile=True,
                           initial_epoch=None, lr_scheduler=False,
                           seed=seed)
