@@ -69,6 +69,7 @@ class SimulationPreparation:
     def load_snapshot_from_simulation_ID(self, sim_id):
         if sim_id == "0":
             path1 = self.path + "training_simulation/snapshots/"
+            # path1 = self.path
             # path1 = "/Users/lls/Documents/mlhalos_files/Nina-Simulations/double/"
             snap_sim = pynbody.load(path1 + "ICs_z99_256_L50_gadget3.dat")
 
@@ -90,6 +91,7 @@ class SimulationPreparation:
 
         if sim_id == "0":
             path1 = self.path + "training_simulation/snapshots/"
+            # path1 = self.path
         else:
             path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
 
@@ -353,7 +355,8 @@ class InputsPreparation:
 class DataGenerator(Sequence):
     def __init__(self, list_IDs, labels, sims, weights=None,
                  batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False,
-                 rescale_mean=0, rescale_std=1):
+                 rescale_mean=0, rescale_std=1,
+                 input_type="raw", num_shells=None):
         """
         This class created the data generator that should be used to fit the deep learning model.
 
@@ -387,6 +390,12 @@ class DataGenerator(Sequence):
         self.rescale_std = rescale_std
         self.sims_rescaled_density = OrderedDict()
         self.preprocess_density_contrasts()
+
+        self.input_type = input_type
+
+        if input_type == "averaged":
+            self.num_shells = num_shells
+            self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
 
         self.on_epoch_end()
 
@@ -468,6 +477,10 @@ class DataGenerator(Sequence):
 
         output_matrix = np.zeros((self.res, self.res, self.res))
         s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+
+        if self.input_type == "averaged":
+            s = get_spherically_averaged_box(s, self.shell_labels)
+
         return s
 
     def preprocess_density_contrasts(self):
@@ -489,4 +502,39 @@ def compute_subbox(i0, j0, k0, width, input_matrix, output_matrix, shape_input):
             for k in prange(width):
                 output_matrix[i, j, k] = input_matrix[(i + i0) % shape_input, (j + j0) % shape_input, (k + k0) % shape_input]
     return output_matrix
+
+
+def assign_shell_to_pixels(width, number_shells):
+    r_shells = np.linspace(2, width / 2, number_shells, endpoint=True)
+
+    x_coord, y_coord, z_coord = np.unravel_index(np.arange(width**3), (width, width, width))
+    x_coord -= width // 2
+    y_coord -= width // 2
+    z_coord -= width // 2
+    r_coords = np.sqrt(x_coord ** 2 + y_coord ** 2 + z_coord ** 2)
+
+    shell_labels = np.ones((width**3)) * -1
+    for i in range(width**3):
+        shell_beloning = np.where(r_coords[i] <= r_shells)[0]
+
+        if shell_beloning.size != 0:
+            shell_labels[i] = shell_beloning.min()
+
+    shell_labels = shell_labels.reshape(width, width, width)
+    return shell_labels
+
+
+def get_spherically_averaged_box(input_matrix, shell_matrix):
+    width = input_matrix.shape[0]
+    averaged_box = np.zeros((width, width, width))
+
+    shell_labels = np.unique(shell_matrix[shell_matrix >= 0])
+    print(shell_labels)
+    for shell_index in shell_labels:
+        print(len(input_matrix[shell_matrix == shell_index].flatten()))
+        averaged_box[shell_matrix == shell_index] = np.mean(input_matrix[shell_matrix == shell_index])
+
+    averaged_box[shell_matrix == -1] = 0
+    return averaged_box
+
 
