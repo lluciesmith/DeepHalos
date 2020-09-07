@@ -35,10 +35,10 @@ if __name__ == "__main__":
     params_box = {'input_type': 'averaged', 'num_shells': 20}
     params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=True, **params_tr)
+                                          shuffle=True, **params_tr, **params_box)
     params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, **params_val)
+                                            shuffle=False, **params_val, **params_box)
 
 
     ######### TRAIN THE MODEL ################
