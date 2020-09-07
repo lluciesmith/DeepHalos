@@ -529,9 +529,7 @@ def get_spherically_averaged_box(input_matrix, shell_matrix):
     averaged_box = np.zeros((width, width, width))
 
     shell_labels = np.unique(shell_matrix[shell_matrix >= 0])
-    print(shell_labels)
     for shell_index in shell_labels:
-        print(len(input_matrix[shell_matrix == shell_index].flatten()))
         averaged_box[shell_matrix == shell_index] = np.mean(input_matrix[shell_matrix == shell_index])
 
     averaged_box[shell_matrix == -1] = 0

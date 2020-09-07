@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
     dim = (75, 75, 75)
     params_box = {'input_type': 'averaged', 'num_shells': 20}
+
     params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
     generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, **params_tr, **params_box)
