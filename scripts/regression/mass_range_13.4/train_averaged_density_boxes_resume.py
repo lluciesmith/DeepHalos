@@ -71,7 +71,7 @@ if __name__ == "__main__":
                           steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=8,
                           use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=lr, save_summary=True,
-                          path_summary=saving_path, validation_freq=1, train=False, compile=True,
+                          path_summary=saving_path, validation_freq=1, train=True, compile=True,
                           initial_epoch=12, lr_scheduler=False, load_weights=saving_path + "model/weights.11.h5",
                           seed=seed)
 
