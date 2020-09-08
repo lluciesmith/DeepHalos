@@ -13,7 +13,8 @@ if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/averaged_densities/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/averaged_densities" \
+                  "/lr1e-4/"
     seed = 123
 
     # Load data
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
-    lr = 0.00005
+    lr = 0.0001
     Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
                           shuffle=True, validation_generator=generator_validation, num_epochs=20,
                           metrics=[CNN.likelihood_metric],
