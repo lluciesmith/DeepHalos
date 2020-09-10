@@ -504,8 +504,9 @@ def compute_subbox(i0, j0, k0, width, input_matrix, output_matrix, shape_input):
     return output_matrix
 
 
-def assign_shell_to_pixels(width, number_shells):
-    r_shells = np.linspace(2, width / 2, number_shells, endpoint=True)
+def assign_shell_to_pixels(width, number_shells, r_shells=None):
+    if r_shells is None:
+        r_shells = np.linspace(2, width / 2, number_shells, endpoint=True)
 
     x_coord, y_coord, z_coord = np.unravel_index(np.arange(width**3), (width, width, width))
     x_coord -= width // 2
