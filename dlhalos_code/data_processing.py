@@ -522,7 +522,7 @@ def assign_shell_to_pixels(width, number_shells, r_shells=None):
             shell_labels[i] = shell_beloning.min()
 
     shell_labels = shell_labels.reshape(width, width, width)
-    return shell_labels
+    return shell_labels.astype("int")
 
 
 def get_spherically_averaged_box_slow(input_matrix, shell_matrix):
