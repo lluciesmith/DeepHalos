@@ -525,13 +525,31 @@ def assign_shell_to_pixels(width, number_shells, r_shells=None):
     return shell_labels
 
 
-def get_spherically_averaged_box(input_matrix, shell_matrix):
+def get_spherically_averaged_box_slow(input_matrix, shell_matrix):
     averaged_box = np.zeros_like(input_matrix)
     shell_labels = np.unique(shell_matrix[shell_matrix >= 0])
 
     for shell_index in shell_labels:
         averaged_box[shell_matrix == shell_index] = np.mean(input_matrix[shell_matrix == shell_index])
     return averaged_box
+
+
+@njit(parallel=True)
+def _get_spherically_averaged_box_w_numba(input_matrix, shell_matrix):
+    cumsum = np.zeros(shell_matrix.max() + 2)  # the last index will match for shell_index == -1
+    counts = np.zeros_like(cumsum)
+    for shell_index, input_value in zip(shell_matrix.flatten(), input_matrix.flatten()):
+        if shell_index < 0:
+            cumsum[shell_index] = 0
+        else:
+            cumsum[shell_index] += input_value
+        counts[shell_index] += 1
+    mean_per_shell = cumsum / counts
+    return mean_per_shell
+
+
+def get_spherically_averaged_box(input_matrix, shell_matrix):
+    return _get_spherically_averaged_box_w_numba(input_matrix, shell_matrix)[shell_matrix]
 
 
 
