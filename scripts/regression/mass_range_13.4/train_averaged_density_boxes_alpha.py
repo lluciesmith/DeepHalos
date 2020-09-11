@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     lr = 0.00005
     Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
-                          shuffle=True, validation_generator=generator_validation, num_epochs=20,
+                          shuffle=True, validation_generator=generator_validation, num_epochs=40,
                           metrics=[CNN.likelihood_metric],
                           steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=8,

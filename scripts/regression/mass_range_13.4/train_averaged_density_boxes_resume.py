@@ -13,7 +13,12 @@ if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/averaged_densities/"
+    log_alpha = sys.argv[1]
+    log_alpha_str = str(log_alpha)
+    log_alpha_int = float(log_alpha)
+
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/averaged_densities" \
+                  "/log_alpha_" + log_alpha_str + "/"
     seed = 123
 
     # Load data
@@ -44,7 +49,7 @@ if __name__ == "__main__":
 
     ######### TRAIN THE MODEL ################
 
-    alpha = 10**-2.2
+    alpha = 10**log_alpha_int
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)
                        }
@@ -66,12 +71,12 @@ if __name__ == "__main__":
 
     lr = 0.00005
     Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
-                          shuffle=True, validation_generator=generator_validation, num_epochs=30,
+                          shuffle=True, validation_generator=generator_validation, num_epochs=40,
                           metrics=[CNN.likelihood_metric],
                           steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=8,
                           use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=lr, save_summary=True,
                           path_summary=saving_path, validation_freq=1, train=True, compile=True,
-                          initial_epoch=12, lr_scheduler=False, load_weights=saving_path + "model/weights.11.h5",
+                          initial_epoch=10, lr_scheduler=False, load_weights=saving_path + "model/weights.10.h5",
                           seed=seed)
 
