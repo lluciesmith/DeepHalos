@@ -97,8 +97,8 @@ class DataGenerator_z0(Sequence):
 
 class Boxz0:
     def __init__(self, snapshot, res_box, rescale=False):
-        if not np.allclose(snapshot["iord"], np.arange(len(snapshot))):
-            raise ValueError("The snapshot properties are not ordered by particle ID so this code will break")
+        # if not np.allclose(snapshot["iord"], np.arange(len(snapshot))):
+        #     raise ValueError("The snapshot properties are not ordered by particle ID so this code will break")
 
         boxsize = float(snapshot.properties['boxsize'].in_units(snapshot['pos'].units))
         grid_spacing = boxsize/res_box
@@ -214,13 +214,10 @@ class SimulationPreparation_z0:
             print("Saved density array of simulation ID " + sim_id)
 
         rho_m = pynbody.analysis.cosmology.rho_M(snapshot, unit=snapshot["rho"].units)
-        snapshot['den_contrast'] = snapshot["rho"] / rho_m
+        den_con = snapshot["rho"] / rho_m
+        snapshot["log_den_contrast"] = np.log10(den_con)
 
         t1 = time.time()
         print("Computing density contrast (z=0) in simulation took " + str((t1 - t0)/60) + " minutes.")
-
-        rho_m = pynbody.analysis.cosmology.rho_M(snapshot, unit=snapshot["rho"].units)
-        den_con = snapshot["rho"] / rho_m
-        snapshot["log_den_contrast"] = np.log10(den_con)
 
         return snapshot
