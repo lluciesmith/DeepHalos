@@ -180,7 +180,7 @@ class SimulationPreparation_z0:
     def load_snapshot_from_simulation_ID(self, sim_id):
         if sim_id == "0":
             path1 = self.path + "training_simulation/snapshots/"
-            # path1 = self.path
+            #path1 = self.path
             snap_sim = pynbody.load(path1 + "snapshot_104")
 
         else:
@@ -197,6 +197,7 @@ class SimulationPreparation_z0:
 
         if sim_id == "0":
             path1 = self.path + "training_simulation/snapshots/"
+            # path1 = self.path
         else:
             path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
 

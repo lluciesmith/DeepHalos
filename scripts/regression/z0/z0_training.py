@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     ######### TRAIN THE MODEL ################
     lr = 0.00005
-    alpha = 10 ** -2.4
+    alpha = 10 ** -3
 
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)

@@ -526,14 +526,14 @@ def assign_shell_to_pixels(width, number_shells, r_shells=None):
 
 
 def get_spherically_averaged_box(input_matrix, shell_matrix):
-    width = input_matrix.shape[0]
-    averaged_box = np.zeros((width, width, width))
-
+    averaged_box = np.zeros_like(input_matrix)
     shell_labels = np.unique(shell_matrix[shell_matrix >= 0])
+
     for shell_index in shell_labels:
         averaged_box[shell_matrix == shell_index] = np.mean(input_matrix[shell_matrix == shell_index])
-
-    averaged_box[shell_matrix == -1] = 0
     return averaged_box
+
+
+
 
 
