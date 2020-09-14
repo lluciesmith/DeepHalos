@@ -32,7 +32,8 @@ if __name__ == "__main__":
     generator_training = dp0.DataGenerator_z0(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
                                               shuffle=True, batch_size=64, **params_box)
     generator_validation = dp0.DataGenerator_z0(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
-                                                shuffle=False, batch_size=50, **params_box)
+                                                gridded_box=generator_training.box_class, shuffle=False, batch_size=50,
+                                                **params_box)
 
     ######### TRAIN THE MODEL ################
     lr = 0.00005

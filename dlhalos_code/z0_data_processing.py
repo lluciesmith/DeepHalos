@@ -7,7 +7,7 @@ import time
 
 
 class DataGenerator_z0(Sequence):
-    def __init__(self, list_IDs, labels, sims, res_sim=1667, rescale=False,
+    def __init__(self, list_IDs, labels, sims, res_sim=1667, rescale=False, gridded_box=None,
                  batch_size=80, dim=(75, 75, 75), n_channels=1, shuffle=False):
         """
         This class created the data generator that should be used to fit the deep learning model.
@@ -38,8 +38,11 @@ class DataGenerator_z0(Sequence):
         self.n_channels = n_channels
 
         # For every simulation, compute the gridded density at z=0
-        self.box_class = OrderedDict()
-        self.preprocess_gridded_densities(rescale=rescale)
+        if gridded_box is None:
+            self.box_class = OrderedDict()
+            self.preprocess_gridded_densities(rescale=rescale)
+        else:
+            self.box_class = gridded_box
 
         self.on_epoch_end()
 
