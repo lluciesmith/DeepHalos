@@ -99,7 +99,7 @@ class DataGenerator_z0(Sequence):
 
 
 class Boxz0:
-    def __init__(self, sim_id, snapshot, res_box, rescale=False, path="/lfstev/deepskies/luisals/"):
+    def __init__(self, sim_id, snapshot, res_box, rescale=False, path="/mnt/beegfs/work/ati/pearl037/"):
         # if not np.allclose(snapshot["iord"], np.arange(len(snapshot))):
         #     raise ValueError("The snapshot properties are not ordered by particle ID so this code will break")
 
