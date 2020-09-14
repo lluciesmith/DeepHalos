@@ -12,11 +12,6 @@ if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    # saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_9sims/"
-    # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set_13.4/9sims/random/200k/"
-
-    # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set_13.4/20sims/random/200k/"
-
     num_epoch = sys.argv[1]
     saving_path = sys.argv[2]
     path_data = sys.argv[3]
@@ -37,13 +32,14 @@ if __name__ == "__main__":
 
     dim = (75, 75, 75)
     params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
+    params_box = {'input_type': 'averaged', 'num_shells': 20}
     generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, **params_val)
+                                            shuffle=False, **params_val, **params_box)
 
 
     ######### TRAIN THE MODEL ################
 
-    alpha = 10**-3
+    alpha = 10**-4
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)
                        }
