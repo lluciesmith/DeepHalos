@@ -90,7 +90,7 @@ class DataGenerator_z0(Sequence):
 
     def preprocess_gridded_densities(self, rescale=False):
         for i, simulation in self.sims.items():
-            self.box_class[i] = Boxz0(simulation, self.res_sim, rescale=rescale)
+            self.box_class[i] = Boxz0(i, simulation, self.res_sim, rescale=rescale)
 
     def generate_input(self, simulation_index, particle_id):
         class_sim = self.box_class[simulation_index]
@@ -99,13 +99,19 @@ class DataGenerator_z0(Sequence):
 
 
 class Boxz0:
-    def __init__(self, snapshot, res_box, rescale=False):
+    def __init__(self, sim_id, snapshot, res_box, rescale=False, path="/lfstev/deepskies/luisals/"):
         # if not np.allclose(snapshot["iord"], np.arange(len(snapshot))):
         #     raise ValueError("The snapshot properties are not ordered by particle ID so this code will break")
+
+        if sim_id == "0":
+            self.path1 = path + "training_simulation/snapshots/"
+        else:
+            self.path1 = path + "reseed" + sim_id + "_simulation/snapshots/"
 
         boxsize = float(snapshot.properties['boxsize'].in_units(snapshot['pos'].units))
         grid_spacing = boxsize/res_box
 
+        self.sim_id = sim_id
         self.snapshot = snapshot
         self.res_box = res_box
         self.grid_spacing = grid_spacing
@@ -123,7 +129,15 @@ class Boxz0:
         return grid_coords
 
     def deposit_density_on_grid(self, snapshot, res_box):
-        rho_grid = pynbody.sph.to_3d_grid(snapshot, qty="log_den_contrast", nx=res_box, threaded=True)
+        try:
+            rho_grid = np.load(self.path1 + "z0_log_density_constrast_on_grid_" + str(res_box) + ".npy")
+            print("Loaded z=0 gridded density array of simulation ID " + self.sim_id)
+
+        except FileNotFoundError:
+            rho_grid = pynbody.sph.to_3d_grid(snapshot, qty="log_den_contrast", nx=res_box, threaded=True)
+            np.save(self.path1 + "z0_log_density_constrast_on_grid_" + str(res_box) + ".npy", rho_grid)
+            print("Saved z=0 gridded density array of simulation ID " + self.sim_id)
+
         return rho_grid
 
     def rescale_density_on_grid(self, rho_gridded):
