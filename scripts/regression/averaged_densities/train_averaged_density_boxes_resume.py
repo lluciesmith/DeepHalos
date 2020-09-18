@@ -31,8 +31,8 @@ if __name__ == "__main__":
     path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set_13.4/20sims/random/200k/"
     training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
     training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
-    val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
-    val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
+    val_particle_IDs = load(open(path_data + 'larger_validation_set.pkl', 'rb'))
+    val_labels_particle_IDS = load(open(path_data + 'larger_labels_validation_set.pkl', 'rb'))
 
     # Create the generators for training
 
@@ -71,12 +71,12 @@ if __name__ == "__main__":
 
     lr = 0.00005
     Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
-                          shuffle=True, validation_generator=generator_validation, num_epochs=40,
+                          shuffle=True, validation_generator=generator_validation, num_epochs=80,
                           metrics=[CNN.likelihood_metric],
                           steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=8,
                           use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=lr, save_summary=True,
-                          path_summary=saving_path, validation_freq=1, train=True, compile=True,
-                          initial_epoch=10, lr_scheduler=False, load_weights=saving_path + "model/weights.10.h5",
+                          path_summary=saving_path, validation_freq=2, train=True, compile=True,
+                          initial_epoch=38, lr_scheduler=False, load_weights=saving_path + "model/weights.38.h5",
                           seed=seed)
 
