@@ -13,8 +13,8 @@ if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_5e-5/log_alpha_-2" \
-                   ".2/training_set2/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_5e-5/alpha_-2.2/" \
+                  "training_set2/"
 
     seed = 123
     np.random.seed(seed)
