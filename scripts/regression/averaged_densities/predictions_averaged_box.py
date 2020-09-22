@@ -27,8 +27,19 @@ if __name__ == "__main__":
     s = tn.SimulationPreparation([val_sim], path="/mnt/beegfs/work/ati/pearl037/")
 
     scaler = load(open(path_data + 'scaler_output.pkl', 'rb'))
-    val_particle_IDs = load(open(path_data + 'larger_validation_set.pkl', 'rb'))
-    val_labels_particle_IDS = load(open(path_data + 'larger_labels_validation_set.pkl', 'rb'))
+
+    # val_particle_IDs = load(open(path_data + 'larger_validation_set.pkl', 'rb'))
+    # val_labels_particle_IDS = load(open(path_data + 'larger_labels_validation_set.pkl', 'rb'))
+    # dim = (75, 75, 75)
+    # params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
+    # params_box = {'input_type': 'averaged', 'num_shells': 20}
+    # generator_validation = tn.DataGenerator(val_particle_IDs, val_labels_particle_IDS, s.sims_dic,
+    #                                         shuffle=False, **params_val, **params_box)
+
+    training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
+    training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
+    val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
+    val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 
     dim = (75, 75, 75)
     params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
@@ -67,9 +78,23 @@ if __name__ == "__main__":
                           initial_epoch=None, initialiser="Xavier_uniform")
     Model.model.load_weights(weights)
 
-    pred = Model.model.predict_generator(generator_validation, use_multiprocessing=False, workers=0, verbose=1)
-    truth_rescaled = np.array([val_labels_particle_IDS[ID] for ID in val_particle_IDs])
-    h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
-    true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    np.save(saving_path + "predicted_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", h_m_pred)
-    np.save(saving_path + "true_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", true)
+    # pred = Model.model.predict_generator(generator_validation, use_multiprocessing=False, workers=0, verbose=1)
+    # truth_rescaled = np.array([val_labels_particle_IDS[ID] for ID in val_particle_IDs])
+    # h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
+    # true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
+    # np.save(saving_path + "small_val_predicted_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", h_m_pred)
+    # np.save(saving_path + "small_val_true_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", true)
+
+    dim = (75, 75, 75)
+    params_box = {'input_type': 'averaged', 'num_shells': 20}
+
+    params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
+    generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
+                                          shuffle=True, **params_tr, **params_box)
+
+    predt = Model.model.predict_generator(generator_training, use_multiprocessing=False, workers=0, verbose=1)
+    truth_rescaledt = np.array([training_labels_particle_IDS[ID] for ID in training_particle_IDs])
+    h_m_predt = scaler.inverse_transform(predt.reshape(-1, 1)).flatten()
+    truet = scaler.inverse_transform(truth_rescaledt.reshape(-1, 1)).flatten()
+    np.save(saving_path + "training_predicted_epoch_" + num_epoch + ".npy", h_m_predt)
+    np.save(saving_path + "training_true_sim_epoch_" + num_epoch + ".npy", truet)

@@ -14,7 +14,7 @@ if __name__ == "__main__":
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     log_alpha = sys.argv[1]
-    log_alpha_str = str(log_alpha)
+    log_alpha_str = '%.1f' % log_alpha
     log_alpha_int = float(log_alpha)
 
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/averaged_densities" \
