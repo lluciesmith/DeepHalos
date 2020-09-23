@@ -13,10 +13,10 @@ if __name__ == "__main__":
 
 ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_5e-5/alpha_-2.2/" \
-                  "training_set2/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_5e-5" \
+                  "/training_set2_alpha_-2.5/"
 
-    seed = 123
+    seed = 20
     np.random.seed(seed)
     python_random.seed(seed)
     tf.compat.v1.set_random_seed(seed)
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     ######### TRAIN THE MODEL ################
 
-    alpha = 10**-2.2
+    alpha = 10**-2.5
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)
                        }
