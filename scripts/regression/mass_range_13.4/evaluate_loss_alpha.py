@@ -9,7 +9,8 @@ if __name__ == "__main__":
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
-    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_5e-5/alpha_-2.2/"
+    saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_5e-5/alpha_-2.2" \
+                  "/training_set2/"
 
     s = tn.SimulationPreparation(["6"], path="/mnt/beegfs/work/ati/pearl037/")
     path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set_13.4/20sims/random/200k/"
@@ -52,12 +53,12 @@ if __name__ == "__main__":
     epochs = ["%02d" % num for num in np.arange(2, 19, step=2)]
     loss_val = []
 
-    for num_epoch in epochs:
+    for num_epoch in epochs[:-3]:
         weights = saving_path + "model/weights." + num_epoch + ".h5"
         Model.model.load_weights(weights)
 
         l_v = Model.model.evaluate_generator(generator_validation, use_multiprocessing=False, workers=0, verbose=1,
                                              steps=len(generator_validation))
         loss_val.append(l_v)
-        
+
     np.save(saving_path + "loss_larger_validation_set.npy", loss_val)
