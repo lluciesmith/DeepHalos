@@ -10,7 +10,7 @@ if __name__ == "__main__":
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
     saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/averaged_densities" \
-                   "/log_alpha_-5/"
+                   "/log_alpha_-4.3/"
 
     path_sims = "/mnt/beegfs/work/ati/pearl037/"
     all_sims = ["%i" % i for i in np.arange(22)]
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     ######### TRAIN THE MODEL ################
 
-    alpha = 10**-5
+    alpha = 10**-4.3
 
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)
@@ -59,7 +59,7 @@ if __name__ == "__main__":
                           save_summary=False, path_summary=saving_path, validation_freq=1, train=False, compile=True,
                           initial_epoch=None, initialiser="Xavier_uniform")
 
-    epochs = ["%02d" % num for num in np.arange(1, 39)][::5]
+    epochs = ["%02d" % num for num in np.arange(1, 41)][10::2]
     loss_val = []
 
     for num_epoch in epochs:
