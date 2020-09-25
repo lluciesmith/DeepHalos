@@ -14,9 +14,13 @@ if __name__ == "__main__":
 
     # saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_9sims/"
     # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set_13.4/9sims/random/200k/"
+
+    # path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set_13.4/20sims/random/200k/"
+
     num_epoch = sys.argv[1]
     saving_path = sys.argv[2]
     path_data = sys.argv[3]
+    training_set=False
 
     seed = 123
     np.random.seed(seed)
@@ -40,7 +44,7 @@ if __name__ == "__main__":
 
     ######### TRAIN THE MODEL ################
 
-    alpha = 10**-3
+    alpha = 10**-2.2
     params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                        'kernel_regularizer': reg.l2_norm(alpha)
                        }
@@ -74,3 +78,24 @@ if __name__ == "__main__":
     true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
     np.save(saving_path + "predicted_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", h_m_pred)
     np.save(saving_path + "true_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", true)
+
+    # If wanting to predict the training set too:
+
+    if training_set is True:
+        all_sims = ["%i" % i for i in np.arange(22)]
+        all_sims.remove("3")
+        s = tn.SimulationPreparation(all_sims, path="/mnt/beegfs/work/ati/pearl037/")
+
+        training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
+        training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
+
+        params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (75, 75, 75)}
+        generator_training = tn.DataGenerator(training_particle_IDs, training_labels_particle_IDS, s.sims_dic,
+                                              shuffle=False, **params_tr)
+
+        predt = Model.model.predict_generator(generator_training, use_multiprocessing=False, workers=0, verbose=1)
+        truth_rescaledt = np.array([training_labels_particle_IDS[ID] for ID in training_particle_IDs])
+        h_m_predt = scaler.inverse_transform(predt.reshape(-1, 1)).flatten()
+        truet = scaler.inverse_transform(truth_rescaledt.reshape(-1, 1)).flatten()
+        np.save(saving_path + "training_predicted_epoch_" + num_epoch + ".npy", h_m_predt)
+        np.save(saving_path + "training_true_epoch_" + num_epoch + ".npy", truet)
