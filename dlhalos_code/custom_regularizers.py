@@ -36,7 +36,7 @@ class L2(Regularizer, TrainRegParameter):
 
     def __call__(self, x):
         regularization = 0.
-        regularization += self.alpha * K.sum(K.square(x))
+        regularization += K.sum(self.alpha * K.square(x))
         return regularization
 
     def get_config(self):
@@ -50,7 +50,7 @@ class L1(Regularizer, TrainRegParameter):
 
     def __call__(self, x):
         regularization = 0.
-        regularization += self.alpha * K.sum(K.abs(x))
+        regularization += K.sum(self.alpha * K.abs(x))
         return regularization
 
     def get_config(self):
@@ -66,8 +66,8 @@ class L21_and_L1(Regularizer, TrainRegParameter):
 
     def __call__(self, x):
         regularization = 0.
-        regularization += self.alpha * K.sum(K.abs(x))
-        regularization += self.alpha * K.sum(K.sqrt(K.sum(K.square(x), axis=1)))
+        regularization += K.sum(self.alpha * K.abs(x))
+        regularization += K.sum(self.alpha * K.sqrt(K.sum(K.square(x), axis=1)))
         return regularization
 
     def get_config(self):
@@ -86,7 +86,7 @@ class L21(Regularizer, TrainRegParameter):
         # const_coeff = np.sqrt(K.int_shape(x)[1])
 
         regularization = 0.
-        regularization += self.alpha * K.sum(K.sqrt(K.sum(K.square(x), axis=1)))
+        regularization += K.sum(self.alpha * K.sqrt(K.sum(K.square(x), axis=1)))
         return regularization
 
     def get_config(self):

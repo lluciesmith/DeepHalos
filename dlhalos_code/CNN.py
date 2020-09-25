@@ -674,7 +674,7 @@ class CNNCauchy(CNN):
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
                                       verbose=self.verbose, epochs=self.num_epochs, shuffle=self.shuffle,
-                                      callbacks=callbacks_list, validation_freq=self.val_freq,
+                                      callbacks=callbacks_list, validation_freq=self.validation_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
 
         return model, history, [cbk.weights if self.train_gamma is True else None][0]
@@ -741,7 +741,7 @@ class CNNCauchy(CNN):
                                        validation_data=self.validation_generator,
                                        use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                        max_queue_size=self.max_queue_size, verbose=self.verbose, epochs=num_epochs,
-                                       shuffle=self.shuffle, callbacks=callbacks, validation_freq=self.val_freq,
+                                       shuffle=self.shuffle, callbacks=callbacks, validation_freq=self.validation_freq,
                                        validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
         return _tanh_model
 

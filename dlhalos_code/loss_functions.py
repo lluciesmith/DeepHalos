@@ -1,4 +1,4 @@
-local_machine = False
+local_machine = True
 
 import numpy as np
 if local_machine:
@@ -38,6 +38,7 @@ def cauchy_selection_loss_fixed_boundary(gamma=0.2, y_max=1, y_min=-1):
     def loss(y_true, y_predicted):
         return L.loss(y_true, y_predicted)
     return loss
+
 
 def cauchy_selection_loss_trainable_gamma(layer, y_max=1, y_min=-1):
     def loss(y_true, y_pred):
