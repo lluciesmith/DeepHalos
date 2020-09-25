@@ -15,7 +15,7 @@ if __name__ == "__main__":
     num_epoch = sys.argv[1]
     saving_path = sys.argv[2]
     path_data = sys.argv[3]
-    training = False
+    training = True
 
     seed = 123
     np.random.seed(seed)
@@ -75,6 +75,10 @@ if __name__ == "__main__":
     np.save(saving_path + "true_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", true)
 
     if training is True:
+        all_sims = ["%i" % i for i in np.arange(22)]
+        all_sims.remove("3")
+        s = tn.SimulationPreparation(all_sims, path="/mnt/beegfs/work/ati/pearl037/")
+        
         training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
         training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
 
