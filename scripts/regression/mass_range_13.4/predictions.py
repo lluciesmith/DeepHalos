@@ -33,8 +33,8 @@ if __name__ == "__main__":
     s = tn.SimulationPreparation([val_sim], path="/mnt/beegfs/work/ati/pearl037/")
 
     scaler = load(open(path_data + 'scaler_output.pkl', 'rb'))
-    val_particle_IDs = load(open(path_data + 'larger_validation_set2.pkl', 'rb'))
-    val_labels_particle_IDS = load(open(path_data + 'larger_labels_validation_set2.pkl', 'rb'))
+    val_particle_IDs = load(open(path_data + 'larger_validation_set.pkl', 'rb'))
+    val_labels_particle_IDS = load(open(path_data + 'larger_labels_validation_set.pkl', 'rb'))
 
     dim = (75, 75, 75)
     params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
@@ -76,8 +76,8 @@ if __name__ == "__main__":
     truth_rescaled = np.array([val_labels_particle_IDS[ID] for ID in val_particle_IDs])
     h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
     true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    np.save(saving_path + "predicted_sim_" + val_sim + "_epoch_" + num_epoch + "_set2.npy", h_m_pred)
-    np.save(saving_path + "true_sim_" + val_sim + "_epoch_" + num_epoch + "_set2.npy", true)
+    np.save(saving_path + "predicted_sim_" + val_sim + "_epoch_" + num_epoch + "_test.npy", h_m_pred)
+    np.save(saving_path + "true_sim_" + val_sim + "_epoch_" + num_epoch + "_test.npy", true)
 
     # If wanting to predict the training set too:
 
