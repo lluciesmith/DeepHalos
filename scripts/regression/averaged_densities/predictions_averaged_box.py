@@ -28,8 +28,8 @@ if __name__ == "__main__":
     s = tn.SimulationPreparation([val_sim], path="/mnt/beegfs/work/ati/pearl037/")
 
     scaler = load(open(path_data + 'scaler_output.pkl', 'rb'))
-    val_particle_IDs = load(open(path_data + 'larger_validation_set.pkl', 'rb'))
-    val_labels_particle_IDS = load(open(path_data + 'larger_labels_validation_set.pkl', 'rb'))
+    val_particle_IDs = load(open(path_data + 'larger_validation_set2.pkl', 'rb'))
+    val_labels_particle_IDS = load(open(path_data + 'larger_labels_validation_set2.pkl', 'rb'))
 
     params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (75, 75, 75)}
     params_box = {'input_type': 'averaged', 'num_shells': 20}
