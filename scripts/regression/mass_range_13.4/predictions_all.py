@@ -18,7 +18,6 @@ if __name__ == "__main__":
     num_epoch = sys.argv[1]
     saving_path = sys.argv[2]
     path_data = sys.argv[3]
-    training_set = False
 
     seed = 123
     np.random.seed(seed)
@@ -33,10 +32,10 @@ if __name__ == "__main__":
     scaler = load(open(path_data + 'scaler_output.pkl', 'rb'))
 
     test_set = tn.InputsPreparation([val_sim], scaler_type="minmax", log_high_mass_limit=13.4,
-                                    load_ids=False, shuffle=False, random_style=None, random_subset_all=None,
+                                    load_ids=False, shuffle=False, random_style="random", random_subset_all=1000000,
                                     random_subset_each_sim=None, scaler_output=scaler, path=path_sims)
 
-    params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (75, 75, 75)}
+    params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (75, 75, 75)}
     generator_validation = tn.DataGenerator(test_set.particle_IDs, test_set.labels_particle_IDS, s.sims_dic,
                                             shuffle=False, **params_val)
 
