@@ -32,7 +32,7 @@ if __name__ == "__main__":
     scaler = load(open(path_data + 'scaler_output.pkl', 'rb'))
 
     test_set = tn.InputsPreparation([val_sim], scaler_type="minmax", log_high_mass_limit=13.4,
-                                    load_ids=False, shuffle=False, random_style="random", random_subset_all=1000000,
+                                    load_ids=False, shuffle=False, random_style="random", random_subset_all=100000,
                                     random_subset_each_sim=None, scaler_output=scaler, path=path_sims)
 
     params_val = {'batch_size': 100, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': (75, 75, 75)}
@@ -74,5 +74,5 @@ if __name__ == "__main__":
     truth_rescaled = np.array([test_set.labels_particle_IDS[ID] for ID in test_set.particle_IDs])
     h_m_pred = scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
     true = scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    np.save(saving_path + "all_predicted_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", h_m_pred)
-    np.save(saving_path + "all_true_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", true)
+    np.save(saving_path + "10k_predicted_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", h_m_pred)
+    np.save(saving_path + "10k_true_sim_" + val_sim + "_epoch_" + num_epoch + ".npy", true)
