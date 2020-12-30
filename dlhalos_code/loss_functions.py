@@ -1,4 +1,4 @@
-local_machine = False
+local_machine = True
 
 import numpy as np
 if local_machine:
