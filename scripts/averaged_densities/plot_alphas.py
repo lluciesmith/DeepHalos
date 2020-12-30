@@ -23,7 +23,7 @@ plt.subplots_adjust(bottom=0.12, left=0.08, right=0.95,top=0.98, wspace=0.25)
 axes[-2].set_xlabel("Epoch")
 axes[0].set_ylabel("Loss")
 axes[3].set_ylabel("Loss")
-axes[-1].plot(np.arange(16), l_tr_end_epoch - 0.003, color="k", label="training loss at end epoch")
+# axes[-1].plot(np.arange(16), l_tr_end_epoch - 0.003, color="k", label="training loss at end epoch")
 axes[-1].legend(loc="best", fontsize=14)
 plt.savefig("losses_alpha.png")
 
