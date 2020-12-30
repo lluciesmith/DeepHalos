@@ -11,7 +11,6 @@ if __name__ == "__main__":
     h = f0.halos()
 
     h_num = 50
-    halo_id = h[h_num]
     particle_id = h[h_num]['iord'][0]
     pos0 = f0[particle_id]['pos']
 

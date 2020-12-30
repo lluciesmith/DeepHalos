@@ -25,6 +25,8 @@ if __name__ == "__main__":
 
     f0 = pynbody.load(path + "snapshot_099")
     h = f0.halos()
+    particle_id = h[50]['iord'][0]
+    pos_h50 = f0[particle_id]['pos']
 
     pynbody.analysis.halo.center(h[50], vel=False, wrap=True)
     comoving_width = "50 Mpc h**-1"
