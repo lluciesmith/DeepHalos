@@ -126,14 +126,10 @@ if __name__ == "__main__":
 
     path1 = path + "run_2_fermi/"
     weights = path1 + "model/weights.10.h5"
-    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                      training_generator=generator_training, validation_generator=generator_validation,
-                      num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
-                      use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, save_summary=False,
-                      path_summary=path1,
-                      compile=True, train=False, load_weights=weights,
-                      load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                      **reg_params)
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                          validation_generator=generator_validation, num_epochs=20, dim=generator_training.dim,
+                          max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001,
+                          save_summary=False, path_summary=path1, validation_freq=1, train=False, compile=True)
 
     # Get loss landscape
 

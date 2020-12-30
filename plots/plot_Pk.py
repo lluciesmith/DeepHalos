@@ -17,6 +17,7 @@ def load_genpk(path,box):
     Pk=matpow[1:, 1] * box**3
     return (simk,Pk)
 
+
 def plot_genpk_power(matpow1, box,color=None, ls="-", label=None):
     """ Plot the matter power as output by gen-pk"""
     (k, Pk1)=load_genpk(matpow1,box)
@@ -37,7 +38,7 @@ if __name__ == "__main__":
         final_snapshot="/Users/lls/Documents/mlhalos_files/reseed50/snapshot_099")
 
     paths = ["./nina_sim/PK-DM-snapshot_104", "./reseed_50/PK-DM-snapshot_099", "./reseed50_2/PK-DM-snapshot_099",
-             "./reseed3/PK-DM-snapshot_099", "./reseed4/PK-DM-snapshot_099", "./reseed5/ PK - DM - snapshot_099",
+             "./reseed3/PK-DM-snapshot_099", "./reseed4/PK-DM-snapshot_099", "./reseed5/PK-DM-snapshot_099",
              "./reseed6/PK-DM-snapshot_007", "./reseed7/PK-DM-snapshot_007", "./reseed8/PK-DM-snapshot_007",
              "./reseed9/PK-DM-snapshot_007", "./reseed10/PK-DM-snapshot_007"]
 
