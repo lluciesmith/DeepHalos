@@ -4,6 +4,7 @@ from dlhalos_code import CNN
 from dlhalos_code import custom_regularizers as reg
 import dlhalos_code.data_processing as tn
 from pickle import dump, load
+import tensorflow as tf
 from dlhalos_code import loss_functions as lf
 import numpy as np
 import os
@@ -43,11 +44,7 @@ if __name__ == "__main__":
 
     log_alpha = -4
     alpha = 0.0001
-    # path_model = path + "log_alpha_" + str(log_alpha) + "/no_reg_mse_epoch/"
-    path_model = path + "l2_l21_l1_dropout/"
-    # path_model = path + "same_reg_as_cauchy/"
-    path_model1 = path_model + "reg_added_layer/"
-    path_model2 = path_model + "reg_added_loss/"
+    path_model = path + "optimizer/"
 
     ############### TEST 1 ########################
 
@@ -69,90 +66,28 @@ if __name__ == "__main__":
 
     # Dense layers parameters
 
-    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'kernel_regularizer':dense_l21_l1,
-                      'dropout': 0.4}
+    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'kernel_regularizer': dense_l21_l1}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
-                 'last': {}}
+             'last': {}}
 
     # Regularization parameters + Cauchy likelihood
 
     reg_params = {'init_gamma': 0.2}
 
-    # Train for 100 epochs
+    # Train
 
-    _Model1 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                          training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
-                          use_multiprocessing=False,
-                          workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model1,
-                          compile=True, train=False, load_weights=None,
-                          train_mse=True, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params, reg_mse=True, alpha_mse=alpha)
+    sgd_optimiser = tf.keras.optimizers.SGD(learning_rate=0.0001, momentum=0, nesterov=False, name='SGD')
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                          validation_generator=generator_validation, num_epochs=60, dim=generator_training.dim,
+                          max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001,
+                          save_summary=True, path_summary=path_model, validation_freq=1, train=True, compile=True)
 
-    # Use MSE weights and train on Cauchy
-
-    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'kernel_regularizer':dense_l21_l1}
-    param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
-                 'last': {}}
-
-    Model1 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                          training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
-                          use_multiprocessing=False,
-                          workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model1,
-                          compile=True, train=True, load_weights=None,
-                          train_mse=True, load_mse_weights=True, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params, reg_mse=True, alpha_mse=alpha)
+    path2 = path_model + "adam/"
+    Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                          validation_generator=generator_validation, num_epochs=60, dim=generator_training.dim,
+                          max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001,
+                          save_summary=True, path_summary=path2, validation_freq=1, train=True, compile=True)
 
 
-    ##################### TEST 2 ######################
 
-    # Convolutional layers
 
-    params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False}
-    param_conv = {'conv_1': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': None, **params_all_conv},
-                  'conv_2': {'num_kernels': 32, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-                  'conv_3': {'num_kernels': 64, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-                  'conv_4': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv},
-                  'conv_5': {'num_kernels': 128, 'dim_kernel': (3, 3, 3), 'pool': "max", **params_all_conv}
-                  }
-
-    # Dense layers parameters
-
-    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True}
-    param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
-                 'last': {}}
-
-    # Regularization parameters + Cauchy likelihood
-
-    reg_params = {'fixed_alpha': log_alpha,
-                  'init_gamma': 0.2,
-                  # 'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
-                  # 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
-                  'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
-                  }
-
-    # Train for 100 epochs
-
-    Model2 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                          training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
-                          use_multiprocessing=False,
-                          workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model2,
-                          compile=True, train=True, load_weights=None,
-                          train_mse=True, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params, reg_mse=False)
-
-    # l1 = Model1.model.evaluate(generator_training, verbose=1)
-    # l2 = Model2.model.evaluate(generator_training, verbose=1)
-    #
-    # y = tf.convert_to_tensor(y_true.reshape(len(y_true), 1), dtype="float32")
-    # yp = tf.convert_to_tensor(y_pred, dtype="float32")
-    #
-    # l2_cauchy = lf.cauchy_selection_loss_fixed_boundary()(y, yp)
-    # l1_cauchy = lf.cauchy_selection_loss_fixed_boundary()(y_true, y_pred)
-    #
-    # lr_reg = [(K.get_value(Model2.model.losses[i])) for i in range(7)]
-    #
-    # Model1.model.layers[indices[0]].losses
-    # Model2.model.layers[indices[0]].losses

@@ -43,7 +43,8 @@ if __name__ == "__main__":
 
     log_alpha = -4
     alpha = 0.0001
-    path_model = path + "log_alpha_" + str(log_alpha) + "/l2_reg_mse_epoch/"
+    path_model = path + "l2_dropout/"
+    # path_model = path + "log_alpha_" + str(log_alpha) + "/l2_reg_mse_epoch/"
     path_model1 = path_model + "reg_added_layer/"
     path_model2 = path_model + "reg_added_loss/"
 
@@ -67,32 +68,40 @@ if __name__ == "__main__":
 
     # Dense layers parameters
 
-    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'kernel_regularizer':dense_l21_l1}
+    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True,
+                      # 'dropout': 0.4,
+                      'kernel_regularizer':dense_l21_l1
+                      }
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
     # Regularization parameters + Cauchy likelihood
 
-    reg_params = {# 'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
-                  #'fixed_alpha': alpha,
-                  'init_gamma': 0.2,
-                  # 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
-                  'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
+    reg_params = {'init_gamma': 0.2,
+                  'regularizer_conv': reg.l2_norm,
+                  'regularizer_dense': reg.l1_and_l21_group
                   }
 
     # Train for 100 epochs
 
-    Model1 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                          training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
-                          use_multiprocessing=False,
-                          workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model1,
-                          compile=True, train=True, load_weights=None,
-                          train_mse=True, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params, reg_mse=True, alpha_mse=0.001)
+    # First train on MSE and save weights
+
+    _Model2 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                            validation_generator=generator_validation, num_epochs=20, dim=generator_training.dim,
+                            max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001,
+                            save_summary=True, path_summary=path_model2, validation_freq=1, train=False, compile=True)
+
+    # Use MSE weights and train on Cauchy
+
+    Model2 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                           validation_generator=generator_validation, num_epochs=20, dim=generator_training.dim,
+                           max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001,
+                           save_summary=True, path_summary=path_model2, validation_freq=1, train=True, compile=True)
 
 
     ##################### TEST 2 ######################
+
+    # In this case, the regularizers are added internally (this is enabled when you specify `fixed_alpha' parameter.
 
     # Convolutional layers
 
@@ -106,7 +115,7 @@ if __name__ == "__main__":
 
     # Dense layers parameters
 
-    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True}
+    params_all_fcc = {'bn': False, 'activation': "linear", 'relu': True, 'dropout': 0.4}
     param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons': 128, **params_all_fcc},
                  'last': {}}
 
@@ -114,21 +123,15 @@ if __name__ == "__main__":
 
     reg_params = {'fixed_alpha': log_alpha,
                   'init_gamma': 0.2,
-                  # 'init_alpha': -3, 'upper_bound_alpha': -3, 'lower_bound_alpha': -4,
-                  # 'upper_bound_gamma': 0.4, 'lower_bound_gamma': 0.1,
                   'regularizer_conv': reg.l2_norm, 'regularizer_dense': reg.l1_and_l21_group
                   }
 
     # Train for 100 epochs
 
-    Model2 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                          training_generator=generator_training, validation_generator=generator_validation,
-                          num_epochs=30, validation_freq=1, lr=0.0001, max_queue_size=10,
-                          use_multiprocessing=False,
-                          workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path_model2,
-                          compile=True, train=True, load_weights=None,
-                          train_mse=True, load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                          **reg_params, reg_mse=True, alpha_mse=0.001)
+    Model2 = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                           validation_generator=generator_validation, num_epochs=20, dim=generator_training.dim,
+                           max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001,
+                           save_summary=True, path_summary=path_model2, validation_freq=1, train=True, compile=True)
 
     # l1 = Model1.model.evaluate(generator_training, verbose=1)
     # l2 = Model2.model.evaluate(generator_training, verbose=1)

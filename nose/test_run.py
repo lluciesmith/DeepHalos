@@ -72,24 +72,25 @@ param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons
 
 reg_params = {'init_gamma': 0.2}
 
-path1 = path + 'run_' + str(run) + '/'
-try:
-    os.mkdir(path1)
-except:
-    pass
-
-try:
-    os.mkdir(path1 + "/model")
-except:
-    pass
+# path1 = path + 'run_' + str(run) + '/'
+# try:
+#     os.mkdir(path1)
+# except:
+#     pass
+#
+# try:
+#     os.mkdir(path1 + "/model")
+# except:
+#     pass
+# path1 = path + "run_2_fermi/"
+path1 = path + "run_7_fermi/"
+# path1 = path + "landscape/"
 
 # Train for 100 epochs
 
-Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", dim=generator_training.dim,
-                      training_generator=generator_training, validation_generator=generator_validation,
-                      num_epochs=20, validation_freq=1, lr=0.0001, max_queue_size=10,
-                      use_multiprocessing=False,
-                      workers=0, verbose=1, num_gpu=1, save_summary=True, path_summary=path1,
-                      compile=True, train=True, load_weights=None,
-                      load_mse_weights=False, use_mse_n_epoch=1, use_tanh_n_epoch=0,
-                      **reg_params)
+Model = CNN.CNNCauchy(param_conv, param_fcc, model_type="regression", training_generator=generator_training,
+                      validation_generator=generator_validation, num_epochs=20, dim=generator_training.dim,
+                      max_queue_size=10, use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=0.0001,
+                      save_summary=False, path_summary=path1, validation_freq=1, train=False, compile=True)
+
+

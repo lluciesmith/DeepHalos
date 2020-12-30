@@ -23,6 +23,7 @@ class Model(tf.keras.Model):
         else:
             return inputs * self.W + self.B
 
+
 def main():
     n = 10
     x = tf.random_normal([n, 2])
