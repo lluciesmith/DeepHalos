@@ -7,10 +7,8 @@ from collections import OrderedDict
 
 
 if __name__ == "__main__":
-    # sims = ["6", "7", "8", "9", "10"]
-    # sims = ["13", "14", "15", "16", "17", "18", "19", "20", "21"]
-    sims = ["20", "21"]
-    # # sims = ["11", "12"]
+    sims = ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"]
+
     for i in range(len(sims)):
         sim = sims[i]
 
