@@ -1,0 +1,1 @@
+This repository contains all the relevant code used in Lucie-Smith et al. 2020, "Deep learning insights into cosmological structure formation", https://ui.adsabs.harvard.edu/abs/2020arXiv201110577L/abstract.
