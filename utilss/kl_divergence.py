@@ -55,10 +55,10 @@ def get_difference_in_kl_array2_array3_wrt_array1(array1_log_mass, array2_log_ma
     return kl_12[0] - kl_13[0]
 
 
-def get_KL_div(array1_log_mass, array2_log_mass, bandwidth):
+def get_KL_div(array1_log_mass, array2_log_mass, bandwidth, xlow=9, xhigh=16):
     kde_1 = fit_kde_kernel(array1_log_mass, bandwidth=bandwidth)
     kde_2 = fit_kde_kernel(array2_log_mass, bandwidth=bandwidth)
-    kl_1_vs_2 = KL_div_continuous(kde_1, kde_2)
+    kl_1_vs_2 = KL_div_continuous(kde_1, kde_2, xlow=xlow, xhigh=xhigh)
     return kl_1_vs_2
 
 
@@ -67,7 +67,7 @@ def get_KL_div(array1_log_mass, array2_log_mass, bandwidth):
 def plot_histogram(samples, bins=None, title=None, ylabel="PDF ground truth", figsize=(10, 6),
                    color="darkgrey", label=None):
     if bins is None:
-        bins = np.linspace(10, 15, 201)
+        bins = np.linspace(10, 14, 201)
     ntruth, btruth = np.histogram(samples, bins=bins, density=True)
     bmid_truth = (btruth[1:] + btruth[:-1]) / 2
 
@@ -84,6 +84,14 @@ def plot_histogram(samples, bins=None, title=None, ylabel="PDF ground truth", fi
         plt.subplots_adjust(bottom=0.14, top=0.9)
 
 
+def plot_smoothed_kde(array, bandwidth=0.1, x_grid=None):
+    if x_grid is None:
+        x_grid = np.linspace(10, 14, 500)
+    kde_1 = fit_kde_kernel(array, bandwidth=bandwidth)
+    b = [f(kde_1, xi) for xi in x_grid]
+    return plt.plot(x_grid, b)
+
+
 def plot_kde_distribution(log_pdf, x_grid=None, label1="KDE", color=None, lw=1, ls="-"):
     if x_grid is None:
         x_grid = np.linspace(10, 16, 500)
@@ -91,5 +99,3 @@ def plot_kde_distribution(log_pdf, x_grid=None, label1="KDE", color=None, lw=1, 
         plt.plot(x_grid, np.exp(log_pdf), label=label1, color=color, lw=lw, ls=ls)
     else:
         plt.plot(x_grid, np.exp(log_pdf), label=label1)
-
-

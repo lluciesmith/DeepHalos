@@ -5,23 +5,6 @@ import gc
 from pickle import load, dump
 
 
-
-# t00 = time.time()
-# path = "/lfstev/deepskies/luisals/"
-# X = {}
-# for sim in ["0", "2", "4", "5", "6"]:
-#     t0 = time.time()
-#     if sim == "0":
-#         path1 = path + "training_simulation/"
-#     else:
-#         path1 = path + "reseed" + sim + "_simulation/"
-#     X[sim] = np.load(path1 + "res_75_20000_subboxes.npy")
-#     t1 = time.time()
-#     print("Loading one sim took " + str((t1 - t0) / 60) + " minutes.")
-#     gc.collect()
-# t2 = time.time()
-# print("Loading whole training set took " + str((t2 - t00) / 60) + " minutes.")
-
 class DataProcessing:
     def __init__(self, train_sims, test_sims, ids_filename="random_training_set.txt",
                  load_inputs_standard_scaler=False, save_inputs_standard_scaler=False, path_inputs_standard_scaler=".",

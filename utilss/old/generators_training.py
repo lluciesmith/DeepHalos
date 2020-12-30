@@ -2,8 +2,7 @@ import time
 
 import numpy as np
 import sklearn.preprocessing
-
-from utils.old import data_generator_individual_files as dp
+from utilss.old import data_generator_individual_files as dp
 
 
 def get_standard_scaler_and_transform(list_outputs):
