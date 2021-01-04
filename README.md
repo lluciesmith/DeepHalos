@@ -39,13 +39,18 @@ The CNN takes as input a cubic sub-region of the initial conditions, centred on 
 
 ## Software dependencies
 
-List of dependencies: Standard Python packages (numpy, scipy..) you will need Tensorflow 1.14, pynbody, numba, scikit-learn. 
+The code requires pre-installation of the following Python packages:
+- standard Python packages (numpy, scipy, matplotlib..) which can easily be obtained from Anaconda,
+- [Tensorflow 1.14](https://www.tensorflow.org),
+- [pynbody](https://pynbody.github.com/pynbody/),
+- [numba](https://numba.pydata.org),
+- [scikit-learn](https://scikit-learn.org).
 
 ## Demo Jupyter Notebook
 
 The repository includes a demo that demonstrates t. You can open the `demo_script.ipynb` file in `demo` directory using Jupyter notebook.
 
-You will first need to download the data from [Google Cloud Storage](https://console.cloud.google.com/storage/browser/deep-halos-data?cloudshell=false&hl=en-AU&project=deephalos&pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false). Click on this link and download the `demo-data` folder. Make sure that the `demo-data` folder is located at the directory where the notebook is running (e.g. inside the `demo` directory).
+You will first need to download the data from [Google Cloud Storage](https://console.cloud.google.com/storage/browser/deep-halos-data?cloudshell=false&hl=en-AU&project=deephalos&pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false). Click on this link and download the `demo-data` folder. Make sure that the `demo-data` folder is located at the directory where the notebook is running (e.g. inside the `demo` directory). Note that the data we have provided here is only a small subset of that used in the paper.
 
 Once you are done with these steps, you're good to go. You can run through the ipython notebook and predict final halo masses from the initial conditions! The notebook should run within a few minutes on your laptop -- no need for GPUs. You can also make changes in the parameter file `params_demo.py` to play around with different choices for the CNN architecture, the training set size, the size of the cubic sub-region inputs, and so on.
 
