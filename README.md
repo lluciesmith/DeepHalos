@@ -4,9 +4,8 @@ This repository contains the code used in Lucie-Smith, Peiris, Pontzen, Nord, Th
 
 For those wanting to try out our code, the best place to start is the ipython notebook demo. Please see below for instructions.
 
-If you use this dataset in your work, please cite it as follows:
-
 ## Bibtex
+If you use this dataset in your work, please cite it as follows:
 ```
 @ARTICLE{2020arXiv201110577L,
        author = {{Lucie-Smith}, Luisa and {Peiris}, Hiranya V. and {Pontzen}, Andrew and {Nord}, Brian and {Thiyagalingam}, Jeyan},
