@@ -17,8 +17,8 @@ if __name__ == "__main__":
 
     # Save training sets sampled at random from 9 simulations, with n=200,000
 
-    n_samples = 400000
-    saving_path = path_random + "400k/"
+    n_samples = 200000
+    saving_path = path_random + "200k/"
 
     training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
                                         output_range=(-1, 1), log_high_mass_limit=13.4,
@@ -40,8 +40,8 @@ if __name__ == "__main__":
     v_set2 = tn.InputsPreparation([val_sim], scaler_type="minmax", load_ids=False, log_high_mass_limit=13.4,
                                  random_style="random", random_subset_all=50000, random_subset_each_sim=1000000,
                                  scaler_output=training_set.scaler_output, path=path_sims)
-    dump(v_set2.particle_IDs, open(saving_path + 'larger_validation_set2.pkl', 'wb'))
-    dump(v_set2.labels_particle_IDS, open(saving_path + 'larger_labels_validation_set2.pkl', 'wb'))
+    dump(v_set2.particle_IDs, open(saving_path + 'larger_validation_set.pkl', 'wb'))
+    dump(v_set2.labels_particle_IDS, open(saving_path + 'larger_labels_validation_set.pkl', 'wb'))
 
     del saving_path
     del n_samples
