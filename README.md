@@ -52,3 +52,7 @@ The repository includes a demo that demonstrates t. You can open the `demo_scrip
 Once you are done with these steps, you're good to go. You can run through the ipython notebook and predict final halo masses from the initial conditions! The notebook should run within a few minutes on your laptop -- no need for GPUs. You can also make changes in the parameter file `params_demo.py` to play around with different choices for the CNN architecture, the training set size, the size of the cubic sub-region inputs, and so on.
 
 ## Reproducibility 
+
+To reproduce the results in ["Deep learning insights into cosmological structure formation"](https://ui.adsabs.harvard.edu/abs/2020arXiv201110577L/abstract), Lucie-Smith, Peiris, Pontzen, Nord, Thiyagalingam, 2020, one should use the code in the `scripts` directory. Each CNN model described in the paper has its own sub-directory, which includes the parameter file and two scripts, one for training and one for evaluation. 
+
+To run these, you will also need to download the full dataset from [Google Cloud Storage](https://console.cloud.google.com/storage/browser/deep-halos-data/full-data?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&cloudshell=false&hl=en-AU&project=deephalos&prefix=&forceOnObjectsSortingFiltering=false).
