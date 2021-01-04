@@ -1,6 +1,8 @@
 # Deep learning halos
 
-This repository contains the code used in Lucie-Smith, Peiris, Pontzen, Nord, Thiyagalingam, ["Deep learning insights into cosmological structure formation"](https://ui.adsabs.harvard.edu/abs/2020arXiv201110577L/abstract), 2020, to learn about dark matter halo formation with convolutional neural networks.
+This repository contains the code used in Lucie-Smith, Peiris, Pontzen, Nord, Thiyagalingam, ["Deep learning insights into cosmological structure formation"](https://ui.adsabs.harvard.edu/abs/2020arXiv201110577L/abstract), 2020, to learn about the formation of dark matter halos in the Universe with convolutional neural networks (CNNs).
+
+The CNN predicts the final mass of dark matter halos given the initial conditions of a cosmological simulation. The inputs are cubic sub-regions of the initial conditions, each centred on a given simulation particle, and the output is the mass of the dark matter halo to which that particle will belong at z=0.
 
 For those wanting to try out our code, the best place to start is the ipython notebook demo. Please see below for instructions.
 
@@ -24,24 +26,19 @@ archivePrefix = {arXiv},
 }
 ```
 
-## Description
-
-The CNN predicts the final mass of dark matter halos given the initial conditions of a cosmological simulation.
-The CNN takes as input a cubic sub-region of the initial conditions, centred on a given simulation particle, and predicts the mass of the dark matter halo to which that particle will belong at z=0.
-
+## Repo Contents
+- `demo`: An iPython notebook demo of the code.
 - `dlhalos_code`: contains most important Python modules involving the main steps of the pipeline: data processing, training and evaluation.
-- `scripts`: contains the scripts used to produce the results in the paper.
-- `plots` & `paper_plots`: functions to make general plots and those used in paper from the outputs.
 - `nose`: unit tests.
-- `utilss`: contains useful funcitons used throughout the scripts.
+- `plots` & `paper_plots`: functions to make general plots and those used in paper from the outputs.
 - `scratch`: contains a large number of test runs used during production.
+- `scripts`: contains the scripts used to produce the results in the paper.
+- `utilss`: contains useful functions used throughout the scripts.
 
 ## Software dependencies
-
 The code requires pre-installation of the following software: standard Python packages, such as numpy, scipy, and matplotlib;[Tensorflow 1.14](https://www.tensorflow.org); [pynbody](https://pynbody.github.com/pynbody/); [numba](https://numba.pydata.org); [scikit-learn](https://scikit-learn.org).
 
 ## Demo Jupyter Notebook
-
 The repository includes a demo that demonstrates t. You can open the `demo_script.ipynb` file in `demo` directory using Jupyter notebook. This is what you need:
 
 1. First, you need a working version of python3, which contains Tensorflow 1.14 and all other software dependencies.
@@ -51,7 +48,6 @@ The repository includes a demo that demonstrates t. You can open the `demo_scrip
 Once you are done with these steps, you're good to go. You can run through the ipython notebook and predict final halo masses from the initial conditions! The notebook should run within a few minutes on your laptop -- no need for GPUs. You can also make changes in the parameter file `params_demo.py` to play around with different choices for the CNN architecture, the training set size, the size of the cubic sub-region inputs, and so on.
 
 ## Results
-
 To reproduce the results in ["Deep learning insights into cosmological structure formation"](https://ui.adsabs.harvard.edu/abs/2020arXiv201110577L/abstract), Lucie-Smith, Peiris, Pontzen, Nord, Thiyagalingam, 2020, one should use the code in the `scripts` directory. Each CNN model described in the paper has its own sub-directory, which includes the parameter file and two scripts, one for training and one for evaluation. 
 
 To run these, you will also need to download the full dataset from [Google Cloud Storage](https://console.cloud.google.com/storage/browser/deep-halos-data/full-data?pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&cloudshell=false&hl=en-AU&project=deephalos&prefix=&forceOnObjectsSortingFiltering=false).
