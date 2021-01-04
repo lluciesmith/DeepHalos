@@ -2,27 +2,20 @@
 
 This repository contains the code used in Lucie-Smith, Peiris, Pontzen, Nord, Thiyagalingam, ["Deep learning insights into cosmological structure formation"](https://ui.adsabs.harvard.edu/abs/2020arXiv201110577L/abstract), 2020, to learn about the formation of dark matter halos in the Universe with convolutional neural networks (CNNs).
 
-The CNN predicts the final mass of dark matter halos given the initial conditions of a cosmological simulation. The inputs are cubic sub-regions of the initial conditions, each centred on a given simulation particle, and the output is the mass of the dark matter halo to which that particle will belong at z=0.
+The CNN predicts the final mass of dark matter halos from the initial conditions of a cosmological simulation. The input is given by the density field within cubic sub-regions of the initial conditions simulation box.
 
 For those wanting to try out our code, the best place to start is the ipython notebook demo. Please see below for instructions.
 
 ## Bibtex
 If you use this dataset in your work, please cite it as follows:
 ```
-@ARTICLE{2020arXiv201110577L,
-       author = {{Lucie-Smith}, Luisa and {Peiris}, Hiranya V. and {Pontzen}, Andrew and {Nord}, Brian and {Thiyagalingam}, Jeyan},
-        title = "{Deep learning insights into cosmological structure formation}",
-      journal = {arXiv e-prints},
-     keywords = {Astrophysics - Cosmology and Nongalactic Astrophysics, Astrophysics - Instrumentation and Methods for Astrophysics, Computer Science - Artificial Intelligence, Computer Science - Machine Learning},
-         year = 2020,
-        month = nov,
-          eid = {arXiv:2011.10577},
-        pages = {arXiv:2011.10577},
-archivePrefix = {arXiv},
-       eprint = {2011.10577},
- primaryClass = {astro-ph.CO},
-       adsurl = {https://ui.adsabs.harvard.edu/abs/2020arXiv201110577L},
-      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+@misc{luciesmith2020deep,
+      title={Deep learning insights into cosmological structure formation}, 
+      author={Luisa Lucie-Smith and Hiranya V. Peiris and Andrew Pontzen and Brian Nord and Jeyan Thiyagalingam},
+      year={2020},
+      eprint={2011.10577},
+      archivePrefix={arXiv},
+      primaryClass={astro-ph.CO}
 }
 ```
 
