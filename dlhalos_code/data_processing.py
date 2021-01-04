@@ -2,11 +2,10 @@
 # one is the 'delta' which is rho/rho_M
 # and the other is 'coords' which is the coordinates of the particles in the 3D simulation grid
 
-# Then prepare the data in the right format and generate the DataGenerator
+# This module takes care of the data preparation: it generates the DataGenerator used in the model.
 
 import numpy as np
 import time
-import pandas
 import pynbody
 import sklearn.preprocessing
 from numba import njit, prange
@@ -15,30 +14,6 @@ from collections import OrderedDict
 import threading
 import warnings
 import gc
-
-
-# class threadsafe_iter:
-#     """Takes an iterator/generator and makes it thread-safe by
-#     serializing call to the `next` method of given iterator/generator.
-#     """
-#     def __init__(self, it):
-#         self.it = it
-#         self.lock = threading.Lock()
-#
-#     def __iter__(self):
-#         return self
-#
-#     def __next__(self):
-#         with self.lock:
-#             return next(self.it)
-#
-#
-# def threadsafe_generator(f):
-#     """A decorator that takes a generator function and makes it thread-safe.
-#     """
-#     def g(*a, **kw):
-#         return threadsafe_iter(f(*a, **kw))
-#     return g
 
 
 class SimulationPreparation:
@@ -422,7 +397,6 @@ class DataGenerator(Sequence):
     def on_epoch_end(self):
         self.indexes = np.arange(len(self.list_IDs))
         if self.shuffle is True:
-            print("Be very aware of setting shuffle=True! I think there is a bug here")
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, list_IDs_temp):
