@@ -39,18 +39,15 @@ The CNN takes as input a cubic sub-region of the initial conditions, centred on 
 
 ## Software dependencies
 
-The code requires pre-installation of the following Python packages:
-- standard Python packages (numpy, scipy, matplotlib..) which can easily be obtained from Anaconda,
-- [Tensorflow 1.14](https://www.tensorflow.org),
-- [pynbody](https://pynbody.github.com/pynbody/),
-- [numba](https://numba.pydata.org),
-- [scikit-learn](https://scikit-learn.org).
+The code requires pre-installation of the following software: standard Python packages, such as numpy, scipy, and matplotlib;[Tensorflow 1.14](https://www.tensorflow.org); [pynbody](https://pynbody.github.com/pynbody/); [numba](https://numba.pydata.org); [scikit-learn](https://scikit-learn.org).
 
 ## Demo Jupyter Notebook
 
-The repository includes a demo that demonstrates t. You can open the `demo_script.ipynb` file in `demo` directory using Jupyter notebook.
+The repository includes a demo that demonstrates t. You can open the `demo_script.ipynb` file in `demo` directory using Jupyter notebook. This is what you need:
 
-You will first need to download the data from [Google Cloud Storage](https://console.cloud.google.com/storage/browser/deep-halos-data?cloudshell=false&hl=en-AU&project=deephalos&pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false). Click on this link and download the `demo-data` folder. Make sure that the `demo-data` folder is located at the directory where the notebook is running (e.g. inside the `demo` directory). Note that the data we have provided here is only a small subset of that used in the paper.
+1. First, you need a working version of python3 and [Tensorflow 1.14](https://www.tensorflow.org), which contains all software dependencies.
+
+2. You will also need to download the data from [Google Cloud Storage](https://console.cloud.google.com/storage/browser/deep-halos-data?cloudshell=false&hl=en-AU&project=deephalos&pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false). Click on this link and download the `demo-data` folder. Make sure that the `demo-data` folder is located at the directory where the notebook is running (e.g. inside the `demo` directory). Note that the data we have provided here is only a small subset of that used in the paper, but is enough to familiarize with the code.
 
 Once you are done with these steps, you're good to go. You can run through the ipython notebook and predict final halo masses from the initial conditions! The notebook should run within a few minutes on your laptop -- no need for GPUs. You can also make changes in the parameter file `params_demo.py` to play around with different choices for the CNN architecture, the training set size, the size of the cubic sub-region inputs, and so on.
 
