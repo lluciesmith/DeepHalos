@@ -29,10 +29,10 @@ If you use this dataset in your work, please cite it as follows:
 - `utilss`: contains useful functions used throughout the scripts.
 
 ## Software dependencies
-The code requires pre-installation of the following software: standard Python packages, such as numpy, scipy, and matplotlib;[Tensorflow 1.14](https://www.tensorflow.org); [pynbody](https://pynbody.github.com/pynbody/); [numba](https://numba.pydata.org); [scikit-learn](https://scikit-learn.org).
+The code requires pre-installation of the following software: standard Python packages, such as numpy, scipy, and matplotlib;[Tensorflow 1.14](https://www.tensorflow.org); [pynbody](https://pynbody.github.com/pynbody/); [numba](https://numba.pydata.org); [scikit-learn](https://scikit-learn.org). Once there are installed, simply git clone the repo and start using the code!
 
 ## Demo Jupyter Notebook
-The repository includes a demo that demonstrates t. You can open the `demo_script.ipynb` file in `demo` directory using Jupyter notebook. This is what you need:
+The repository includes a demo that demonstrates how to run the code. You can open the `demo_script.ipynb` file in `demo` directory using Jupyter notebook. This is what you need:
 
 1. First, you need a working version of python3, which contains Tensorflow 1.14 and all other software dependencies.
 
