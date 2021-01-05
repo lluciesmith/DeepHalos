@@ -84,7 +84,8 @@ class CNN:
                                       callbacks=self.callbacks, validation_freq=self.val_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
         t1 = time.time()
-        print("This model took " + str((t1 - t0)/60) + " minutes to train.")
+        if self.verbose == 1:
+            print("This model took " + str((t1 - t0)/60) + " minutes to train.")
 
         if self.save is True:
             Model.save(self.model_name)
@@ -138,7 +139,8 @@ class CNN:
 
     def compile_model_single_gpu(self):
         if self.model_type == "regression":
-            print("Initiating regression model")
+            if self.verbose == 1:
+                print("Initiating regression model")
 
             if self.pretrained_model is not None:
                 print("Loading pretrained model")
@@ -285,7 +287,8 @@ class CNN:
             x = keras.layers.BatchNormalization(axis=-1)(x)
 
         if relu is True:
-            print("leaky relu")
+            if self.verbose == 1:
+                print("leaky relu")
             x = keras.layers.LeakyReLU(alpha=alpha_relu)(x)
 
         if dropout is not None:
@@ -528,9 +531,11 @@ class CNNCauchy(CNN):
             self.initial_epoch = initial_epoch
 
         if self.compile is True:
-            print("compiling")
+            if self.verbose == 1:
+                print("compiling")
             self.model = self.compile_cauchy_model(self.mse_model)
-            print("done compiling")
+            if self.verbose == 1:
+                print("done compiling")
 
             if self.save_summary is True:
                 with open(self.path_summary + 'model_summary.txt', 'w') as fh:
@@ -600,8 +605,9 @@ class CNNCauchy(CNN):
                 for i in range(len(indices_dense)):
                     add_dense_reg(indices_dense[i])
 
-            print("These are the final losses from the Cauchy model:")
-            print(new_model.losses)
+            if self.verbose == 1:
+                print("These are the final losses from the Cauchy model:")
+                print(new_model.losses)
 
             loss_params_layer = [layer for layer in new_model.layers if 'loss_trainable_params' in layer.name][0]
             loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(loss_params_layer)
@@ -634,7 +640,9 @@ class CNNCauchy(CNN):
             callbacks_list.append(cbk)
 
             # Alpha logger
-            alpha_logger = RegularizerCallback(layer_loss, alpha_check=[True if self.init_alpha is not None else False][0])
+            alpha_logger = RegularizerCallback(layer_loss,
+                                               alpha_check=[True if self.init_alpha is not None else False][0],
+                                               verbose=self.verbose)
             callbacks_list.append(alpha_logger)
 
         else:
@@ -665,11 +673,13 @@ class CNNCauchy(CNN):
                 model.set_weights(tanh_model.get_weights())
                 self.initial_epoch = self.use_tanh_n_epoch
 
-            if self.init_alpha is not None:
-                print("Initial value of log-alpha is %.5f" % float(K.get_value(loss_layer.alpha)))
-            print("Initial value of gamma is %.5f" % float(K.get_value(loss_layer.gamma)))
+            if self.verbose == 1:
+                if self.init_alpha is not None:
+                    print("Initial value of log-alpha is %.5f" % float(K.get_value(loss_layer.alpha)))
+                print("Initial value of gamma is %.5f" % float(K.get_value(loss_layer.gamma)))
 
-        print("Start training with a linear activation in the last layer")
+        if self.verbose == 1:
+            print("Start training with a linear activation in the last layer")
         history = model.fit_generator(generator=self.training_generator, validation_data=self.validation_generator,
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
@@ -771,13 +781,15 @@ def likelihood_metric(y_true, y_pred):
 
 
 class RegularizerCallback(Callback):
-    def __init__(self, layer, alpha_check):
+    def __init__(self, layer, alpha_check, verbose=1):
         super(Callback, self).__init__()
         self.layer = layer
         self.alpha_check = alpha_check
+        self.verbose = verbose
 
     def on_epoch_end(self, epoch, logs=None):
-        print("\nUpdated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
+        if self.verbose == 1:
+            print("\nUpdated gamma to value %.5f" % float(K.get_value(self.layer.gamma)))
         if self.alpha_check is True:
             print("Updated log-alpha to value %.5f" % float(K.get_value(self.layer.alpha)))
 
