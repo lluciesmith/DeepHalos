@@ -31,6 +31,8 @@ If you use this dataset in your work, please cite it as follows:
 ## Software dependencies
 The code requires pre-installation of the following software: standard Python packages, such as numpy, scipy, and matplotlib;[Tensorflow 1.14](https://www.tensorflow.org); [pynbody](https://pynbody.github.com/pynbody/); [numba](https://numba.pydata.org); [scikit-learn](https://scikit-learn.org). Once there are installed, simply git clone the repo and start using the code!
 
+The code has been tested on Linux and MacOS. It can be run on CPU or GPU (tested on NVIDIA Tesla P100 and NVIDIA Tesla V100 GPUs).  
+
 ## Demo Jupyter Notebook
 The repository includes a demo that demonstrates how to run the code. You can open the `demo_script.ipynb` file in `demo` directory using Jupyter notebook. This is what you need:
 
