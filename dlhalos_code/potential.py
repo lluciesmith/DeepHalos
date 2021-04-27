@@ -2,7 +2,7 @@ import numpy as np
 from scipy.constants import G
 
 
-def get_delta_in_fourier_sapce(delta):
+def get_delta_in_fourier_space(delta):
     delta_fourier = np.fft.fftn(delta.reshape(256, 256, 256))
     return delta_fourier
 
