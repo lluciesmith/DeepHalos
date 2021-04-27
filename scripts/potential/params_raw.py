@@ -22,9 +22,9 @@ val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
 val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 
 dim = (75, 75, 75)
-params_box = {'input_type': 'potential', 'num_shells': 20}
-params_tr = {'batch_size': 64, 'rescale_mean': 0., 'rescale_std': 0.05050, 'dim': dim}
-params_val = {'batch_size': 50, 'rescale_mean': 0., 'rescale_std': 0.05050, 'dim': dim}
+params_box = {'input_type': 'potential'}
+params_tr = {'batch_size': 64, 'rescale_mean': 0., 'rescale_std': 65, 'dim': dim}
+params_val = {'batch_size': 50, 'rescale_mean': 0., 'rescale_std': 65, 'dim': dim}
 
 
 # Model parameters
