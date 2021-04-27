@@ -9,7 +9,7 @@ import importlib
 
 if __name__ == "__main__":
     try: params = importlib.import_module(sys.argv[1])
-    except IndexError: import params_avg as params
+    except IndexError: from scripts.potential import params_pot as params
 
     np.random.seed(params.seed)
     python_random.seed(params.seed)
