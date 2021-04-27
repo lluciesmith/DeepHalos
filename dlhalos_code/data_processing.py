@@ -14,6 +14,7 @@ from collections import OrderedDict
 import threading
 import warnings
 import gc
+from dlhalos_code import potential as pot
 
 
 class SimulationPreparation:
@@ -90,6 +91,11 @@ class SimulationPreparation:
         shape_sim = int(round((snapshot["iord"].shape[0]) ** (1 / 3)))
         i, j, k = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
         snapshot['coords'] = np.column_stack((i, j, k))
+
+        delta = snapshot["rho"] / np.mean(snapshot["rho"]) - 1
+        boxsize = snapshot.properties["boxsize"].in_units(sim["pos"].units)
+        pot_field = pot.get_potential_from_density(delta, boxsize)
+        snapshot["potential"] = pot_field
 
         del snapshot['rho'], snapshot['iord']
         gc.collect()
@@ -363,8 +369,12 @@ class DataGenerator(Sequence):
 
         self.rescale_mean = rescale_mean
         self.rescale_std = rescale_std
-        self.sims_rescaled_density = OrderedDict()
-        self.preprocess_density_contrasts()
+        if input_type == "potential":
+            self.sims_potential = OrderedDict()
+            self.preprocess_potential()
+        else:
+            self.sims_rescaled_density = OrderedDict()
+            self.preprocess_density_contrasts()
 
         self.input_type = input_type
 
@@ -429,7 +439,6 @@ class DataGenerator(Sequence):
             sim_index = ID[ID.find('sim-') + 4 : ID.find('-id')]
 
             # generate box
-
             particle_ID = int(ID[ID.find('-id-') + 4 :])
             s = self.generate_input(sim_index, particle_ID)
 
@@ -447,7 +456,10 @@ class DataGenerator(Sequence):
 
     def generate_input(self, simulation_index, particle_id):
         i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
-        delta_sim = self.sims_rescaled_density[simulation_index]
+        if self.input_type == "potential":
+            delta_sim = self.sims_potential[simulation_index]
+        else:
+            delta_sim = self.sims_rescaled_density[simulation_index]
 
         output_matrix = np.zeros((self.res, self.res, self.res))
         s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
@@ -457,12 +469,16 @@ class DataGenerator(Sequence):
 
         return s
 
+    def preprocess_potential(self):
+        for i, simulation in self.sims.items():
+            self.sims_potential[i] = self.rescaled_qty_3d(simulation, qty="potential")
+
     def preprocess_density_contrasts(self):
         for i, simulation in self.sims.items():
-            self.sims_rescaled_density[i] = self.rescaled_density_contrast_3d(simulation)
+            self.sims_rescaled_density[i] = self.rescaled_qty_3d(simulation, qty="den_contrast")
 
-    def rescaled_density_contrast_3d(self, sim):
-        d = (sim['den_contrast'] - self.rescale_mean) / self.rescale_std
+    def rescaled_qty_3d(self, sim, qty="den_contrast"):
+        d = (sim[qty] - self.rescale_mean) / self.rescale_std
         return d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
 
 
