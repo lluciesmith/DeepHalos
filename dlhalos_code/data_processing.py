@@ -93,7 +93,7 @@ class SimulationPreparation:
         snapshot['coords'] = np.column_stack((i, j, k))
 
         delta = snapshot["rho"] / np.mean(snapshot["rho"]) - 1
-        boxsize = snapshot.properties["boxsize"].in_units(sim["pos"].units)
+        boxsize = snapshot.properties["boxsize"].in_units(snapshot["pos"].units)
         pot_field = pot.get_potential_from_density(delta, boxsize)
         snapshot["potential"] = pot_field
 
