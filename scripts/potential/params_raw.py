@@ -6,7 +6,7 @@ seed = 123
 log_alpha = -2.5
 alpha = 10**float(log_alpha)
 
-saving_path_ = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/lr_5e-5/"
+saving_path_ = "/mnt/beegfs/work/ati/pearl037/regression/potential/"
 saving_path = saving_path_ + "alpha_" + str(log_alpha) + "/"
 
 # Data parameters
