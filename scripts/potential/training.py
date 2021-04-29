@@ -25,13 +25,15 @@ if __name__ == "__main__":
 
 
     ######### TRAIN THE MODEL ################
+    initial_epoch = 20
+    load_weights = params.saving_path + "model/weights.20.h5"
 
     Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, model_type="regression", training_generator=generator_training,
-                          shuffle=True, validation_generator=generator_validation, num_epochs=30,
+                          shuffle=True, validation_generator=generator_validation, num_epochs=40,
                           metrics=[CNN.likelihood_metric],
                           steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=10,
                           use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=params.lr, save_summary=True,
                           path_summary=params.saving_path, validation_freq=1, train=True, compile=True,
-                          initial_epoch=None, lr_scheduler=False,
+                          initial_epoch=initial_epoch, lr_scheduler=False, load_weights=load_weights,
                           seed=params.seed)
