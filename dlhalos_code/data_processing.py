@@ -253,14 +253,12 @@ class InputsPreparation:
 
     def generate_random_set(self, simulation_ID, number_samples=None):
         if simulation_ID == "0":
-            # halo_mass = np.load("/Users/lls/Documents/mlhalos_files/stored_files/halo_mass_particles.npy")
             halo_mass = np.load(self.path + "training_simulation/halo_mass_particles.npy")
-        else:
-            # halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed50/features/halo_mass_particles.npy")
+        elif len(sim_id) == 2 or len(sim_id) == 1:
             halo_mass = np.load(self.path + "reseed" + simulation_ID + "_simulation/reseed" + simulation_ID +
                                 "_halo_mass_particles.npy")
-            # halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed6/reseed" + simulation_ID +
-            #                     "_halo_mass_particles.npy")
+        else:
+            halo_mass = np.load(self.path + sim + "/" + sim + "_halo_mass_particles.npy")
 
         ids_in_halo = np.where(halo_mass > 0)[0]
 
@@ -286,12 +284,7 @@ class InputsPreparation:
         else:
             path1 = self.path + "reseed" + sim + "_simulation/reseed_" + sim + "_"
             halo_mass = np.load(self.path + "reseed" + sim + "_simulation/reseed" + sim + "_halo_mass_particles.npy")
-        # if sim == "0":
-        #     path1 = "/Users/lls/Documents/mlhalos_files/training_sim_"
-        #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/stored_files/halo_mass_particles.npy")
-        # else:
-        #     path1 = "/Users/lls/Documents/mlhalos_files/reseed6/reseed_6_"
-        #     halo_mass = np.load("/Users/lls/Documents/mlhalos_files/reseed6/reseed6_halo_mass_particles.npy")
+
         with open(path1 + self.ids_filename, "r") as f:
             ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
 
