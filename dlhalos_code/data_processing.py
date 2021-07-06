@@ -9,7 +9,7 @@ import time
 import pynbody
 import sklearn.preprocessing
 from numba import njit, prange
-from tensorflow.keras.utils import Sequence
+#from tensorflow.keras.utils import Sequence
 from collections import OrderedDict
 import threading
 import warnings
