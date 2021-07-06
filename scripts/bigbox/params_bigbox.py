@@ -6,23 +6,21 @@ seed = 123
 log_alpha = -2.5
 alpha = 10**float(log_alpha)
 
-saving_path_ = "/mnt/beegfs/work/ati/pearl037/regression/potential/"
-saving_path = saving_path_ + "alpha_" + str(log_alpha) + "/"
+saving_path = "/mnt/beegfs/work/ati/pearl037/regression/bigbox/alpha_" + str(log_alpha) + "/"
 
 # Data parameters
 
 path_sims = "/mnt/beegfs/work/ati/pearl037/"
-all_sims = ["%i" % i for i in np.arange(22)]
-all_sims.remove("3")
+all_sims = ["L200_N1024_genetIC", "L200_N1024_genetIC2", "L200_N1024_genetIC3"]
 
-path_data = "/mnt/beegfs/work/ati/pearl037/regression/training_set_13.4/20sims/random/200k/"
+path_data = "/mnt/beegfs/work/ati/pearl037/regression/bigbox/data/"
 training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
 training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
 val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
 val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 
 dim = (75, 75, 75)
-params_box = {'input_type': 'potential'}
+params_box = {'input_type': 'raw'}
 params_tr = {'batch_size': 64, 'rescale_mean': 0., 'rescale_std': 65, 'dim': dim}
 params_val = {'batch_size': 50, 'rescale_mean': 0., 'rescale_std': 65, 'dim': dim}
 
@@ -52,9 +50,9 @@ param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons
 
 # Parameters for testing
 training_set_testing = False
-val_sim = "6"
-num_epoch_testing = "09"
-
+val_sim = all_sims[:-1]
+# num_epoch_testing = "09"
+#
 scaler = load(open(path_data + 'scaler_output.pkl', 'rb'))
 larger_val_particle_IDs = load(open(path_data + 'larger_validation_set.pkl', 'rb'))
 larger_val_labels_particle_IDS = load(open(path_data + 'larger_labels_validation_set.pkl', 'rb'))

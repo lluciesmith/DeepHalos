@@ -9,7 +9,7 @@ import importlib
 
 if __name__ == "__main__":
     try: params = importlib.import_module(sys.argv[1])
-    except IndexError: from scripts.potential import params_pot as params
+    except IndexError: from scripts.bigbox import params_bigbox as params
 
     np.random.seed(params.seed)
     python_random.seed(params.seed)
@@ -25,15 +25,11 @@ if __name__ == "__main__":
 
 
     ######### TRAIN THE MODEL ################
-    initial_epoch = 20
-    load_weights = params.saving_path + "model/weights.20.h5"
-
-    Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, model_type="regression", training_generator=generator_training,
-                          shuffle=True, validation_generator=generator_validation, num_epochs=40,
-                          metrics=[CNN.likelihood_metric],
-                          steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
-                          dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=10,
+    Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, model_type="regression",
+                          training_generator=generator_training, steps_per_epoch=len(generator_training),
+                          validation_generator=generator_validation, validation_steps=len(generator_validation),
+                          num_epochs=40, shuffle=True, metrics=[CNN.likelihood_metric], dim=generator_training.dim,
+                          initialiser="Xavier_uniform", max_queue_size=10,
                           use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=params.lr, save_summary=True,
                           path_summary=params.saving_path, validation_freq=1, train=True, compile=True,
-                          initial_epoch=initial_epoch, lr_scheduler=False, load_weights=load_weights,
-                          seed=params.seed)
+                          lr_scheduler=False, seed=params.seed)
