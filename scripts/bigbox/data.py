@@ -15,7 +15,7 @@ if __name__ == "__main__":
     n_samples = 200000
     training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
                                         output_range=(-1, 1), log_high_mass_limit=13.4,
-                                        load_ids=False, random_subset_each_sim=n_samples/2,
+                                        load_ids=False, random_subset_each_sim=int(n_samples/2),
                                         random_style=None, random_subset_all=None,
                                         path=path)
 
