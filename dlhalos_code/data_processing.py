@@ -18,7 +18,7 @@ from dlhalos_code import potential as pot
 
 
 class SimulationPreparation:
-    def __init__(self, sim_IDs, path="/lfstev/deepskies/luisals/"):
+    def __init__(self, sim_IDs, potential=False, path="/lfstev/deepskies/luisals/"):
         """
         This class stores the simulations in dictionaries (accessible via sims_dic) and creates two new keys:
         the density contrast for each particle and the coordinates of each particle in the 3D box.
@@ -27,6 +27,7 @@ class SimulationPreparation:
 
         self.sims = sim_IDs
         self.path = path
+        self.potential = potential
 
         self.sims_dic = None
         self.generate_simulation_dictionary()
@@ -37,7 +38,7 @@ class SimulationPreparation:
 
         for i, ID in enumerate(sims):
             snapshot_i = self.load_snapshot_from_simulation_ID(ID)
-            snapshot_i = self.prepare_sim(snapshot_i, ID)
+            snapshot_i = self.prepare_sim(snapshot_i, ID, potential=self.potential)
             sims_dic[ID] = snapshot_i
 
         self.sims_dic = sims_dic
@@ -49,7 +50,7 @@ class SimulationPreparation:
             # path1 = "/Users/lls/Documents/mlhalos_files/Nina-Simulations/double/"
             snap_sim = pynbody.load(path1 + "ICs_z99_256_L50_gadget3.dat")
 
-        else:
+        elif len(sim_id) == 2 or len(sim_id) == 1:
             path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
             # path1 = "/Users/lls/Documents/mlhalos_files/reseed50/"
             # path1 = "/Users/lls/Documents/mlhalos_files/reseed6/"
@@ -60,16 +61,20 @@ class SimulationPreparation:
                 snap_sim = pynbody.load(path1 + "IC.gadget3")
             else:
                 snap_sim = pynbody.load(path1 + "IC.gadget2")
+        else:
+            snap_sim = pynbody.load(self.path + sim + "/snapshots/IC.gadget3")
         return snap_sim
 
-    def prepare_sim(self, snapshot, sim_id):
+    def prepare_sim(self, snapshot, sim_id, potential=False):
         snapshot.physical_units()
 
         if sim_id == "0":
             path1 = self.path + "training_simulation/snapshots/"
             # path1 = self.path
-        else:
+        elif len(sim_id) == 2 or len(sim_id) == 1:
             path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
+        else:
+            path1 = self.path + sim + "/snapshots/"
 
         t0 = time.time()
         try:
@@ -92,10 +97,11 @@ class SimulationPreparation:
         i, j, k = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
         snapshot['coords'] = np.column_stack((i, j, k))
 
-        delta = snapshot["rho"] / np.mean(snapshot["rho"]) - 1
-        boxsize = snapshot.properties["boxsize"].in_units(snapshot["pos"].units)
-        pot_field = pot.get_potential_from_density(delta, boxsize)
-        snapshot["potential"] = pot_field
+        if potential:
+            delta = snapshot["rho"] / np.mean(snapshot["rho"]) - 1
+            boxsize = snapshot.properties["boxsize"].in_units(snapshot["pos"].units)
+            pot_field = pot.get_potential_from_density(delta, boxsize)
+            snapshot["potential"] = pot_field
 
         del snapshot['rho'], snapshot['iord']
         gc.collect()
