@@ -254,11 +254,11 @@ class InputsPreparation:
     def generate_random_set(self, simulation_ID, number_samples=None):
         if simulation_ID == "0":
             halo_mass = np.load(self.path + "training_simulation/halo_mass_particles.npy")
-        elif len(sim_id) == 2 or len(sim_id) == 1:
+        elif len(simulation_ID) == 2 or len(simulation_ID) == 1:
             halo_mass = np.load(self.path + "reseed" + simulation_ID + "_simulation/reseed" + simulation_ID +
                                 "_halo_mass_particles.npy")
         else:
-            halo_mass = np.load(self.path + sim + "/" + sim + "_halo_mass_particles.npy")
+            halo_mass = np.load(self.path + simulation_ID + "/" + simulation_ID + "_halo_mass_particles.npy")
 
         ids_in_halo = np.where(halo_mass > 0)[0]
 
