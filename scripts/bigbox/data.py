@@ -1,14 +1,13 @@
+import sys; sys.path.append("/freya/ptmp/mpa/luisals/Codes/DeepHalos/")
 import dlhalos_code.data_processing as tn
 from pickle import dump
 import numpy as np
 
 if __name__ == "__main__":
-    #path = "/mnt/beegfs/work/ati/pearl037/regression/bigbox/data/"
-    path = "/freya/ptmp/mpa/luisals/Simulations/deep_halos/"
+    # this was run on the Freya cluster
+    path = "/freya/ptmp/mpa/luisals/deep_halos/"
     saving_path = path + "data/"
 
-    #path_sims = "/mnt/beegfs/work/ati/pearl037/"
-    # path_sims = "/freya/ptmp/mpa/luisals/Simulations/"
     all_sims = ["L200_N1024_genetIC", "L200_N1024_genetIC2", "L200_N1024_genetIC3"]
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
@@ -16,8 +15,8 @@ if __name__ == "__main__":
     n_samples = 200000
     training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
                                         output_range=(-1, 1), log_high_mass_limit=13.4,
-                                        load_ids=False, random_subset_each_sim=None,
-                                        random_style="random", random_subset_all=n_samples,
+                                        load_ids=False, random_subset_each_sim=n_samples/2,
+                                        random_style=None, random_subset_all=None,
                                         path=path)
 
     dump(training_set.particle_IDs, open(saving_path + 'training_set.pkl', 'wb'))
