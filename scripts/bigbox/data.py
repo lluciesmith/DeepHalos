@@ -3,11 +3,9 @@ from pickle import dump
 import numpy as np
 
 if __name__ == "__main__":
-    #path = "/mnt/beegfs/work/ati/pearl037/regression/bigbox/data/"
-    path = "/freya/ptmp/mpa/luisals/deep_halos/"
+    path = "/mnt/beegfs/work/ati/pearl037/regression/bigbox/data/"
 
-    #path_sims = "/mnt/beegfs/work/ati/pearl037/"
-    path_sims = "/freya/ptmp/mpa/luisals/Simulations/"
+    path_sims = "/mnt/beegfs/work/ati/pearl037/"
     all_sims = ["L200_N1024_genetIC", "L200_N1024_genetIC2", "L200_N1024_genetIC3"]
     train_sims = all_sims[:-1]
     val_sim = all_sims[-1]
