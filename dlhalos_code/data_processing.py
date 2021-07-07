@@ -9,7 +9,7 @@ import time
 import pynbody
 import sklearn.preprocessing
 from numba import njit, prange
-#from tensorflow.keras.utils import Sequence
+from tensorflow.keras.utils import Sequence
 from collections import OrderedDict
 import threading
 import warnings
@@ -62,7 +62,7 @@ class SimulationPreparation:
             else:
                 snap_sim = pynbody.load(path1 + "IC.gadget2")
         else:
-            snap_sim = pynbody.load(self.path + sim + "/snapshots/IC.gadget3")
+            snap_sim = pynbody.load(self.path + sim_id + "/snapshots/IC.gadget3")
         return snap_sim
 
     def prepare_sim(self, snapshot, sim_id, potential=False):
@@ -74,7 +74,7 @@ class SimulationPreparation:
         elif len(sim_id) == 2 or len(sim_id) == 1:
             path1 = self.path + "reseed" + sim_id + "_simulation/snapshots/"
         else:
-            path1 = self.path + sim + "/snapshots/"
+            path1 = self.path + sim_id + "/snapshots/"
 
         t0 = time.time()
         try:
@@ -332,213 +332,213 @@ class InputsPreparation:
         return weights_samples
 
 
-# class DataGenerator(Sequence):
-#     def __init__(self, list_IDs, labels, sims, weights=None,
-#                  batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False,
-#                  rescale_mean=0, rescale_std=1,
-#                  input_type="raw", num_shells=None):
-#         """
-#         This class created the data generator that should be used to fit the deep learning model.
-#
-#         :param list_IDs: this variable should be a string of the form 'sim-%i-ID-%i' % (simulation_index, particle_ID)
-#         :param labels: This is a dictionary of the form {particle ID: labels}
-#         :param sims: list of simulation IDs
-#         :param batch_size: batch size
-#         :param dim: dimension of the sub-box to generate
-#         :param n_channels: number of channels in the input
-#         :param shuffle: this should always be False or you have a bug.. leave it as an option so I can fix later
-#         :param rescale_mean: mean of inputs to use of rescaling
-#         :param rescale_std: std of inputs to use of rescaling
-#
-#         """
-#
-#         self.list_IDs = list_IDs
-#         self.labels = labels
-#
-#         self.sims = sims
-#         sim_id0 = list(sims.keys())[0]
-#         self.shape_sim = int(round((sims[sim_id0]["iord"].shape[0]) ** (1 / 3)))
-#
-#         self.weights = weights
-#         self.shuffle = shuffle
-#         self.dim = dim
-#         self.res = dim[0]
-#         self.batch_size = batch_size
-#         self.n_channels = n_channels
-#
-#         self.rescale_mean = rescale_mean
-#         self.rescale_std = rescale_std
-#         if input_type == "potential":
-#             self.sims_potential = OrderedDict()
-#             self.preprocess_potential()
-#         else:
-#             self.sims_rescaled_density = OrderedDict()
-#             self.preprocess_density_contrasts()
-#
-#         self.input_type = input_type
-#
-#         if input_type == "averaged":
-#             self.num_shells = num_shells
-#             self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
-#
-#         self.on_epoch_end()
-#
-#     def __len__(self):
-#         """ Number of batches per epoch """
-#         return int(np.floor(len(self.list_IDs) / self.batch_size))
-#
-#     def __getitem__(self, index):
-#         """ Generate a batch of data """
-#
-#         indexes = self.indexes[index * self.batch_size: (index+1) * self.batch_size]
-#         list_IDs_temp = [self.list_IDs[k] for k in indexes]
-#
-#         if list_IDs_temp:
-#             if self.weights is None:
-#                 X, y = self.__data_generation(list_IDs_temp)
-#                 return X, y
-#             else:
-#                 X, y, w = self.__data_generation_w_weights(list_IDs_temp)
-#                 return X, y, w
-#         else:
-#             raise IndexError("Batch " + str(index) + " is empty.")
-#
-#     def on_epoch_end(self):
-#         self.indexes = np.arange(len(self.list_IDs))
-#         if self.shuffle is True:
-#             np.random.shuffle(self.indexes)
-#
-#     def __data_generation(self, list_IDs_temp):
-#         """ Loads data containing batch_size samples """
-#
-#         X = np.empty((self.batch_size, *self.dim, self.n_channels))
-#         y = np.empty((self.batch_size,))
-#
-#         # Generate data
-#         for i, ID in enumerate(list_IDs_temp):
-#             sim_index = ID[ID.find('sim-') + 4: ID.find('-id')]
-#
-#             # generate box
-#
-#             particle_ID = int(ID[ID.find('-id-') + 4:])
-#             s = self.generate_input(sim_index, particle_ID)
-#
-#             X[i] = self._process_input(s)
-#             y[i] = self.labels[ID]
-#
-#         return X, y
-#
-#     def __data_generation_w_weights(self, list_IDs_temp):
-#         X = np.empty((self.batch_size, *self.dim, self.n_channels))
-#         y = np.empty((self.batch_size,))
-#         w = np.empty((self.batch_size,))
-#
-#         # Generate data
-#         for i, ID in enumerate(list_IDs_temp):
-#             sim_index = ID[ID.find('sim-') + 4 : ID.find('-id')]
-#
-#             # generate box
-#             particle_ID = int(ID[ID.find('-id-') + 4 :])
-#             s = self.generate_input(sim_index, particle_ID)
-#
-#             X[i] = self._process_input(s)
-#             y[i] = self.labels[ID]
-#             w[i] = self.weights[ID]
-#
-#         return X, y, w
-#
-#     def _process_input(self, s):
-#         # s_t = np.transpose(s, axes=(1, 0, 2))
-#         # Rescale inputs
-#         # s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
-#         return s.reshape((*self.dim, self.n_channels))
-#
-#     def generate_input(self, simulation_index, particle_id):
-#         i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
-#         if self.input_type == "potential":
-#             delta_sim = self.sims_potential[simulation_index]
-#         else:
-#             delta_sim = self.sims_rescaled_density[simulation_index]
-#
-#         output_matrix = np.zeros((self.res, self.res, self.res))
-#         s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
-#
-#         if self.input_type == "averaged":
-#             s = get_spherically_averaged_box(s, self.shell_labels)
-#
-#         return s
-#
-#     def preprocess_potential(self):
-#         for i, simulation in self.sims.items():
-#             self.sims_potential[i] = self.rescaled_qty_3d(simulation, qty="potential")
-#
-#     def preprocess_density_contrasts(self):
-#         for i, simulation in self.sims.items():
-#             self.sims_rescaled_density[i] = self.rescaled_qty_3d(simulation, qty="den_contrast")
-#
-#     def rescaled_qty_3d(self, sim, qty="den_contrast"):
-#         d = (sim[qty] - self.rescale_mean) / self.rescale_std
-#         return d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
-#
-#
-# @njit(parallel=True)
-# def compute_subbox(i0, j0, k0, width, input_matrix, output_matrix, shape_input):
-#     i0 -= width // 2
-#     j0 -= width // 2
-#     k0 -= width // 2
-#     for i in prange(width):
-#         for j in prange(width):
-#             for k in prange(width):
-#                 output_matrix[i, j, k] = input_matrix[(i + i0) % shape_input, (j + j0) % shape_input, (k + k0) % shape_input]
-#     return output_matrix
-#
-#
-# def assign_shell_to_pixels(width, number_shells, r_shells=None):
-#     if r_shells is None:
-#         r_shells = np.linspace(2, width / 2, number_shells, endpoint=True)
-#
-#     x_coord, y_coord, z_coord = np.unravel_index(np.arange(width**3), (width, width, width))
-#     x_coord -= width // 2
-#     y_coord -= width // 2
-#     z_coord -= width // 2
-#     r_coords = np.sqrt(x_coord ** 2 + y_coord ** 2 + z_coord ** 2)
-#
-#     shell_labels = np.ones((width**3)) * -1
-#     for i in range(width**3):
-#         shell_beloning = np.where(r_coords[i] <= r_shells)[0]
-#
-#         if shell_beloning.size != 0:
-#             shell_labels[i] = shell_beloning.min()
-#
-#     shell_labels = shell_labels.reshape(width, width, width)
-#     return shell_labels.astype("int")
-#
-#
-# def get_spherically_averaged_box_slow(input_matrix, shell_matrix):
-#     averaged_box = np.zeros_like(input_matrix)
-#     shell_labels = np.unique(shell_matrix[shell_matrix >= 0])
-#
-#     for shell_index in shell_labels:
-#         averaged_box[shell_matrix == shell_index] = np.mean(input_matrix[shell_matrix == shell_index])
-#     return averaged_box
-#
-#
-# @njit(parallel=True)
-# def _get_spherically_averaged_box_w_numba(input_matrix, shell_matrix):
-#     cumsum = np.zeros(shell_matrix.max() + 2)  # the last index will match for shell_index == -1
-#     counts = np.zeros_like(cumsum)
-#     for shell_index, input_value in zip(shell_matrix.flatten(), input_matrix.flatten()):
-#         if shell_index < 0:
-#             cumsum[shell_index] = 0
-#         else:
-#             cumsum[shell_index] += input_value
-#         counts[shell_index] += 1
-#     mean_per_shell = cumsum / counts
-#     return mean_per_shell
-#
-#
-# def get_spherically_averaged_box(input_matrix, shell_matrix):
-#     return _get_spherically_averaged_box_w_numba(input_matrix, shell_matrix)[shell_matrix]
+class DataGenerator(Sequence):
+    def __init__(self, list_IDs, labels, sims, weights=None,
+                 batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False,
+                 rescale_mean=0, rescale_std=1,
+                 input_type="raw", num_shells=None):
+        """
+        This class created the data generator that should be used to fit the deep learning model.
+
+        :param list_IDs: this variable should be a string of the form 'sim-%i-ID-%i' % (simulation_index, particle_ID)
+        :param labels: This is a dictionary of the form {particle ID: labels}
+        :param sims: list of simulation IDs
+        :param batch_size: batch size
+        :param dim: dimension of the sub-box to generate
+        :param n_channels: number of channels in the input
+        :param shuffle: this should always be False or you have a bug.. leave it as an option so I can fix later
+        :param rescale_mean: mean of inputs to use of rescaling
+        :param rescale_std: std of inputs to use of rescaling
+
+        """
+
+        self.list_IDs = list_IDs
+        self.labels = labels
+
+        self.sims = sims
+        sim_id0 = list(sims.keys())[0]
+        self.shape_sim = int(round((sims[sim_id0]["iord"].shape[0]) ** (1 / 3)))
+
+        self.weights = weights
+        self.shuffle = shuffle
+        self.dim = dim
+        self.res = dim[0]
+        self.batch_size = batch_size
+        self.n_channels = n_channels
+
+        self.rescale_mean = rescale_mean
+        self.rescale_std = rescale_std
+        if input_type == "potential":
+            self.sims_potential = OrderedDict()
+            self.preprocess_potential()
+        else:
+            self.sims_rescaled_density = OrderedDict()
+            self.preprocess_density_contrasts()
+
+        self.input_type = input_type
+
+        if input_type == "averaged":
+            self.num_shells = num_shells
+            self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
+
+        self.on_epoch_end()
+
+    def __len__(self):
+        """ Number of batches per epoch """
+        return int(np.floor(len(self.list_IDs) / self.batch_size))
+
+    def __getitem__(self, index):
+        """ Generate a batch of data """
+
+        indexes = self.indexes[index * self.batch_size: (index+1) * self.batch_size]
+        list_IDs_temp = [self.list_IDs[k] for k in indexes]
+
+        if list_IDs_temp:
+            if self.weights is None:
+                X, y = self.__data_generation(list_IDs_temp)
+                return X, y
+            else:
+                X, y, w = self.__data_generation_w_weights(list_IDs_temp)
+                return X, y, w
+        else:
+            raise IndexError("Batch " + str(index) + " is empty.")
+
+    def on_epoch_end(self):
+        self.indexes = np.arange(len(self.list_IDs))
+        if self.shuffle is True:
+            np.random.shuffle(self.indexes)
+
+    def __data_generation(self, list_IDs_temp):
+        """ Loads data containing batch_size samples """
+
+        X = np.empty((self.batch_size, *self.dim, self.n_channels))
+        y = np.empty((self.batch_size,))
+
+        # Generate data
+        for i, ID in enumerate(list_IDs_temp):
+            sim_index = ID[ID.find('sim-') + 4: ID.find('-id')]
+
+            # generate box
+
+            particle_ID = int(ID[ID.find('-id-') + 4:])
+            s = self.generate_input(sim_index, particle_ID)
+
+            X[i] = self._process_input(s)
+            y[i] = self.labels[ID]
+
+        return X, y
+
+    def __data_generation_w_weights(self, list_IDs_temp):
+        X = np.empty((self.batch_size, *self.dim, self.n_channels))
+        y = np.empty((self.batch_size,))
+        w = np.empty((self.batch_size,))
+
+        # Generate data
+        for i, ID in enumerate(list_IDs_temp):
+            sim_index = ID[ID.find('sim-') + 4 : ID.find('-id')]
+
+            # generate box
+            particle_ID = int(ID[ID.find('-id-') + 4 :])
+            s = self.generate_input(sim_index, particle_ID)
+
+            X[i] = self._process_input(s)
+            y[i] = self.labels[ID]
+            w[i] = self.weights[ID]
+
+        return X, y, w
+
+    def _process_input(self, s):
+        # s_t = np.transpose(s, axes=(1, 0, 2))
+        # Rescale inputs
+        # s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
+        return s.reshape((*self.dim, self.n_channels))
+
+    def generate_input(self, simulation_index, particle_id):
+        i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
+        if self.input_type == "potential":
+            delta_sim = self.sims_potential[simulation_index]
+        else:
+            delta_sim = self.sims_rescaled_density[simulation_index]
+
+        output_matrix = np.zeros((self.res, self.res, self.res))
+        s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+
+        if self.input_type == "averaged":
+            s = get_spherically_averaged_box(s, self.shell_labels)
+
+        return s
+
+    def preprocess_potential(self):
+        for i, simulation in self.sims.items():
+            self.sims_potential[i] = self.rescaled_qty_3d(simulation, qty="potential")
+
+    def preprocess_density_contrasts(self):
+        for i, simulation in self.sims.items():
+            self.sims_rescaled_density[i] = self.rescaled_qty_3d(simulation, qty="den_contrast")
+
+    def rescaled_qty_3d(self, sim, qty="den_contrast"):
+        d = (sim[qty] - self.rescale_mean) / self.rescale_std
+        return d.reshape(self.shape_sim, self.shape_sim, self.shape_sim)
+
+
+@njit(parallel=True)
+def compute_subbox(i0, j0, k0, width, input_matrix, output_matrix, shape_input):
+    i0 -= width // 2
+    j0 -= width // 2
+    k0 -= width // 2
+    for i in prange(width):
+        for j in prange(width):
+            for k in prange(width):
+                output_matrix[i, j, k] = input_matrix[(i + i0) % shape_input, (j + j0) % shape_input, (k + k0) % shape_input]
+    return output_matrix
+
+
+def assign_shell_to_pixels(width, number_shells, r_shells=None):
+    if r_shells is None:
+        r_shells = np.linspace(2, width / 2, number_shells, endpoint=True)
+
+    x_coord, y_coord, z_coord = np.unravel_index(np.arange(width**3), (width, width, width))
+    x_coord -= width // 2
+    y_coord -= width // 2
+    z_coord -= width // 2
+    r_coords = np.sqrt(x_coord ** 2 + y_coord ** 2 + z_coord ** 2)
+
+    shell_labels = np.ones((width**3)) * -1
+    for i in range(width**3):
+        shell_beloning = np.where(r_coords[i] <= r_shells)[0]
+
+        if shell_beloning.size != 0:
+            shell_labels[i] = shell_beloning.min()
+
+    shell_labels = shell_labels.reshape(width, width, width)
+    return shell_labels.astype("int")
+
+
+def get_spherically_averaged_box_slow(input_matrix, shell_matrix):
+    averaged_box = np.zeros_like(input_matrix)
+    shell_labels = np.unique(shell_matrix[shell_matrix >= 0])
+
+    for shell_index in shell_labels:
+        averaged_box[shell_matrix == shell_index] = np.mean(input_matrix[shell_matrix == shell_index])
+    return averaged_box
+
+
+@njit(parallel=True)
+def _get_spherically_averaged_box_w_numba(input_matrix, shell_matrix):
+    cumsum = np.zeros(shell_matrix.max() + 2)  # the last index will match for shell_index == -1
+    counts = np.zeros_like(cumsum)
+    for shell_index, input_value in zip(shell_matrix.flatten(), input_matrix.flatten()):
+        if shell_index < 0:
+            cumsum[shell_index] = 0
+        else:
+            cumsum[shell_index] += input_value
+        counts[shell_index] += 1
+    mean_per_shell = cumsum / counts
+    return mean_per_shell
+
+
+def get_spherically_averaged_box(input_matrix, shell_matrix):
+    return _get_spherically_averaged_box_w_numba(input_matrix, shell_matrix)[shell_matrix]
 
 
 
