@@ -6,14 +6,15 @@ seed = 123
 log_alpha = -2.5
 alpha = 10**float(log_alpha)
 
-saving_path = "/mnt/beegfs/work/ati/pearl037/regression/bigbox/alpha_" + str(log_alpha) + "/"
+# cluster_path = "/mnt/beegfs/work/ati/pearl037/regression/"
+cluster_path = "/freya/ptmp/mpa/luisals/deep_halos/"
+saving_path = cluster_path + "bigbox/alpha_" + str(log_alpha) + "/"
 
-# Data parameters
-
-path_sims = "/mnt/beegfs/work/ati/pearl037/"
+# path_sims = "/mnt/beegfs/work/ati/pearl037/"
+path_sims = "/freya/ptmp/mpa/luisals/deep_halos/"
 all_sims = ["L200_N1024_genetIC", "L200_N1024_genetIC2", "L200_N1024_genetIC3"]
 
-path_data = "/mnt/beegfs/work/ati/pearl037/regression/bigbox/data/"
+path_data = cluster_path + "bigbox/data/"
 training_particle_IDs = load(open(path_data + 'training_set.pkl', 'rb'))
 training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 'rb'))
 val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
