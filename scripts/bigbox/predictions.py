@@ -11,7 +11,7 @@ import importlib
 
 if __name__ == "__main__":
     try: params = importlib.import_module(sys.argv[1])
-    except IndexError: from scripts.bigbox import params_bigbox as params
+    except IndexError: from scripts.bigbox import params_bigbox_avg as params
 
     # Load data
 
@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
 
     # Load the model
-    params.num_epoch_testing = '10'
+    params.num_epoch_testing = '18'
     weights = params.saving_path + "model/weights." + params.num_epoch_testing + ".h5"
     Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, model_type="regression", training_generator={}, shuffle=True,
                           validation_generator=generator_validation, num_epochs=100, dim=generator_validation.dim,
