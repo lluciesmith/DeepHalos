@@ -54,7 +54,7 @@ param_fcc = {'dense_1': {'neurons': 256, **params_all_fcc}, 'dense_2': {'neurons
 
 # Parameters for testing
 training_set_testing = False
-val_sim = all_sims[:-1]
+val_sim = all_sims[-1]
 # num_epoch_testing = "09"
 #
 scaler = load(open(path_data + 'scaler_output.pkl', 'rb'))
