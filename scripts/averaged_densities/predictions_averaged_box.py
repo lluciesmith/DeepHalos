@@ -2,7 +2,7 @@ from dlhalos_code import CNN
 import dlhalos_code.data_processing as tn
 import numpy as np
 import importlib
-import sys
+import sys, os
 
 if __name__ == "__main__":
     try: params = importlib.import_module(sys.argv[1])
@@ -18,6 +18,8 @@ if __name__ == "__main__":
 
 
     ######### LOAD THE MODEL ################
+    seed = int(sys.argv[2])
+    params.saving_path = params.saving_path + "seed_" + str(seed) + "/"
 
     weights = params.saving_path + "model/weights." + params.num_epoch_testing + ".h5"
     Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, model_type="regression", training_generator={}, shuffle=True,
