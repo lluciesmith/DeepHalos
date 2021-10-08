@@ -20,7 +20,7 @@ if __name__ == "__main__":
     ######### LOAD THE MODEL ################
     seed = int(sys.argv[2])
     params.saving_path = params.saving_path + "seed_" + str(seed) + "/"
-    tr = np.loadtx(params.saving_path + "training.log", delimiter=",", skiprows=1)
+    tr = np.loadtxt(params.saving_path + "training.log", delimiter=",", skiprows=1)
     num_epoch = int(np.where(tr[:, 4] == tr[:, 4].min())[0] + 1)
 
     weights = params.saving_path + "model/weights." + params.num_epoch_testing + ".h5"
