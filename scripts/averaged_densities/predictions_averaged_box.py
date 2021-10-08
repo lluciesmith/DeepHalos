@@ -20,6 +20,8 @@ if __name__ == "__main__":
     ######### LOAD THE MODEL ################
     seed = int(sys.argv[2])
     params.saving_path = params.saving_path + "seed_" + str(seed) + "/"
+    tr = np.loadtx(params.saving_path + "training.log", delimiter=",", skiprows=1)
+    num_epoch = int(np.where(tr[:, 4] == tr[:, 4].min())[0] + 1)
 
     weights = params.saving_path + "model/weights." + params.num_epoch_testing + ".h5"
     Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, model_type="regression", training_generator={}, shuffle=True,
@@ -37,8 +39,8 @@ if __name__ == "__main__":
     h_m_pred = params.scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
     true = params.scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
 
-    np.save(params.saving_path + "predicted_sim_" + params.val_sim + "_epoch_" + params.num_epoch + ".npy", h_m_pred)
-    np.save(params.saving_path + "true_sim_" + params.val_sim + "_epoch_" + params.num_epoch + ".npy", true)
+    np.save(params.saving_path + "predicted_sim_" + params.val_sim + "_epoch_" + params.num_epoch_testing + ".npy", h_m_pred)
+    np.save(params.saving_path + "true_sim_" + params.val_sim + "_epoch_" + params.num_epoch_testing + ".npy", true)
 
     if params.test_training is True:
         s = tn.SimulationPreparation(params.all_sims, path=params.path_sims)
