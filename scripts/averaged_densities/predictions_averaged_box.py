@@ -21,7 +21,7 @@ if __name__ == "__main__":
     seed = int(sys.argv[2])
     params.saving_path = params.saving_path + "seed_" + str(seed) + "/"
     tr = np.loadtxt(params.saving_path + "training.log", delimiter=",", skiprows=1)
-    params.num_epoch_testing = int(np.where(tr[:, 4] == tr[:, 4].min())[0] + 1)
+    params.num_epoch_testing = str(int(np.where(tr[:, 4] == tr[:, 4].min())[0] + 1))
 
     weights = params.saving_path + "model/weights." + params.num_epoch_testing + ".h5"
     Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, model_type="regression", training_generator={}, shuffle=True,
