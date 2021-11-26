@@ -1,8 +1,6 @@
 import numpy as np
 from plots import plots_for_predictions as pp
-import sys
-sys.path.append('/Users/lls/Documents/mlhalos_code/')
-from mlhalos import distinct_colours as dc
+from utilss import distinct_colours as dc
 import matplotlib.pyplot as plt
 from pickle import load
 
