@@ -1,46 +1,46 @@
-import sys
-sys.path.append('/Users/lls/Documents/mlhalos_code/')
-sys.path.append('/Users/lls/Documents/Projects/LightGBM_halos/')
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath("./DeepHalos/"))))
 import numpy as np
 import matplotlib as mpl
 mpl.rcParams['text.usetex'] = True
 import matplotlib.pyplot as plt
-import predictions_functions as pf
+from plots import predictions_functions as pf
 
 
 def plot_violin(true, predicted, bins_violin=None,labels=None, return_stats="median", col=None, vert=True, alpha=0.3,
                 box=False, figsize=(6.9, 5.2)):
-    if col is None:
-        col1 = "#8C4843",
-        col1_violin = "#A0524D"
-    else:
-        col1=col
-        col1_violin=col
-
     if len(true) == 2:
+        if col is None:
+            col1, col1_violin, col2, col2_violin = "#8C4843", "#A0524D", "#406D60", "#55917F"
+        else:
+            col1, col2 = col
+            col1_violin, col2_violin = col
+
         if bins_violin is None:
             true_all = np.concatenate(true)
             bins_violin = np.linspace(true_all.min(), true_all.max(), 13)
 
-        col2 = "#406D60"
-        col2_violin = "#55917F"
-
         fig, ax = pf.compare_two_violin_plots(predicted[0], true[0], predicted[1], true[1],
                                               bins_violin, label1=labels[0], label2=labels[1], return_stats=return_stats,
                                               col1=col1, col2=col2, col1_violin=col1_violin, col2_violin=col2_violin,
-                                              alpha1=0.3, alpha2=0.3, figsize=figsize,
-                                              edge1=col1, edge2=col2)
+                                              alpha1=alpha[0], alpha2=alpha[1], figsize=figsize,
+                                              edge1='black', edge2='black')
         plt.legend(loc='upper left', bbox_to_anchor=(0.01, 0.48, 0.5, 0.5), framealpha=1)
         ax.yaxis.set_major_locator(plt.MaxNLocator(4))
-        plt.subplots_adjust(left=0.14)
+        #plt.subplots_adjust(left=0.14)
     else:
+        if col is None:
+            col1 = "#8C4843",
+            col1_violin = "#A0524D"
+        else:
+            col1 = col
+            col1_violin = col
+
         if bins_violin is None:
             bins_violin = np.linspace(true.min(), true.max() + 0.01, 13, endpoint=True)
-
-        fig, ax = pf.violin_plot(predicted, true, bins_violin,
-                    path=None, label1=labels, return_stats=return_stats, figsize=figsize,
-                    title=None, col1=col1, col1_violin=col1_violin, alpha1=alpha, edge1='black',
-                    fig=None, axes=None, vert=vert, box=box)
+        fig, ax = pf.violin_plot(predicted, true, bins_violin, path=None, label1=labels, return_stats=return_stats,
+                                 figsize=figsize, title=None, col1=col1, col1_violin=col1_violin, alpha1=alpha,
+                                 edge1='black', fig=None, axes=None, vert=vert, box=box)
 
         plt.subplots_adjust(left=0.13)
     return fig, ax

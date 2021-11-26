@@ -1,21 +1,16 @@
-import sys
-sys.path.append('/Users/lls/Documents/Projects/DeepHalos')
-sys.path.append('/Users/lls/Documents/mlhalos_code/')
-#from mlhalos_code import distinct_colours
-sys.path.append('/Users/lls/Documents/Projects/LightGBM_halos/')
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath("./DeepHalos/"))))
 from utilss import radius_functions_deep as rf
-import predictions_functions as pf
+from plots import predictions_functions as pf
 import numpy as np
 import matplotlib as mpl
 mpl.rcParams['text.usetex'] = True
 import matplotlib.pyplot as plt
-#import corner
-from dlhalos_code import loss_functions as lf
 
 
 def plot_histogram_predictions(predictions, truths, particle_ids=None, sim="6", label="new", radius_bins=True,
                                mass_bins=None, r_bins=None, fig=None, axes=None, color="C0", density=True,
-                               errorbars=True, inner=True, mid=True, out=True, legend=True, col=None):
+                               errorbars=True, inner=True, mid=True, out=True, legend=True, col=None, alpha=None):
     if radius_bins is True:
         if sim == "6":
             r = np.load("/Users/lls/Documents/mlhalos_files/reseed6/reseed6radius_in_halo_particles.npy")[particle_ids]
@@ -45,7 +40,7 @@ def plot_histogram_predictions(predictions, truths, particle_ids=None, sim="6", 
             r_bins = np.linspace(-3, 3, 50)
 
         f, (ax1, ax2, ax3) = rf.plot_diff_predicted_true_mass_ranges(predictions, truths, mass_bins, r_bins,
-                                                                     figsize=(11, 5.1),
+                                                                     figsize=(11, 5.1), alpha=alpha,
                                                                      fig=fig, axes=axes, col_truth="dimgrey", lw=1.8,
                                                                      density=True, label=label, color=color)
     return f, (ax1, ax2, ax3), mass_bins
