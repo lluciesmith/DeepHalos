@@ -2,7 +2,7 @@ import sys
 sys.path.append('/Users/lls/Documents/Projects/DeepHalos')
 from utilss import radius_functions_deep as rf
 sys.path.append('/Users/lls/Documents/mlhalos_code/')
-from mlhalos import distinct_colours
+from utilss import distinct_colours
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats

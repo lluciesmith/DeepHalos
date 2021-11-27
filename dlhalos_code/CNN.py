@@ -7,7 +7,7 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.callbacks import Callback
 import tensorflow.keras.callbacks as callbacks
 from tensorflow.keras.layers import Input, Dense, Flatten, Add
-from tensorflow.keras.utils import multi_gpu_model
+from tensorflow.python.keras.utils.multi_gpu_utils import multi_gpu_model
 from tensorflow.keras.layers import Layer
 import tensorflow as tf
 from dlhalos_code import evaluation as eval
@@ -931,7 +931,3 @@ class Between(Constraint):
     def get_config(self):
         return {'min_value': self.min_value,
                 'max_value': self.max_value}
-
-
-
-
