@@ -40,7 +40,7 @@ def plot_histogram_predictions(predictions, truths, particle_ids=None, sim="6", 
             r_bins = np.linspace(-3, 3, 50)
 
         f, (ax1, ax2, ax3) = rf.plot_diff_predicted_true_mass_ranges(predictions, truths, mass_bins, r_bins,
-                                                                     figsize=(11, 5.1), alpha=alpha,
+                                                                     figsize=(11, 5.1),
                                                                      fig=fig, axes=axes, col_truth="dimgrey", lw=1.8,
                                                                      density=True, label=label, color=color)
     return f, (ax1, ax2, ax3), mass_bins
