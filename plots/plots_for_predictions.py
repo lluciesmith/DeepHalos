@@ -2,6 +2,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath("./DeepHalos/"))))
 from utilss import radius_functions_deep as rf
 from plots import predictions_functions as pf
+from dlhalos_code import loss_functions as lf
 import numpy as np
 import matplotlib as mpl
 mpl.rcParams['text.usetex'] = True
