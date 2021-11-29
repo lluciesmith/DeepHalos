@@ -1,7 +1,5 @@
-import sys
-sys.path.append('/Users/lls/Documents/Projects/DeepHalos')
+import sys, os; sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath("./DeepHalos/"))))
 from utilss import radius_functions_deep as rf
-sys.path.append('/Users/lls/Documents/mlhalos_code/')
 from utilss import distinct_colours
 import numpy as np
 import matplotlib.pyplot as plt
@@ -126,50 +124,42 @@ def plot_radial_cat_in_mass_bins(predictions, truth, radii, inner=True, mid=True
 
 
 def plot_diff_predicted_true_mass_ranges(predictions, truths, mass_bins, xbins,
-                                           figsize=(10, 5.1),
+                                           figsize=(10, 5.1), alpha=None,
                                            col_truth="dimgrey", lw=1.8,
                                           density=True, fig=None, axes=None, color="C0", label=None):
     if fig is None:
-        f, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=figsize, sharex=True)
-    else:
-        f=fig
-        (ax1, ax2, ax3) = axes
+        fig, axes = plt.subplots(nrows=1, ncols=3, figsize=figsize, sharex=True)
 
-    ax1.axvline(x=0, color=col_truth, ls="--")
-    ax2.axvline(x=0, color=col_truth, ls="--")
-    ax3.axvline(x=0, color=col_truth, ls="--")
-
-    pred_low = (truths >= mass_bins[0]) & (truths < mass_bins[1])
-    pred_mid = (truths >= mass_bins[1]) & (truths < mass_bins[2])
-    pred_high = (truths >= mass_bins[2]) & (truths < mass_bins[3])
-
-    aa = ax1.hist(predictions[pred_low] - truths[pred_low], bins=xbins,
-                 histtype="step", density=density, lw=lw, color=color, label=label)
-    ax1.set_title(r"$ %.1f \leq \log(M_{\mathrm{true}}) \leq %.1f$" % (mass_bins[0], mass_bins[1]), fontsize=16)
-
-    _ = ax2.hist(predictions[pred_mid] - truths[pred_mid], bins=xbins,
-                 histtype="step", density=density, lw=lw, color=color)
-    ax2.set_title(r"$%.1f \leq \log(M_{\mathrm{true}}) \leq %.1f$" % (mass_bins[1], mass_bins[2]), fontsize=16)
-
-    dd = ax3.hist(predictions[pred_high] - truths[pred_high], bins=xbins,
-                 histtype="step", density=density, lw=lw, color=color)
-    ax3.set_title(r"$%.1f \leq \log(M_{\mathrm{true}}) \leq %.1f$" % (mass_bins[2], mass_bins[3]), fontsize=16)
-
+    [ax.axvline(x=0, color=col_truth, ls="--") for ax in axes]
+    [ax.set_xlabel(r"$\log(M_{\mathrm{predicted}}/M_{\mathrm{true}})$", fontsize=16) for ax in axes]
+    [ax.set_yticks([]) for ax in axes]
+    axes[0].set_ylabel(r"$n_{\mathrm{particles}}$", fontsize=20)
     plt.subplots_adjust(wspace=0, bottom=0.15, left=0.08, top=0.93)
 
+    for j in range(len(mass_bins) - 1):
+        idx = (truths >= mass_bins[j]) & (truths < mass_bins[j+1])
+
+        if isinstance(predictions, list):
+            n = np.array([np.histogram(p[idx] - truths[idx], bins=xbins, density=True)[0] for p in predictions])
+            nmax = np.array([ni.max() for ni in n.T])
+            nmin = np.array([ni.min() for ni in n.T])
+            midbins = (xbins[1:] + xbins[:-1])/2
+            _ = axes[j].bar(x=midbins, height=nmax-nmin, bottom=nmin, width=np.diff(xbins), align='center',
+                            linewidth=0, color=color, alpha=alpha, zorder=-1, label=label)
+            _ = axes[j].step(midbins, nmax, linewidth=1.2, color=color, alpha=1., where='mid')
+            _ = axes[j].step(midbins, nmin, linewidth=1.2, color=color, alpha=1., where='mid')
+            axes[j].set_title(r"$ %.1f \leq \log(M_{\mathrm{true}}) \leq %.1f$" % (mass_bins[j], mass_bins[j + 1]),
+                              fontsize=16)
+        else:
+            _ = axes[j].hist(predictions[idx] - truths[idx], bins=xbins, histtype="step", density=density, lw=lw,
+                             color=color, label=label, alpha=alpha)
+            axes[j].set_title(r"$ %.1f \leq \log(M_{\mathrm{true}}) \leq %.1f$" % (mass_bins[j], mass_bins[j+1]), fontsize=16)
+
     if label is not None:
-        handles, labels = ax1.get_legend_handles_labels()
-        f.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.12, 0.45, 0.5, 0.5), framealpha=1, fontsize=16)
-        #ax1.legend(fontsize=16, loc='upper center', bbox_to_anchor=(1., 0.45, 0.5, 0.5), framealpha=1)
-    ax1.set_ylabel(r"$n_{\mathrm{particles}}$")
-    ax1.set_xlabel(r"$\log(M_{\mathrm{predicted}}/M_{\mathrm{true}})$")
-    ax2.set_xlabel(r"$\log(M_{\mathrm{predicted}}/M_{\mathrm{true}})$")
-    ax3.set_xlabel(r"$\log(M_{\mathrm{predicted}}/M_{\mathrm{true}})$")
-    # ax3.set_xticks([-4, -3, -2, -1, 0, 1, 2, 3, 4])
-    ax1.set_yticks([])
-    ax2.set_yticks([])
-    ax3.set_yticks([])
-    return f, (ax1, ax2, ax3)
+        handles, labels = axes[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.12, 0.45, 0.5, 0.5), framealpha=1, fontsize=14)
+
+    return fig, axes
 
 
 def plot_diff_predicted_true_radial_ranges(den_inner, truth_inner, den_mid, truth_mid, den_outer, truth_outer,
@@ -270,13 +260,6 @@ def plot_diff_predicted_true_radial_ranges(den_inner, truth_inner, den_mid, trut
                        r"$r/\mathrm{r_{vir}} > %.1f $" % o0,
                        ),
                        loc='upper center', bbox_to_anchor=(0.12, 0.45, 0.5, 0.5), framealpha=1, fontsize=14)
-
-    # ax1.text(0.2, 0.8, "Low-mass \n haloes", horizontalalignment='center', verticalalignment='center',
-    #          fontweight='bold', transform=ax1.transAxes)
-    # ax2.text(0.8, 0.8, "Mid-mass \n haloes", horizontalalignment='center', verticalalignment='center',
-    #          fontweight='bold', transform=ax2.transAxes)
-    # ax3.text(0.8, 0.8, "High-mass \n haloes", horizontalalignment='center', verticalalignment='center',
-    #          fontweight='bold', transform=ax3.transAxes)
     return f, (ax1, ax2, ax3)
 
 
