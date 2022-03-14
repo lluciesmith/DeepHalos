@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
         for scale in [scale0, scale1]:
             sp0 = ge.ShearProperties(f, scale, number_of_processors=40)
-            np.save(saving_path + "reseed" + sim + "_ellipticity_scale_%.2f.py" % float(scale), sp0.ellipticity)
-            np.save(saving_path + "reseed" + sim + "_prolateness_scale_%.2f.py" % float(scale), sp0.prolateness)
-            np.save(saving_path + "reseed" + sim + "_densub_ellipticity_scale_%.2f.py" % float(scale), sp0.density_subtracted_ellipticity)
-            np.save(saving_path + "reseed" + sim + "_densub_prolateness_scale_%.2f.py" % float(scale), sp0.density_subtracted_prolateness)
+            np.save(saving_path + "reseed" + sim + "_ellipticity_scale_%.2f.npy" % float(scale), sp0.ellipticity)
+            np.save(saving_path + "reseed" + sim + "_prolateness_scale_%.2f.npy" % float(scale), sp0.prolateness)
+            np.save(saving_path + "reseed" + sim + "_densub_ellipticity_scale_%.2f.npy" % float(scale), sp0.density_subtracted_ellipticity)
+            np.save(saving_path + "reseed" + sim + "_densub_prolateness_scale_%.2f.npy" % float(scale), sp0.density_subtracted_prolateness)
