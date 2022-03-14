@@ -15,11 +15,11 @@ if __name__ == "__main__":
         f = pynbody.load(path_sim + "IC.gadget2")
         f.physical_units()
 
-        scale0 = pynbody.array.SimArray(2., "Mpc h**-1")
+        scale0 = pynbody.array.SimArray(2., "Mpc h**-1")  # z = 0
         scale0 *= f.properties["a"]
         scale0.sim = f
 
-        scale1 = pynbody.array.SimArray(12., "Mpc h**-1")
+        scale1 = pynbody.array.SimArray(12., "Mpc h**-1")  # z = 0
         scale1 *= f.properties["a"]
         scale1.sim = f
 

@@ -27,7 +27,7 @@ class Shear(object):
         """
 
         self.snapshot = snapshot
-        self.smoothing_scale = smoothing_scale
+        self.smoothing_scale = smoothing_scale.in_units(self.snapshot["x"].units)
 
         self.number_of_processors = number_of_processors
         self.path = path
