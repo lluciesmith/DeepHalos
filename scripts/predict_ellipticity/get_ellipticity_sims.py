@@ -1,9 +1,6 @@
 import numpy as np
-import sys; sys.path.append("/home/lls/mlhalos_code/")
 import pynbody
-import time
-from multiprocessing import Pool
-from collections import OrderedDict
+import ellipticity as ge
 
 
 if __name__ == "__main__":
