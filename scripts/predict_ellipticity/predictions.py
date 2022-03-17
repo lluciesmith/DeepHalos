@@ -13,15 +13,15 @@ if __name__ == "__main__":
     try: params = importlib.import_module(sys.argv[1])
     except IndexError: import params_ell as params
 
-    # Load data
-
-    s = tn.SimulationPreparation([params.val_sim], path=params.path_sims)
-    generator_validation = tn.DataGenerator(params.larger_val_particle_IDs, params.larger_val_labels_particle_IDS,
-                                            s.sims_dic, shuffle=False, **params.params_val)
-
     scaler = load(open(params.saving_path + 'scaler_output_ell.pkl', 'rb'))
     labels_val = turn_mass_labels_into_ellipticity(params.larger_val_labels_particle_IDS, scale0, params.path_sims,
                                                    scaler=scaler)
+    params.larger_val_labels_particle_IDS = labels_val
+
+    # Load data
+    s = tn.SimulationPreparation([params.val_sim], path=params.path_sims)
+    generator_validation = tn.DataGenerator(params.larger_val_particle_IDs, params.larger_val_labels_particle_IDS,
+                                            s.sims_dic, shuffle=False, **params.params_val)
 
     # Load the model
     weights = params.saving_path + "model/weights." + params.num_epoch_testing + ".h5"

@@ -43,7 +43,7 @@ if __name__ == "__main__":
     scale0 = params.smoothing_scales[0]
     labels_tr, scaler_tr = turn_mass_labels_into_ellipticity(params.training_labels_particle_IDS, scale0, params.path_sims)
     params.training_labels_particle_IDS = labels_tr
-    with open(params.saving_path + "scaler_output_ell.pickle", "wb") as output_file:
+    with open(params.saving_path + "scaler_output_ell.pkl", "wb") as output_file:
         dump(scaler_tr, output_file)
 
     labels_val = turn_mass_labels_into_ellipticity(params.val_labels_particle_IDS, scale0, params.path_sims, scaler=scaler_tr)
