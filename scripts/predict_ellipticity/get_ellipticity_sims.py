@@ -10,7 +10,7 @@ if __name__ == "__main__":
     for i in range(len(sims)):
         sim = sims[i]
         if sim == "0":
-            path_sim = "/share/hypatia/lls/simulations/standard_reseed" + sim + "/ICs_z99_256_L50_gadget3.dat"
+            path_sim = "/share/hypatia/lls/simulations/Nina_sim/ICs_z99_256_L50_gadget3.dat"
             saving_path = "/share/hypatia/lls/deep_halos/training_sim/"
         elif sim == "1":
             path_sim = "/share/hypatia/lls/simulations/reseed50/IC_doub_z99_256.gadget3"
