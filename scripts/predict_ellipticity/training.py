@@ -35,12 +35,14 @@ if __name__ == "__main__":
     try: params = importlib.import_module(sys.argv[1])
     except IndexError: import params_ell as params
 
+    scale0 = params.smoothing_scales[0]
+    params.saving_path = params.saving_path + "scale_%.2f/" % float(scale)
+
     np.random.seed(params.seed)
     python_random.seed(params.seed)
     tf.compat.v1.set_random_seed(params.seed)
 
     # Prepare the data
-    scale0 = params.smoothing_scales[0]
     labels_tr, scaler_tr = turn_mass_labels_into_ellipticity(params.training_labels_particle_IDS, scale0, params.path_sims)
     params.training_labels_particle_IDS = labels_tr
     with open(params.saving_path + "scaler_output_ell.pkl", "wb") as output_file:

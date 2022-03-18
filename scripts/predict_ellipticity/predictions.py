@@ -7,15 +7,20 @@ import tensorflow as tf
 import random as python_random
 import sys
 import importlib
+import training as training_script
 
 
 if __name__ == "__main__":
     try: params = importlib.import_module(sys.argv[1])
     except IndexError: import params_ell as params
 
+
+    scale0 = params.smoothing_scales[0]
+    params.saving_path = params.saving_path + "scale_%.2f/" % float(scale)
+
     scaler = load(open(params.saving_path + 'scaler_output_ell.pkl', 'rb'))
-    labels_val = turn_mass_labels_into_ellipticity(params.larger_val_labels_particle_IDS, scale0, params.path_sims,
-                                                   scaler=scaler)
+    labels_val = training_script.turn_mass_labels_into_ellipticity(params.larger_val_labels_particle_IDS, scale0,
+                                                                   params.path_sims, scaler=scaler)
     params.larger_val_labels_particle_IDS = labels_val
 
     # Load data

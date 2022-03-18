@@ -5,7 +5,7 @@ from dlhalos_code import custom_regularizers as reg
 seed = 123
 log_alpha = -2.5
 alpha = 10**float(log_alpha)
-smoothing_scales = [0.12, 0.02]  # in Mpc/h at z=99
+smoothing_scales = [0.02, 0.12]  # in Mpc/h at z=99
 
 saving_path = "/mnt/beegfs/work/ati/pearl037/regression/mass_range_13.4/random_20sims_200K/ellipticity/"
 
