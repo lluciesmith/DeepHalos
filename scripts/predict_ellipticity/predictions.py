@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
 
     scale0 = params.smoothing_scales[0]
-    params.saving_path = params.saving_path + "scale_%.2f/" % float(scale)
+    params.saving_path = params.saving_path + "scale_%.2f/" % float(scale0)
 
     scaler = load(open(params.saving_path + 'scaler_output_ell.pkl', 'rb'))
     labels_val = training_script.turn_mass_labels_into_ellipticity(params.larger_val_labels_particle_IDS, scale0,

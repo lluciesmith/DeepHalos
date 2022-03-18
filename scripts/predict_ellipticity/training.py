@@ -36,7 +36,7 @@ if __name__ == "__main__":
     except IndexError: import params_ell as params
 
     scale0 = params.smoothing_scales[0]
-    params.saving_path = params.saving_path + "scale_%.2f/" % float(scale)
+    params.saving_path = params.saving_path + "scale_%.2f/" % float(scale0)
 
     np.random.seed(params.seed)
     python_random.seed(params.seed)
