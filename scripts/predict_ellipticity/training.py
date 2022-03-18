@@ -7,6 +7,7 @@ import sys
 import importlib
 from pickle import dump
 from collections import OrderedDict
+import sklearn.preprocessing
 
 
 def turn_mass_labels_into_ellipticity(labels, scale, path, scaler=None):
