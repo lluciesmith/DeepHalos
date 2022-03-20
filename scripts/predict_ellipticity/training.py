@@ -34,7 +34,7 @@ def turn_mass_labels_into_ellipticity(labels, scale, path, scaler=None):
 
 
 if __name__ == "__main__":
-    idx = sys.argv[1]
+    idx = int(sys.argv[1])
     scale0 = params.smoothing_scales[idx]
     params.saving_path = params.saving_path + "scale_%.2f/" % float(scale0)
 
