@@ -8,6 +8,7 @@ import importlib
 from pickle import dump
 from collections import OrderedDict
 import sklearn.preprocessing
+import params_ell as params
 
 
 def turn_mass_labels_into_ellipticity(labels, scale, path, scaler=None):
@@ -33,10 +34,8 @@ def turn_mass_labels_into_ellipticity(labels, scale, path, scaler=None):
 
 
 if __name__ == "__main__":
-    try: params = importlib.import_module(sys.argv[1])
-    except IndexError: import params_ell as params
-
-    scale0 = params.smoothing_scales[0]
+    idx = sys.argv[1]
+    scale0 = params.smoothing_scales[idx]
     params.saving_path = params.saving_path + "scale_%.2f/" % float(scale0)
 
     np.random.seed(params.seed)
@@ -69,6 +68,6 @@ if __name__ == "__main__":
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=10,
                           use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=params.lr, save_summary=True,
                           path_summary=params.saving_path, validation_freq=1, train=True, compile=True,
-                          initial_epoch=None,
-                    # lr_scheduler=False,
+                          # initial_epoch=None,  lr_scheduler=False,
+                    initial_epoch=0,
                           seed=params.seed)
