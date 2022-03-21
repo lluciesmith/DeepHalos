@@ -8,14 +8,12 @@ import random as python_random
 import sys
 import importlib
 import training as training_script
+import params_ell as params
 
 
 if __name__ == "__main__":
-    try: params = importlib.import_module(sys.argv[1])
-    except IndexError: import params_ell as params
-
-
-    scale0 = params.smoothing_scales[0]
+    idx = int(sys.argv[1])
+    scale0 = params.smoothing_scales[idx]
     params.saving_path = params.saving_path + "scale_%.2f/" % float(scale0)
 
     scaler = load(open(params.saving_path + 'scaler_output_ell.pkl', 'rb'))
