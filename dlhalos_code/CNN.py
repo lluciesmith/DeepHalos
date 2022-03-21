@@ -49,7 +49,8 @@ class CNN:
         self.verbose = verbose
         self.metrics = metrics
         self.lr = lr
-        self.callbacks = callbacks
+        if callbacks is None:
+            self.callbacks = self.callbacks()
         self.model_type = model_type
         self.skip_connector = skip_connector
         self.loss = loss
@@ -396,6 +397,20 @@ class CNN:
         x = Flatten(data_format=data_format)(x)
         x = self._fcc_layers(x, fcc_params, initialiser)
         return x
+
+    def callbacks(self):
+        callbacks_list = []
+
+        # checkpoint
+        filepath = self.path_model + "model/weights.{epoch:02d}.h5"
+        checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
+        callbacks_list.append(checkpoint_call)
+
+        # Record training history in log file
+        csv_logger = callbacks.CSVLogger(self.path_model + "training.log", separator=',', append=True)
+        callbacks_list.append(csv_logger)
+
+        return callbacks_list
 
 
 class LossTrainableParams(Layer):
