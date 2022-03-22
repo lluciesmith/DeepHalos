@@ -15,6 +15,7 @@ if __name__ == "__main__":
     idx = int(sys.argv[1])
     scale0 = params.smoothing_scales[idx]
     params.saving_path = params.saving_path + "scale_%.2f/" % float(scale0)
+    params.num_epoch_testing = "02"
 
     scaler = load(open(params.saving_path + 'scaler_output_ell.pkl', 'rb'))
     labels_val = training_script.turn_mass_labels_into_ellipticity(params.larger_val_labels_particle_IDS, scale0,
@@ -28,11 +29,11 @@ if __name__ == "__main__":
 
     # Load the model
     weights = params.saving_path + "model/weights." + params.num_epoch_testing + ".h5"
-    Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, model_type="regression", training_generator={}, shuffle=True,
+    Model = CNN.CNN(params.param_conv, params.param_fcc, model_type="regression", training_generator={}, shuffle=True,
                           validation_generator=generator_validation, num_epochs=100, dim=generator_validation.dim,
                           max_queue_size=80, use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=params.lr,
                           save_summary=False, path_summary=params.saving_path, validation_freq=1, train=False, compile=True,
-                          initial_epoch=None, initialiser="Xavier_uniform")
+                          initial_epoch=0, initialiser="Xavier_uniform")
     Model.model.load_weights(weights)
 
     # Predict the labels for the test set
