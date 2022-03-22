@@ -50,7 +50,7 @@ class CNN:
         self.metrics = metrics
         self.lr = lr
         if callbacks is None:
-            self.callbacks = self.callbacks()
+            self.cks = self.callbacks(path_summary)
         self.model_type = model_type
         self.skip_connector = skip_connector
         self.loss = loss
@@ -64,7 +64,6 @@ class CNN:
         self.model_name = model_name
         self.save_summary = save_summary
         self.path_summary = path_summary
-        self.path_model = path_summary
         self.shuffle = shuffle
 
         if train is True:
@@ -83,7 +82,7 @@ class CNN:
                                       use_multiprocessing=self.use_multiprocessing, workers=self.workers,
                                       max_queue_size=self.max_queue_size, initial_epoch=self.initial_epoch,
                                       verbose=self.verbose, epochs=self.num_epochs, shuffle=self.shuffle,
-                                      callbacks=self.callbacks, validation_freq=self.val_freq,
+                                      callbacks=self.cks, validation_freq=self.val_freq,
                                       validation_steps=self.validation_steps, steps_per_epoch=self.steps_per_epoch)
         t1 = time.time()
         if self.verbose == 1:
@@ -399,16 +398,17 @@ class CNN:
         x = self._fcc_layers(x, fcc_params, initialiser)
         return x
 
-    def callbacks(self):
+    @staticmethod
+    def callbacks(path):
         callbacks_list = []
 
         # checkpoint
-        filepath = self.path_model + "model/weights.{epoch:02d}.h5"
+        filepath = path + "model/weights.{epoch:02d}.h5"
         checkpoint_call = callbacks.ModelCheckpoint(filepath, period=1, save_weights_only=True)
         callbacks_list.append(checkpoint_call)
 
         # Record training history in log file
-        csv_logger = callbacks.CSVLogger(self.path_model + "training.log", separator=',', append=True)
+        csv_logger = callbacks.CSVLogger(path + "training.log", separator=',', append=True)
         callbacks_list.append(csv_logger)
 
         return callbacks_list
