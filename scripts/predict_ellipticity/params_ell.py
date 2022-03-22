@@ -26,7 +26,7 @@ params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, '
 
 # Model parameters
 
-lr = 0.001
+lr = 0.0001
 
 params_all_conv = {'activation': "linear", 'relu': True, 'strides': 1, 'padding': 'same', 'bn': False,
                    'kernel_regularizer': reg.l2_norm(alpha)

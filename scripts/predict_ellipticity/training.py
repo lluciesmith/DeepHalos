@@ -11,18 +11,23 @@ import sklearn.preprocessing
 import params_ell as params
 
 
-def turn_mass_labels_into_ellipticity(labels, scale, path, scaler=None):
-    ids_keys = labels.keys()
+def get_ell(ids_keys, scale, path):
     sim_index = np.array([ID[ID.find('sim-') + 4: ID.find('-id')] for ID in ids_keys])
     particle_ids = np.array([int(ID[ID.find('-id-') + 4:]) for ID in ids_keys])
     labels_ell = np.zeros((len(particle_ids),))
     sims_unique = np.unique(sim_index)
-    for sim in sims_unique[11:]:
+    for sim in sims_unique:
         if sim == "0":
             ell = np.load(path + "training_simulation/reseed" + sim + "_densub_ellipticity_scale_%.2f.npy" % float(scale))
         else:
             ell = np.load(path + "reseed" + sim + "_simulation/reseed" + sim + "_densub_ellipticity_scale_%.2f.npy" % float(scale))
         labels_ell[sim_index == sim] = ell[particle_ids[sim_index == sim]]
+    return labels_ell
+
+
+def turn_mass_labels_into_ellipticity(labels, scale, path, scaler=None):
+    ids_keys = labels.keys()
+    labels_ell = get_ell(ids_keys, scale, path)
     if scaler is None:
         scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1, 1))
         scaler.fit(labels_ell.reshape(-1, 1))
