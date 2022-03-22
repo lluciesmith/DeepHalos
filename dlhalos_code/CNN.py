@@ -64,6 +64,7 @@ class CNN:
         self.model_name = model_name
         self.save_summary = save_summary
         self.path_summary = path_summary
+        self.path_model = path_summary
         self.shuffle = shuffle
 
         if train is True:
@@ -403,7 +404,7 @@ class CNN:
 
         # checkpoint
         filepath = self.path_model + "model/weights.{epoch:02d}.h5"
-        checkpoint_call = callbacks.ModelCheckpoint(filepath, period=self.period_model_save, save_weights_only=True)
+        checkpoint_call = callbacks.ModelCheckpoint(filepath, period=1, save_weights_only=True)
         callbacks_list.append(checkpoint_call)
 
         # Record training history in log file
