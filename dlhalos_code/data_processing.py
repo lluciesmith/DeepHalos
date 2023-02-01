@@ -329,7 +329,7 @@ class DataGenerator(Sequence):
     def __init__(self, list_IDs, labels, sims, weights=None,
                  batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False,
                  rescale_mean=0, rescale_std=1,
-                 input_type="raw", num_shells=None):
+                 input_type="raw", num_shells=None, path=None):
         """
         This class created the data generator that should be used to fit the deep learning model.
 
@@ -358,6 +358,7 @@ class DataGenerator(Sequence):
         self.res = dim[0]
         self.batch_size = batch_size
         self.n_channels = n_channels
+        self.path = path
 
         self.rescale_mean = rescale_mean
         self.rescale_std = rescale_std
