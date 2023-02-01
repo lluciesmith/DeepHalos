@@ -112,14 +112,21 @@ class CNN:
 
         if self.model_type == "regression":
             print("Initiating regression model on multiple GPUs")
-            # with tf.device('/cpu:0'):
-            Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                   data_format=self.data_format)
-            optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
-                                              amsgrad=True)
+            if self.pretrained_model is not None:
+                print("Loading pretrained model")
+                Model = self.pretrained_model
+            else:
+                Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                       data_format=self.data_format)
 
+            if self.weights is not None:
+                print("Loading given weights onto model")
+                Model.load_weights(self.weights)
+
+            self.optimiser = keras.optimizers.Adam(lr=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
+                                                   amsgrad=True)
             parallel_model = multi_gpu_model(Model, gpus=num_gpus, cpu_relocation=True, cpu_merge=True)
-            parallel_model.compile(optimizer=optimiser, loss='mse', metrics=self.metrics)
+            parallel_model.compile(optimizer=self.optimiser, loss=self.loss, metrics=self.metrics)
 
         elif self.model_type == "binary_classification":
             print("Initiating binary classification model on multiple GPUs")
