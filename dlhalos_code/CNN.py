@@ -947,3 +947,30 @@ class Between(Constraint):
     def get_config(self):
         return {'min_value': self.min_value,
                 'max_value': self.max_value}
+
+
+class CNNGaussian(CNN):
+    """
+    This is the model which uses the Gaussian+selection loss
+
+    """
+
+    def __init__(self, conv_params, fcc_params,
+                 training_generator=None, validation_generator=None, steps_per_epoch=None,
+                 data_format="channels_last", dim=(51, 51, 51),
+                 lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None,
+                 max_queue_size=10, use_multiprocessing=False, workers=1, verbose=1, num_gpu=1, seed=None,
+                 save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5, lr_scheduler=True,
+                 weights=None, initial_epoch=None, global_average=None):
+        loss_c = lf.GaussianSelectionLoss(sigma=0.3, y_max=1, y_min=-1).loss
+
+        super(CNNGaussian, self).__init__(conv_params, fcc_params, model_type="regression",
+                                          training_generator=training_generator, num_epochs=num_epochs, dim=dim,
+                                          validation_generator=validation_generator, pool_size=pool_size,
+                                          initialiser=initialiser, max_queue_size=max_queue_size,
+                                          data_format=data_format, use_multiprocessing=use_multiprocessing,
+                                          workers=workers, verbose=verbose, num_gpu=num_gpu, lr=lr, loss=loss_c,
+                                          save_summary=save_summary, path_summary=path_summary, train=train,
+                                          compile=compile, steps_per_epoch=steps_per_epoch, initial_epoch=initial_epoch,
+                                          pretrained_model=pretrained_model, weights=weights, seed=seed,
+                                          global_average=global_average)

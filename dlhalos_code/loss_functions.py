@@ -200,3 +200,96 @@ class ConditionalCauchySelectionLoss:
         term6 = K.log(tf.atan(2 / gamma))
         return term1 + term2 + term3 + term4 + term5 + term6
 
+
+class GaussianSelectionLoss:
+    def __init__(self, sigma=0.4, y_max=1, y_min=-1):
+        self.sigma = sigma
+        self.y_max = y_max
+        self.y_min = y_min
+        if local_machine:
+            self.e = np.e
+            self.pi = np.pi
+        else:
+            self.e = K.constant(np.e, dtype="float32")
+            self.pi = K.constant(np.pi, dtype="float32")
+
+    def loss(self, y_true, y_pred):
+        return K.mean(self._loss(y_true, y_pred), axis=-1)
+
+    def _loss(self, y_true, y_pred):
+        zeros = K.zeros_like(y_pred)
+
+        mask_range = K.less_equal(K.abs(y_pred), K.ones_like(y_pred))
+        range_term = tf.where(mask_range, self.loss_range(y_true, y_pred), zeros)
+
+        mask_neg = K.less(y_pred, -1 * K.ones_like(y_pred))
+        negative_term = tf.where(mask_neg, self.loss_neg(y_true, y_pred), zeros)
+
+        mask_pos = K.less(K.ones_like(y_pred), y_pred)
+        positive_term = tf.where(mask_pos, self.loss_pos(y_true, y_pred), zeros)
+
+        loss = negative_term + range_term + positive_term
+        return loss
+
+    def likelihood_term(self, y_true, y_pred):
+        return np.log(self.sigma) + 0.5 * ((y_true - y_pred) / self.sigma) ** 2
+
+    def selection_term(self, y_pred):
+        t1 = tf.math.erf((1. - y_pred) / (tf.math.sqrt(2.) * self.sigma))
+        t2 = tf.math.erf((-1. - y_pred) / (self.sigma * tf.math.sqrt(2.)))
+        return tf.math.log(t1 - t2)
+
+    def loss_range(self, y_true, y_pred):
+        return self.likelihood_term(y_true, y_pred) + self.selection_term(y_pred)
+
+    # def selection_term(self, y_pred, sigma=0.2):
+    #     t1 = scipy.special.erf((1. - y_pred) / (np.sqrt(2.) * sigma))
+    #     t2 = scipy.special.erf((-1. - y_pred) / (sigma * np.sqrt(2.)))
+    #     return np.log(t1 - t2)
+
+    def loss_neg(self, y_true, y_pred):
+        y_minimum = self.y_min
+        sigma = self.sigma
+        alpha_neg = self.alpha_minus(y_true, sigma)
+        beta_neg = self.beta_minus(y_true, sigma)
+        return self.function_outside_boundary(y_pred, y_minimum, alpha_neg, beta_neg)
+
+    def loss_pos(self, y_true, y_pred):
+        y_maximum = self.y_max
+        sigma = self.sigma
+        alpha_pos = self.alpha_plus(y_true, sigma)
+        beta_pos = self.beta_plus(y_true, sigma)
+        return self.function_outside_boundary(y_pred, y_maximum, alpha_pos, beta_pos)
+
+    def function_outside_boundary(self, y_pred, y_boundary, alpha, beta):
+        return K.exp(K.exp(y_boundary * y_pred)) + alpha * K.square(y_pred) + beta
+
+    def alpha_plus(self, y_true, sigma):
+        E = self.e
+        term1 = -0.5 * (-1. + y_true + tf.math.exp(1. + E) * sigma ** 2) /sigma ** 2
+        term2 = (-1. + tf.math.exp(-2. /sigma ** 2)) / (tf.math.sqrt(2. * self.pi) * sigma * tf.math.erf(tf.math.sqrt(2.) /sigma))
+        return term1 + term2
+
+    def beta_plus(self, y_true, sigma):
+        E = self.e
+        term1 = ((-2. + E) * tf.math.exp(E) + ((-1. + y_true) * y_true) / sigma ** 2) / 2.
+        term2 = (1. - tf.math.exp(-2. /sigma ** 2)) / (tf.math.sqrt(2. * self.pi) * sigma * tf.math.erf(tf.math.sqrt(2.) /sigma))
+        term3 = tf.math.log(tf.math.erf(tf.math.sqrt(2.) /sigma))
+        return term1 + term2 + term3
+
+    def alpha_minus(self, y_true, sigma):
+        E = self.e
+        term1 = (1. + y_true - tf.math.exp(1. + E) * sigma ** 2 -
+                 (2. * tf.math.sqrt(2./self.pi) * sigma * tf.math.sinh(sigma**(-2)))/
+                 tf.math.exp(1./sigma**2) * tf.math.erf(tf.math.sqrt(2.)/sigma))
+        return term1/(2. * sigma**2)
+
+    def beta_minus(self, y_true, sigma):
+        E = self.e
+        term1 = (y_true + y_true**2 + (-2. + E) * tf.math.exp(E) * sigma**2 +
+                 ((-1. + tf.math.exp(2./sigma**2)) * tf.math.sqrt(2./self.pi) * sigma)/
+                 (tf.math.exp(2./sigma**2) * tf.math.erf(tf.math.sqrt(2.)/sigma)) +
+                 2.*sigma**2*tf.math.log(tf.math.erf(tf.math.sqrt(2.)/sigma)))
+        return term1/(2. * sigma**2)
+
+
