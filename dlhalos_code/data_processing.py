@@ -448,7 +448,7 @@ class DataGenerator(Sequence):
 
     def load_input(self, simulation_index, particle_id):
         path = self.path + "inputs_avg/inp_avg" if self.input_type == "averaged" else self.path + "inputs_raw/inp_raw"
-        return np.load(path + "_sim_" + simulation_index + "_particle_" + particle_id + ".npy")
+        return np.load(path + "_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")
 
     def generate_input(self, simulation_index, particle_id):
         i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
