@@ -26,8 +26,8 @@ test_labels_particle_IDS = load(open(path_data + 'labels_test_set.pkl', 'rb'))
 # inputs parameters
 dim = (75, 75, 75)
 params_box = {'input_type': 'averaged', 'num_shells': 20}
-params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
-params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
+params_tr = {'batch_size': 32, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
+params_val = {'batch_size': 25, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
 
 # Model params
 lr = 0.00005
