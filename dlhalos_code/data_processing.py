@@ -447,19 +447,22 @@ class DataGenerator(Sequence):
         return s.reshape((*self.dim, self.n_channels))
 
     def generate_input(self, simulation_index, particle_id):
-        i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
-        if self.input_type == "potential":
-            delta_sim = self.sims_potential[simulation_index]
-        else:
-            delta_sim = self.sims_rescaled_density[simulation_index]
+        return np.random.random((self.res, self.res, self.res))
 
-        output_matrix = np.zeros((self.res, self.res, self.res))
-        s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
-
-        if self.input_type == "averaged":
-            s = get_spherically_averaged_box(s, self.shell_labels)
-
-        return s
+    # def generate_input(self, simulation_index, particle_id):
+    #     i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
+    #     if self.input_type == "potential":
+    #         delta_sim = self.sims_potential[simulation_index]
+    #     else:
+    #         delta_sim = self.sims_rescaled_density[simulation_index]
+    #
+    #     output_matrix = np.zeros((self.res, self.res, self.res))
+    #     s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+    #
+    #     if self.input_type == "averaged":
+    #         s = get_spherically_averaged_box(s, self.shell_labels)
+    #
+    #     return s
 
     def preprocess_potential(self):
         for i, simulation in self.sims.items():
