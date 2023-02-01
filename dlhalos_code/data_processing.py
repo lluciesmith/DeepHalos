@@ -91,7 +91,7 @@ class SimulationPreparation:
         rho_m = pynbody.analysis.cosmology.rho_M(snapshot, unit=snapshot["rho"].units)
         snapshot['den_contrast'] = snapshot["rho"] / rho_m
         t1 = time.time()
-        print("Computing density contrast in simulation took " + str((t1 - t0)/60) + " minutes.")
+        print("Computing density contrast in simulation took " + str((t1 - t0) / 60) + " minutes.")
 
         shape_sim = int(round((snapshot["iord"].shape[0]) ** (1 / 3)))
         i, j, k = np.unravel_index(snapshot["iord"], (shape_sim, shape_sim, shape_sim))
@@ -154,16 +154,13 @@ class InputsPreparation:
     def generate_particle_IDs_dictionary(self):
         names = []
         masses = []
-
         for i, sim_ID in enumerate(self.sims):
-
             if self.load_ids:
                 ids_i, mass_i = self.load_ids_from_file(sim_ID)
             else:
-                ids_i, mass_i = self.generate_random_set(sim_ID, self.random_subset)
+                ids_i, mass_i = self.generate_random_set(sim_ID)
 
             name = ['sim-' + str(sim_ID) + '-id-' + str(id_i) for id_i in ids_i]
-
             names.append(name)
             masses.append(mass_i)
 
@@ -239,8 +236,8 @@ class InputsPreparation:
             if ind_bins.size != 0:
                 if len(ind_bins) <= number_samples_per_bin:
                     warnings.warn("The number of particles in bin [%.3f, %.3f) is %i. This is smaller than the "
-                                     "requested %i number of particles. We include all particles in this bin."
-                                     % (bins[i-1], bins[i], len(ind_bins), number_samples_per_bin))
+                                  "requested %i number of particles. We include all particles in this bin."
+                                  % (bins[i - 1], bins[i], len(ind_bins), number_samples_per_bin))
                     ind.append(ind_bins)
                 else:
                     ind_i = np.random.choice(ind_bins, number_samples_per_bin, replace=False)
@@ -251,27 +248,23 @@ class InputsPreparation:
         ind = np.concatenate(ind)
         return ind
 
-    def generate_random_set(self, simulation_ID, number_samples=None):
+    def generate_random_set(self, simulation_ID):
         if simulation_ID == "0":
             halo_mass = np.load(self.path + "training_simulation/halo_mass_particles.npy")
-        elif len(simulation_ID) == 2 or len(simulation_ID) == 1:
-            halo_mass = np.load(self.path + "reseed" + simulation_ID + "_simulation/reseed" + simulation_ID +
-                                "_halo_mass_particles.npy")
         else:
-            halo_mass = np.load(self.path + simulation_ID + "/" + simulation_ID + "_halo_mass_particles.npy")
-
+            halo_mass = np.load(
+                self.path + "reseed" + simulation_ID + "_simulation/reseed" + simulation_ID + "_halo_mass_particles.npy")
         ids_in_halo = np.where(halo_mass > 0)[0]
 
         if self.log_high_mass_limit is not None:
             ind = np.log10(halo_mass[ids_in_halo]) <= self.log_high_mass_limit
             ids_in_halo = ids_in_halo[ind]
 
-        if number_samples is None:
-            return ids_in_halo, np.log10(halo_mass[ids_in_halo])
+        if self.random_subset is not None:
+            ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
+            return ids_i, np.log10(halo_mass[ids_i])
         else:
-            ids_i = np.random.choice(ids_in_halo, number_samples, replace=False)
-            mass_i = np.log10(halo_mass[ids_i])
-            return ids_i, mass_i
+            return ids_in_halo, np.log10(halo_mass[ids_in_halo])
 
     def load_ids_from_file(self, simulation_ID):
         ids_i, mass_i = self.get_ids_and_regression_labels(sim=simulation_ID)
@@ -291,7 +284,7 @@ class InputsPreparation:
         if self.log_high_mass_limit is not None:
             ind = np.log10(halo_mass[ids_bc]) <= self.log_high_mass_limit
             ids_bc = ids_bc[ind]
-        
+
         if self.random_subset is not None:
             ids_i = np.random.choice(ids_bc, self.random_subset, replace=False)
             ids_bc = ids_i
@@ -325,7 +318,7 @@ class InputsPreparation:
             if i == range(len(bins) - 1)[-1]:
                 ind = np.where((outputs >= bins[i]) & (outputs <= bins[i + 1]))[0]
             else:
-                ind = np.where((outputs >= bins[i]) & (outputs < bins[i+1]))[0]
+                ind = np.where((outputs >= bins[i]) & (outputs < bins[i + 1]))[0]
 
             weights_samples[ind] = weights[i]
 
@@ -390,7 +383,7 @@ class DataGenerator(Sequence):
     def __getitem__(self, index):
         """ Generate a batch of data """
 
-        indexes = self.indexes[index * self.batch_size: (index+1) * self.batch_size]
+        indexes = self.indexes[index * self.batch_size: (index + 1) * self.batch_size]
         list_IDs_temp = [self.list_IDs[k] for k in indexes]
 
         if list_IDs_temp:
@@ -435,10 +428,10 @@ class DataGenerator(Sequence):
 
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
-            sim_index = ID[ID.find('sim-') + 4 : ID.find('-id')]
+            sim_index = ID[ID.find('sim-') + 4: ID.find('-id')]
 
             # generate box
-            particle_ID = int(ID[ID.find('-id-') + 4 :])
+            particle_ID = int(ID[ID.find('-id-') + 4:])
             s = self.generate_input(sim_index, particle_ID)
 
             X[i] = self._process_input(s)
@@ -489,7 +482,8 @@ def compute_subbox(i0, j0, k0, width, input_matrix, output_matrix, shape_input):
     for i in prange(width):
         for j in prange(width):
             for k in prange(width):
-                output_matrix[i, j, k] = input_matrix[(i + i0) % shape_input, (j + j0) % shape_input, (k + k0) % shape_input]
+                output_matrix[i, j, k] = input_matrix[
+                    (i + i0) % shape_input, (j + j0) % shape_input, (k + k0) % shape_input]
     return output_matrix
 
 
@@ -497,14 +491,14 @@ def assign_shell_to_pixels(width, number_shells, r_shells=None):
     if r_shells is None:
         r_shells = np.linspace(2, width / 2, number_shells, endpoint=True)
 
-    x_coord, y_coord, z_coord = np.unravel_index(np.arange(width**3), (width, width, width))
+    x_coord, y_coord, z_coord = np.unravel_index(np.arange(width ** 3), (width, width, width))
     x_coord -= width // 2
     y_coord -= width // 2
     z_coord -= width // 2
     r_coords = np.sqrt(x_coord ** 2 + y_coord ** 2 + z_coord ** 2)
 
-    shell_labels = np.ones((width**3)) * -1
-    for i in range(width**3):
+    shell_labels = np.ones((width ** 3)) * -1
+    for i in range(width ** 3):
         shell_beloning = np.where(r_coords[i] <= r_shells)[0]
 
         if shell_beloning.size != 0:
