@@ -6,7 +6,6 @@ if __name__ == "__main__":
     path_sims = "/share/hypatia/lls/simulations/dlhalos_sims/"
     all_sims = ["%i" % i for i in np.arange(25)]
     all_sims.remove("3")
-    s = tn.SimulationPreparation(all_sims, path=path_sims)
     val_sim = ["6"]
     test_sim = ["6", "22", "23", "24"]
     train_sims = list(np.array(all_sims)[np.where(~np.in1d(all_sims, test_sim) & ~np.in1d(all_sims, val_sim))[0]])
