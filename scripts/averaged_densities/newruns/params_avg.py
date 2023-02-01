@@ -20,7 +20,7 @@ training_labels_particle_IDS = load(open(path_data + 'labels_training_set.pkl', 
 val_particle_IDs = load(open(path_data + 'validation_set.pkl', 'rb'))
 val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb'))
 scaler = load(open(path_data + 'scaler_output.pkl', 'rb'))
-test_particle_IDs = load(open(path_data + 'test_validation_set.pkl', 'rb'))
+test_particle_IDs = load(open(path_data + 'test_set.pkl', 'rb'))
 test_labels_particle_IDS = load(open(path_data + 'labels_test_set.pkl', 'rb'))
 
 # inputs parameters
