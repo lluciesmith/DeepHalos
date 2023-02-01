@@ -31,7 +31,7 @@ if __name__ == "__main__":
             if os.path.exists(saving_path + "/inputs_raw/inp_raw_sim_" + sim_index + "_particle_" + particle_ID + ".npy"):
                 pass
             else:
-            
+                print(ID)
                 i0, j0, k0 = s.sims_dic[sim_index]['coords'][int(particle_ID)]
                 delta_sim = sims_rescaled_density[sim_index]
                 output_matrix = np.zeros((res, res, res))
