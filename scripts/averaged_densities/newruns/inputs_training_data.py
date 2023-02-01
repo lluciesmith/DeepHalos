@@ -1,6 +1,7 @@
 import dlhalos_code.data_processing as tn
 from pickle import load
 import numpy as np
+import os
 
 if __name__ == "__main__":
     import params_avg as params
@@ -25,14 +26,17 @@ if __name__ == "__main__":
     testing_ids = load(open(saving_path + 'test_set.pkl', 'rb'))
     for pids in [training_ids, validation_ids, testing_ids]:
         for ID in pids:
-            print(ID)
             sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
             particle_ID = ID[ID.find('-id-') + + len('-id-'):]
-            i0, j0, k0 = s.sims_dic[sim_index]['coords'][int(particle_ID)]
-            delta_sim = sims_rescaled_density[sim_index]
-            output_matrix = np.zeros((res, res, res))
-            box = tn.compute_subbox(i0, j0, k0, res, delta_sim, output_matrix, shape_sim)
-            np.save(saving_path + "/inputs_raw/inp_raw_sim_" + sim_index + "_particle_" + particle_ID + ".npy", box)
-            if params.params_box['input_type'] == "averaged":
-                box = tn.get_spherically_averaged_box(box, shell_labels)
-                np.save(saving_path + "/inputs_avg/inp_avg_sim_" + sim_index + "_particle_" + particle_ID + ".npy", box)
+            if os.path.exists(saving_path + "/inputs_raw/inp_raw_sim_" + sim_index + "_particle_" + particle_ID + ".npy"):
+                pass
+            else:
+            
+                i0, j0, k0 = s.sims_dic[sim_index]['coords'][int(particle_ID)]
+                delta_sim = sims_rescaled_density[sim_index]
+                output_matrix = np.zeros((res, res, res))
+                box = tn.compute_subbox(i0, j0, k0, res, delta_sim, output_matrix, shape_sim)
+                np.save(saving_path + "/inputs_raw/inp_raw_sim_" + sim_index + "_particle_" + particle_ID + ".npy", box)
+                if params.params_box['input_type'] == "averaged":
+                    box = tn.get_spherically_averaged_box(box, shell_labels)
+                    np.save(saving_path + "/inputs_avg/inp_avg_sim_" + sim_index + "_particle_" + particle_ID + ".npy", box)
