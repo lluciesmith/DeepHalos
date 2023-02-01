@@ -432,7 +432,8 @@ class DataGenerator(Sequence):
 
             # generate box
             particle_ID = int(ID[ID.find('-id-') + + len('-id-'):])
-            s = self.generate_input(sim_index, particle_ID)
+            s = self.load_input(sim_index, particle_ID)
+            #s = self.generate_input(sim_index, particle_ID)
 
             X[i] = self._process_input(s)
             y[i] = self.labels[ID]
@@ -446,23 +447,24 @@ class DataGenerator(Sequence):
         # s_t_rescaled = (s_t - self.rescale_mean) / self.rescale_std
         return s.reshape((*self.dim, self.n_channels))
 
-    def generate_input(self, simulation_index, particle_id):
-        return np.random.random((self.res, self.res, self.res))
+    def load_input(self, simulation_index, particle_id):
+        path = self.path + "inputs_avg/inp_avg" if self.input_type == "averaged" else self.path + "inputs_raw/inp_raw"
+        return np.load(path + "_sim_" + simulation_index + "_particle_" + particle_id + ".npy")
 
-    # def generate_input(self, simulation_index, particle_id):
-    #     i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
-    #     if self.input_type == "potential":
-    #         delta_sim = self.sims_potential[simulation_index]
-    #     else:
-    #         delta_sim = self.sims_rescaled_density[simulation_index]
-    #
-    #     output_matrix = np.zeros((self.res, self.res, self.res))
-    #     s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
-    #
-    #     if self.input_type == "averaged":
-    #         s = get_spherically_averaged_box(s, self.shell_labels)
-    #
-    #     return s
+    def generate_input(self, simulation_index, particle_id):
+        i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
+        if self.input_type == "potential":
+            delta_sim = self.sims_potential[simulation_index]
+        else:
+            delta_sim = self.sims_rescaled_density[simulation_index]
+
+        output_matrix = np.zeros((self.res, self.res, self.res))
+        s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
+
+        if self.input_type == "averaged":
+            s = get_spherically_averaged_box(s, self.shell_labels)
+
+        return s
 
     def preprocess_potential(self):
         for i, simulation in self.sims.items():
