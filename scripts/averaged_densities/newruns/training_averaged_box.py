@@ -1,11 +1,8 @@
 from dlhalos_code import CNN
 import dlhalos_code.data_processing as tn
-import importlib
-import sys
 
 if __name__ == "__main__":
-    try: params = importlib.import_module(sys.argv[1])
-    except IndexError: import params_avg as params
+    import params_avg as params
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
@@ -26,7 +23,7 @@ if __name__ == "__main__":
                           metrics=[CNN.likelihood_metric],
                           steps_per_epoch=len(generator_training), validation_steps=len(generator_validation),
                           dim=generator_training.dim, initialiser="Xavier_uniform", max_queue_size=8,
-                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=1, lr=params.lr,
+                          use_multiprocessing=False, workers=0, verbose=1, num_gpu=4, lr=params.lr,
                           save_summary=True, path_summary=params.saving_path, validation_freq=1, train=True,
                           compile=True, initial_epoch=None, lr_scheduler=False, seed=params.seed)
 
