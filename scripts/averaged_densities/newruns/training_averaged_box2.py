@@ -17,9 +17,10 @@ if __name__ == "__main__":
                                             shuffle=False, path=params.path_data, **params.params_val, **params.params_box)
 
     ######### TRAIN THE MODEL ################
-
+    params.lr = 0.0001
+    params.saving_path = params.saving_path + "/lr_" + str(params.lr) + "/"
     Model = CNN.CNNGaussian(params.param_conv, params.param_fcc,
-                            training_generator=generator_training, steps_per_epoch=len(generator_training),
+                            training_generator=generator_training, steps_per_epoch=int(len(generator_training)/4),
                             validation_generator=generator_validation, num_epochs=20, dim=generator_training.dim,
                             initialiser="Xavier_uniform", max_queue_size=8, use_multiprocessing=False, workers=1,
                             verbose=1, num_gpu=1, lr=params.lr, save_summary=True, path_summary=params.saving_path,
