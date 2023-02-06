@@ -363,7 +363,7 @@ class DataGenerator:
             yield sample, self.labels[sample]
 
     def map_generator(self, x_elem, label_elem):
-        x_input = tf.numpy_function(func=self.get_input, inp=x_elem, Tout=self.dtype)
+        x_input = tf.py_function(func=self.get_input, inp=x_elem, Tout=self.dtype)
         return x_input, label_elem
 
     def get_input(self, ID):
