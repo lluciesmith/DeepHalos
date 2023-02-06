@@ -1,4 +1,4 @@
-import dlhalos_code.data_processing as tn
+import dlhalos_code_tf2.data_processing as tn
 from pickle import load
 import numpy as np
 import os
