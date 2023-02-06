@@ -28,7 +28,7 @@ if __name__ == "__main__":
         for ID in pids:
             sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
             particle_ID = ID[ID.find('-id-') + + len('-id-'):]
-            if os.path.exists(saving_path + "/inputs_raw/inp_raw_sim_" + sim_index + "_particle_" + particle_ID + ".npy"):
+            if os.path.exists(saving_path + "/inputs_avg/inp_avg_sim_" + sim_index + "_particle_" + particle_ID + ".npy"):
                 pass
             else:
                 print(ID)
@@ -40,3 +40,15 @@ if __name__ == "__main__":
                 if params.params_box['input_type'] == "averaged":
                     box = tn.get_spherically_averaged_box(box, shell_labels)
                     np.save(saving_path + "/inputs_avg/inp_avg_sim_" + sim_index + "_particle_" + particle_ID + ".npy", box)
+
+
+    # saving_path = "/share/hypatia/lls/newdlhalos/training_data/"
+    # training_ids = load(open(saving_path + 'training_set.pkl', 'rb'))
+    # validation_ids = load(open(saving_path + 'validation_set.pkl', 'rb'))
+    # testing_ids = load(open(saving_path + 'test_set.pkl', 'rb'))
+    # for pids in [training_ids, validation_ids, testing_ids]:
+    #     for ID in pids:
+    #         sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
+    #         particle_ID = ID[ID.find('-id-') + + len('-id-'):]
+    #         if not os.path.exists(saving_path + "/inputs_avg/inp_avg_sim_" + sim_index + "_particle_" + particle_ID + ".npy"):
+    #             print(ID)
