@@ -660,7 +660,7 @@ class CNNGaussian(CNN):
                  training_generator=None, validation_generator=None, steps_per_epoch=None,
                  data_format="channels_last", dim=(51, 51, 51),
                  lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None,
-                 verbose=1, num_gpu=1, seed=None,
+                 verbose=1, num_gpu=1, seed=None, validation_steps=None,
                  save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5,
                  weights=None, initial_epoch=None, global_average=None):
 
@@ -673,7 +673,7 @@ class CNNGaussian(CNN):
                                           verbose=verbose, save_model=True, model_name="my_model.h5",
                                           num_gpu=num_gpu, lr=lr, loss=loss_c, save_summary=save_summary,
                                           path_summary=path_summary, validation_freq=1, train=train,
-                                          compile=compile,  validation_steps=len(validation_generator),
+                                          compile=compile,  validation_steps=validation_steps,
                                           steps_per_epoch=steps_per_epoch, initial_epoch=initial_epoch,
                                           pretrained_model=pretrained_model, weights=weights,
                                           seed=seed, global_average=global_average)
