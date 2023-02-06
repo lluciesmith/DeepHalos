@@ -1,9 +1,14 @@
 from dlhalos_code_tf2 import CNN
 import dlhalos_code_tf2.data_processing as tn
 import numpy as np
+import importlib
+import sys
 
 if __name__ == "__main__":
-    import params_avg as params
+    try: params = importlib.import_module(sys.argv[1])
+    except IndexError: import params_avg as params
+
+    print(params.log_alpha)
 
     ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
 
