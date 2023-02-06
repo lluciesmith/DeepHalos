@@ -371,7 +371,7 @@ class DataGenerator:
     def get_input(self, ID):
         sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
         particle_ID = int(ID[ID.find('-id-') + len('-id-'):])
-        inputs_file = self..load_input(sim_index, particle_ID)
+        inputs_file = self.load_input(sim_index, particle_ID)
         return inputs_file.reshape((*self.dim, self.n_channels))
 
     def generate_input(self, simulation_index, particle_id):
