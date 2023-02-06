@@ -323,7 +323,7 @@ class DataGenerator:
         self.cache = cache
         self.prefetch = True
         self.drop_remainder = drop_remainder
-        self.path = path + "inputs_avg/inp_avg" if self.input_type == "averaged" else path + "inputs_raw/inp_raw"
+        self.path = path + "inputs_avg/inp_avg" if input_type == "averaged" else path + "inputs_raw/inp_raw"
         if cache_path is None:
             self.cache_path = path
 
