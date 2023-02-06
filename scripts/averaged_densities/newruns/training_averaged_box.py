@@ -19,7 +19,7 @@ if __name__ == "__main__":
     ######### TRAIN THE MODEL ################
 
     Model = CNN.CNNGaussian(params.param_conv, params.param_fcc, initial_epoch=0,
-                            training_generator=generator_training.get_dataset(),
+                            training_generator=generator_training.get_dataset(), steps_per_epoch=len(generator_training),
                             validation_generator=generator_validation.get_dataset(), num_epochs=20, dim=generator_training.dim,
                             initialiser="Xavier_uniform", verbose=1, num_gpu=4, lr=params.lr, save_summary=True,
                             path_summary=params.saving_path, train=True, compile=True, seed=params.seed)
