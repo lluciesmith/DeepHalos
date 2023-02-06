@@ -345,12 +345,13 @@ class DataGenerator:
         return int(np.floor(len(self.list_IDs) / self.batch_size))
 
     def get_dataset(self):
-        output_signature = tf.TensorSpec(shape=(), dtype=tf.string), tf.TensorSpec(shape=(), dtype=self.dtype)
+        output_signature = tf.TensorSpec(shape=(self.res, self.res, self.res, self.n_channels), dtype=self.dtype), \
+                           tf.TensorSpec(shape=(), dtype=self.dtype)
         num_threads = tf.data.experimental.AUTOTUNE
         dataset = tf.data.Dataset.from_generator(self.generator, output_signature=output_signature)
         if self.shuffle is True:
             dataset = dataset.shuffle(self.num_IDs)
-        dataset = dataset.map(self.map_generator, num_parallel_calls=num_threads)
+        # dataset = dataset.map(self.map_generator, num_parallel_calls=num_threads)
         if self.cache is True:
             dataset = dataset.cache(self.cache_path)
         dataset = dataset.batch(self.batch_size, drop_remainder=self.drop_remainder)
@@ -360,17 +361,17 @@ class DataGenerator:
 
     def generator(self):
         for sample in self.list_IDs:
-            yield sample, self.labels[sample]
+            yield self.get_input(sample), self.labels[sample]
 
-    @tf.function
-    def map_generator(self, x_elem, label_elem):
-        x_input = tf.py_function(func=self.get_input, inp=x_elem, Tout=self.dtype)
-        return x_input, label_elem
+    # @tf.function
+    # def map_generator(self, x_elem, label_elem):
+    #     x_input = tf.py_function(func=self.get_input, inp=[x_elem], Tout=self.dtype)
+    #     return x_input, label_elem
 
     def get_input(self, ID):
         sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
         particle_ID = int(ID[ID.find('-id-') + len('-id-'):])
-        inputs_file = self.load_input(sim_index, particle_ID)
+        inputs_file = self..load_input(sim_index, particle_ID)
         return inputs_file.reshape((*self.dim, self.n_channels))
 
     def generate_input(self, simulation_index, particle_id):
