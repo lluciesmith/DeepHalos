@@ -652,6 +652,11 @@ def likelihood_metric(y_true, y_pred):
     return log_lik
 
 
+def gauss_likelihood_metric(y_true, y_pred):
+    log_lik = lf.GaussianSelectionLoss(sigma=0.3, y_max=1, y_min=-1).loss(y_true, y_pred)
+    return log_lik
+
+
 # def lr_scheduler(epoch):
 #     # This function decays the learning rate exponentially from the 10th epoch onwards.
 #     n = 10
@@ -682,3 +687,48 @@ class Between(Constraint):
     def get_config(self):
         return {'min_value': self.min_value,
                 'max_value': self.max_value}
+
+
+def callbacks(path):
+    callbacks_list = []
+
+    # checkpoint
+    filepath = path + "model/weights.{epoch:02d}.h5"
+    checkpoint_call = callbacks.ModelCheckpoint(filepath, period=1, save_weights_only=True)
+    callbacks_list.append(checkpoint_call)
+
+    # Record training history in log file
+    csv_logger = callbacks.CSVLogger(path + "training.log", separator=',', append=True)
+    callbacks_list.append(csv_logger)
+
+    return callbacks_list
+
+
+class CNNGaussian(CNN):
+    """
+    This is the model which uses the Gaussian+selection loss
+
+    """
+
+    def __init__(self, conv_params, fcc_params,
+                 training_generator=None, validation_generator=None, steps_per_epoch=None,
+                 data_format="channels_last", dim=(51, 51, 51),
+                 lr=0.0001, pool_size=(2, 2, 2), initialiser=None, pretrained_model=None,
+                 verbose=1, num_gpu=1, seed=None,
+                 save_summary=False, path_summary=".", compile=True, train=True, num_epochs=5,
+                 weights=None, initial_epoch=None, global_average=None):
+
+        loss_c = lf.GaussianSelectionLoss(sigma=0.3, y_max=1, y_min=-1).loss
+        metrics = gauss_likelihood_metric
+        super(CNNGaussian, self).__init__(conv_params, fcc_params, model_type="regression",
+                                          training_dataset=training_generator, validation_dataset=validation_generator,
+                                          shuffle=True, callbacks=callbacks(path_summary), metrics=metrics, num_epochs=num_epochs,
+                                          dim=dim, pool_size=pool_size, initialiser=initialiser, data_format=data_format,
+                                          verbose=verbose, save_model=True, model_name="my_model.h5",
+                                          num_gpu=num_gpu, lr=lr, loss=loss_c, save_summary=save_summary,
+                                          path_summary=path_summary, validation_freq=1, train=train,
+                                          compile=compile,  validation_steps=len(validation_generator),
+                                          steps_per_epoch=steps_per_epoch, initial_epoch=initial_epoch,
+                                          pretrained_model=pretrained_model, weights=weights,
+                                          seed=seed, global_average=global_average)
+
