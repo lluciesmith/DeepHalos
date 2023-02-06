@@ -345,8 +345,7 @@ class DataGenerator:
         return int(np.floor(len(self.list_IDs) / self.batch_size))
 
     def get_dataset(self):
-        output_signature = tf.TensorSpec(shape=(), dtype=self.dtype), \
-                           tf.TensorSpec(shape=(), dtype=self.dtype)
+        output_signature = tf.TensorSpec(shape=(), dtype=tf.string), tf.TensorSpec(shape=(), dtype=self.dtype)
         num_threads = tf.data.experimental.AUTOTUNE
         dataset = tf.data.Dataset.from_generator(self.generator, output_signature=output_signature)
         if self.shuffle is True:
