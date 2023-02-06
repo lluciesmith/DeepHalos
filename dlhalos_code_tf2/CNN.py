@@ -689,7 +689,7 @@ class Between(Constraint):
                 'max_value': self.max_value}
 
 
-def callbacks(path):
+def get_callbacks(path):
     callbacks_list = []
 
     # checkpoint
@@ -722,7 +722,7 @@ class CNNGaussian(CNN):
         metrics = gauss_likelihood_metric
         super(CNNGaussian, self).__init__(conv_params, fcc_params, model_type="regression",
                                           training_dataset=training_generator, validation_dataset=validation_generator,
-                                          shuffle=True, callbacks=callbacks(path_summary), metrics=metrics, num_epochs=num_epochs,
+                                          shuffle=True, callbacks=get_callbacks(path_summary), metrics=metrics, num_epochs=num_epochs,
                                           dim=dim, pool_size=pool_size, initialiser=initialiser, data_format=data_format,
                                           verbose=verbose, save_model=True, model_name="my_model.h5",
                                           num_gpu=num_gpu, lr=lr, loss=loss_c, save_summary=save_summary,
