@@ -21,7 +21,7 @@ if __name__ == "__main__":
     Model = CNN.CNNGaussian(params.param_conv, params.param_fcc, initial_epoch=0,
                             training_generator=generator_training.get_dataset(), steps_per_epoch=len(generator_training),
                             validation_generator=generator_validation.get_dataset(), num_epochs=20, dim=generator_training.dim,
-                            initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, save_summary=True,
+                            initialiser="Xavier_uniform", verbose=1, num_gpu=4, lr=params.lr, save_summary=True,
                             path_summary=params.saving_path, train=True, compile=True, seed=params.seed)
 
     # test it on the validation set

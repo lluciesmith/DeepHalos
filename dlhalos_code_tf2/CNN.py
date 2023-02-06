@@ -62,19 +62,28 @@ class CNN:
         if self.verbose == 1:
             print(f'CNN seed={self.seed}, shuffle={self.shuffle}')
 
+        if num_gpu > 1:
+            strategy = tf.distribute.MirroredStrategy()
+            print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+            with strategy.scope():
+                model = self.model()
+        else:
+            model = self.model()
+
         if train is True:
-            self.model, self.history = self.compile_and_fit_model()
+            self.model, self.history = self.compile_and_fit_model(model)
         else:
             if compile is True:
-                self.model = self.compile_model()
+                self.model = self.compile_model(model)
             else:
-                self.model = self.uncompiled_model()
+                self.model = model
 
-    def compile_and_fit_model(self):
-        Model = self.compile_model()
+    def compile_and_fit_model(self, model):
+        if self.initial_epoch == 0:
+            model = self.compile_model(model)
 
         t0 = time.time()
-        history = Model.fit(self.training_dataset, validation_data=self.validation_dataset,
+        history = model.fit(self.training_dataset, validation_data=self.validation_dataset,
                             initial_epoch=self.initial_epoch, verbose=self.verbose, 
                             epochs=self.num_epochs, shuffle=self.shuffle,
                             callbacks=self.callbacks, validation_freq=self.val_freq,
@@ -84,92 +93,29 @@ class CNN:
         print("This model took " + str((t1 - t0)/60) + " minutes to train.")
 
         if self.save is True:
-            Model.save(self.model_name)
+            model.save(self.model_name)
 
-        return Model, history
-
-    def compile_model(self):
-        if self.num_gpu == 1:
-            model = self.compile_model_single_gpu()
-        elif self.num_gpu > 1:
-            model = self.compile_model_multiple_gpu()
-        else:
-            raise ValueError
+        return model, history
+    
+    def compile_model(self, model):
+        self.optimiser = keras.optimizers.Adam(learning_rate=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08,
+                                                amsgrad=True)
+        model.compile(loss=self.loss, optimizer=self.optimiser, metrics=self.metrics)
 
         if self.save_summary is True:
             with open(self.path_summary + 'model_summary.txt', 'w') as fh:
                 model.summary(print_fn=lambda x: fh.write(x + '\n'))
 
         return model
-    
-    def compile_regression_model(self):
-        print("Initiating regression model")
-        
-        if self.pretrained_model is not None:
-            print("Loading pretrained model")
-            Model = self.pretrained_model
-        else:
-            Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                   data_format=self.data_format)
 
-        if self.weights is not None:
-            print("Loading given weights onto model")
-            Model.load_weights(self.weights)
-
-        self.optimiser = keras.optimizers.Adam(learning_rate=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08,
-                                                amsgrad=True)
-        Model.compile(loss=self.loss, optimizer=self.optimiser, metrics=self.metrics)
-        
-        return Model
-    
-    def compile_binary_classification_model(self):
-        print("Initiating binary classification model")
-
-        Model = self.binary_classification_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                          data_format=self.data_format)
-        optimiser = keras.optimizers.Adam(learning_rate=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08,
-                                          amsgrad=True)
-        Model.compile(loss='binary_crossentropy', optimizer=optimiser, metrics=self.metrics)
-        
-        return Model
-
-    def compile_model_multiple_gpu(self):
-        #TODO: need to test this new use of tf.distribute.MirroredStrategy
-        strategy = tf.distribute.MirroredStrategy()
-        
-        with strategy.scope():
-            print("WARNING: this has not been tested yet. strategy.scope() may be in the wrong place.")
-            if self.model_type == "regression":
-                Model = self.compile_regression_model()
-    
-            elif self.model_type == "binary_classification":
-                Model = self.compile_binary_classification_model()
-    
+    def model(self):
+        if self.model_type == "regression":
+            if self.pretrained_model is not None:
+                print("Loading pretrained model")
+                Model = self.pretrained_model
             else:
-                raise NameError("Choose either regression or binary classification as model type")
-        
-        # print(Model.summary())
-        return Model
-
-    def compile_model_single_gpu(self):
-        if self.model_type == "regression":
-            Model = self.compile_regression_model()
-
-        elif self.model_type == "binary_classification":
-            Model = self.compile_binary_classification_model()
-
-        else:
-            raise NameError("Choose either regression or binary classification as model type")
-
-        # print(Model.summary())
-        return Model
-
-    def uncompiled_model(self):
-        if self.model_type == "regression":
-            print("Initiating regression model")
-
-            Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
-                                                   data_format=self.data_format)
+                Model = self.regression_model_w_layers(self.input_shape, self.conv_params, self.fcc_params,
+                                                       data_format=self.data_format)
 
         elif self.model_type == "binary_classification":
             print("Initiating binary classification model")
