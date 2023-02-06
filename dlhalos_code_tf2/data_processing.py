@@ -6,6 +6,7 @@ from numba import njit, prange
 from collections import OrderedDict
 import warnings
 import gc
+import tensorflow as tf
 
 
 class SimulationPreparation:
@@ -287,8 +288,8 @@ class InputsPreparation:
 
 
 class DataGenerator:
-    def __init__(self, list_IDs, labels, sims, batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False, path=None,
-                 rescale_mean=0, rescale_std=1, input_type="raw", num_shells=None, dtype="float32", verbose=0):
+    def __init__(self, list_IDs, labels, sims, batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False, path=None, drop_remainder=True,
+                 rescale_mean=0, rescale_std=1, input_type="raw", num_shells=None, dtype="float32", verbose=0, cache=True, cache_path=None):
         """
         This class creats the data generator that should be used to fit the deep learning model.
         Use DataGenerator.get_dataset() to get the dataset (batched, shuffled and prefetched) produced with tf.data.Dataset.
@@ -319,7 +320,12 @@ class DataGenerator:
         self.res = dim[0]
         self.batch_size = batch_size
         self.n_channels = n_channels
-        self.path = path
+        self.cache = cache
+        self.prefetch = True
+        self.drop_remainder = drop_remainder
+        self.path = path + "inputs_avg/inp_avg" if self.input_type == "averaged" else path + "inputs_raw/inp_raw"
+        if cache_path is None:
+            self.cache_path = path
 
         self.rescale_mean = rescale_mean
         self.rescale_std = rescale_std
@@ -333,39 +339,40 @@ class DataGenerator:
         if input_type == "averaged":
             self.num_shells = num_shells
             self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
-        
+
     def __len__(self):
         """ Number of batches per epoch """
         return int(np.floor(len(self.list_IDs) / self.batch_size))
-            
-    def generate_data(self, idx):
-        ID = self.list_IDs[int(idx)]
-        sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
-        particle_ID = int(ID[ID.find('-id-') + len('-id-'):])
-        s = self.load_input(sim_index, particle_ID)
-        # s = self.generate_input(sim_index, particle_ID)
-        box = self._process_input(s)
-        boxlabel = self.labels[ID]
-        return box, boxlabel
-    
+
     def get_dataset(self):
-        import tensorflow as tf
-        AUTOTUNE = tf.data.experimental.AUTOTUNE
-        dataset = tf.data.Dataset.from_tensor_slices(tf.range(self.num_IDs))
+        output_signature = tf.TensorSpec(shape=(), dtype=self.dtype), \
+                           tf.TensorSpec(shape=(), dtype=self.dtype)
+        num_threads = tf.data.experimental.AUTOTUNE
+        dataset = tf.data.Dataset.from_generator(self.generator, output_signature=output_signature)
         if self.shuffle is True:
             dataset = dataset.shuffle(self.num_IDs)
-        if self.dtype == "float64":            
-            Tout_dtype = tf.float64
-        else:
-            Tout_dtype = tf.float32
-        dataset = dataset.map(lambda x: tf.py_function(func=self.generate_data, inp=[x], Tout=((Tout_dtype, Tout_dtype))),
-                              num_parallel_calls=AUTOTUNE)
-        dataset = dataset.batch(self.batch_size)
-        dataset = dataset.prefetch(buffer_size=AUTOTUNE)
+        dataset = dataset.map(self.map_generator, num_parallel_calls=num_threads)
+        if self.cache is True:
+            dataset = dataset.cache(self.cache_path)
+        dataset = dataset.batch(self.batch_size, drop_remainder=self.drop_remainder)
+        if self.prefetch is True:
+            dataset = dataset.prefetch(buffer_size=num_threads)
         return dataset
 
-    def _process_input(self, s):
-        return s.reshape((*self.dim, self.n_channels))
+    def generator(self):
+        for sample in self.list_IDs:
+            yield sample, self.labels[sample]
+
+    def map_generator(self, x_elem, label_elem):
+        x_input = tf.numpy_function(func=self.get_input, inp=[x_elem], Tout=self.dtype)
+        return x_input, label_elem
+
+    def get_input(self, ID):
+        ID = str(ID)
+        sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
+        particle_ID = int(ID[ID.find('-id-') + len('-id-'):])
+        inputs_file = self.load_input(sim_index, particle_ID)
+        return inputs_file.reshape((*self.dim, self.n_channels))
 
     def generate_input(self, simulation_index, particle_id):
         i0, j0, k0 = self.sims[simulation_index]['coords'][particle_id]
@@ -375,12 +382,10 @@ class DataGenerator:
         s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
         if self.input_type == "averaged":
             s = get_spherically_averaged_box(s, self.shell_labels)
-
         return s
 
     def load_input(self, simulation_index, particle_id):
-        path = self.path + "inputs_avg/inp_avg" if self.input_type == "averaged" else self.path + "inputs_raw/inp_raw"
-        return np.load(path + "_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")
+        return np.load(self.path + "_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")
 
     def preprocess_density_contrasts(self):
         for i, simulation in self.sims.items():
