@@ -367,7 +367,6 @@ class DataGenerator:
         return x_input, label_elem
 
     def get_input(self, ID):
-        ID = str(ID)
         sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
         particle_ID = int(ID[ID.find('-id-') + len('-id-'):])
         inputs_file = self.load_input(sim_index, particle_ID)
