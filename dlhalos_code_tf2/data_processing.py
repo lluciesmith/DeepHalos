@@ -350,7 +350,7 @@ class DataGenerator:
         num_threads = tf.data.experimental.AUTOTUNE
         dataset = tf.data.Dataset.from_generator(self.generator, output_signature=output_signature)
         if self.shuffle is True:
-            dataset = dataset.shuffle(self.num_IDs)
+            dataset = dataset.shuffle(buffer_size=5000)
         # dataset = dataset.map(self.map_generator, num_parallel_calls=num_threads)
         if self.cache is True:
             dataset = dataset.cache(self.cache_path)
