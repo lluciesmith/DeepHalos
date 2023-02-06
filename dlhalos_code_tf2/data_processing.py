@@ -1,6 +1,5 @@
 import numpy as np
 import time
-import tensorflow as tf
 import pynbody
 import sklearn.preprocessing
 from numba import njit, prange
@@ -350,6 +349,7 @@ class DataGenerator:
         return box, boxlabel
     
     def get_dataset(self):
+        import tensorflow as tf
         AUTOTUNE = tf.data.experimental.AUTOTUNE
         dataset = tf.data.Dataset.from_tensor_slices(tf.range(self.num_IDs))
         if self.shuffle is True:
