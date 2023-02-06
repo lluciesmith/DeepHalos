@@ -137,7 +137,7 @@ class InputsPreparation:
             if self.load_ids:
                 ids_i, mass_i = self.load_ids_from_file(sim_ID)
             else:
-                ids_i, mass_i = self.generate_random_set(sim_ID, self.random_subset)
+                ids_i, mass_i = self.generate_random_set(sim_ID)
 
             name = ["sim-" + str(sim_ID) + "-id-" + str(id_i) for id_i in ids_i]
 
@@ -222,30 +222,26 @@ class InputsPreparation:
         ind = np.concatenate(ind)
         return ind
 
-    def generate_random_set(self, simulation_ID, number_samples=None):
-        '''
-        Return indices and log halo mass (of all in sample or only those below
-        certain log mass limit).
-        '''
-
+    def generate_random_set(self, simulation_ID):
+        ''' Return indices and log halo mass (of all in sample or only those below
+        certain log mass limit).'''
+        
         if simulation_ID == "0":
-            halo_mass = np.load(self.path + "halo_mass_particles.npy")
+            halo_mass = np.load(self.path + "training_simulation/halo_mass_particles.npy")
         else:
-            halo_mass = np.load(self.path + "reseed" + simulation_ID + "_simulation/reseed" + simulation_ID +
-                                "_halo_mass_particles.npy")
-
+            halo_mass = np.load(
+                self.path + "reseed" + simulation_ID + "_simulation/reseed" + simulation_ID + "_halo_mass_particles.npy")
         ids_in_halo = np.where(halo_mass > 0)[0]
 
         if self.log_high_mass_limit is not None:
             ind = np.log10(halo_mass[ids_in_halo]) <= self.log_high_mass_limit
             ids_in_halo = ids_in_halo[ind]
 
-        if number_samples is None:
-            return ids_in_halo, np.log10(halo_mass[ids_in_halo])
+        if self.random_subset is not None:
+            ids_i = np.random.choice(ids_in_halo, self.random_subset, replace=False)
+            return ids_i, np.log10(halo_mass[ids_i])
         else:
-            ids_i = np.random.choice(ids_in_halo, number_samples, replace=False)
-            mass_i = np.log10(halo_mass[ids_i])
-            return ids_i, mass_i
+            return ids_in_halo, np.log10(halo_mass[ids_in_halo])
 
     def load_ids_from_file(self, simulation_ID):
         ids_i, mass_i = self.get_ids_and_regression_labels(sim=simulation_ID)
@@ -292,10 +288,8 @@ class InputsPreparation:
 
 
 class DataGenerator:
-    def __init__(self, list_IDs, labels, sims, weights=None,
-                 batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False,
-                 rescale_mean=0, rescale_std=1,
-                 input_type="raw", num_shells=None, dtype="float32", verbose=0):
+    def __init__(self, list_IDs, labels, sims, batch_size=80, dim=(51, 51, 51), n_channels=1, shuffle=False, path=None,
+                 rescale_mean=0, rescale_std=1, input_type="raw", num_shells=None, dtype="float32", verbose=0):
         """
         This class creats the data generator that should be used to fit the deep learning model.
         Use DataGenerator.get_dataset() to get the dataset (batched, shuffled and prefetched) produced with tf.data.Dataset.
@@ -326,6 +320,7 @@ class DataGenerator:
         self.res = dim[0]
         self.batch_size = batch_size
         self.n_channels = n_channels
+        self.path = path
 
         self.rescale_mean = rescale_mean
         self.rescale_std = rescale_std
@@ -336,20 +331,20 @@ class DataGenerator:
         self.dtype = dtype
         warn_float_casting(self.sims_rescaled_density[sim_id0], self.dtype)
 
-        # if input_type == "averaged":
-        #     self.num_shells = num_shells
-        #     self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
+        if input_type == "averaged":
+            self.num_shells = num_shells
+            self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
         
     def __len__(self):
         """ Number of batches per epoch """
         return int(np.floor(len(self.list_IDs) / self.batch_size))
             
     def generate_data(self, idx):
-        idx = int(idx)
-        ID = self.list_IDs[idx]
-        sim_index = ID[ID.find('sim-') + 4: ID.find('-id')]
-        particle_ID = int(ID[ID.find('-id-') + 4:])
-        s = self.generate_input(sim_index, particle_ID)
+        ID = self.list_IDs[int(idx)]
+        sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
+        particle_ID = int(ID[ID.find('-id-') + len('-id-'):])
+        s = self.load_input(sim_index, particle_ID)
+        # s = self.generate_input(sim_index, particle_ID)
         box = self._process_input(s)
         boxlabel = self.labels[ID]
         return box, boxlabel
@@ -378,11 +373,14 @@ class DataGenerator:
 
         output_matrix = np.zeros((self.res, self.res, self.res))
         s = compute_subbox(i0, j0, k0, self.res, delta_sim, output_matrix, self.shape_sim)
-
-        # if self.input_type == "averaged":
-        #     s = get_spherically_averaged_box(s, self.shell_labels)
+        if self.input_type == "averaged":
+            s = get_spherically_averaged_box(s, self.shell_labels)
 
         return s
+
+    def load_input(self, simulation_index, particle_id):
+        path = self.path + "inputs_avg/inp_avg" if self.input_type == "averaged" else self.path + "inputs_raw/inp_raw"
+        return np.load(path + "_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")
 
     def preprocess_density_contrasts(self):
         for i, simulation in self.sims.items():
