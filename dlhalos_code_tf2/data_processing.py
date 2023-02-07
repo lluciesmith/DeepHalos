@@ -325,7 +325,8 @@ class DataGenerator:
         self.drop_remainder = drop_remainder
         self.path = path + "inputs_avg/inp_avg" if input_type == "averaged" else path + "inputs_raw/inp_raw"
         if cache_path is None:
-            self.cache_path = path
+            cache_path = path
+        self.cache_path = cache_path
 
         self.rescale_mean = rescale_mean
         self.rescale_std = rescale_std
