@@ -34,4 +34,4 @@ if __name__ == "__main__":
     num_epoch_testing = np.max(tr[:, 0]) + 1
     weights = params.saving_path + "model/weights.%02d.h5" % num_epoch_testing
     Model.model.load_weights(weights)
-    Model.model.fit(tset, validation_data=vset, initial_epoch=num_epoch_testing, epochs=20, callbacks=Model.callbacks)
+    Model.model.fit(tset, validation_data=vset, initial_epoch=int(num_epoch_testing), epochs=20, callbacks=Model.callbacks)
