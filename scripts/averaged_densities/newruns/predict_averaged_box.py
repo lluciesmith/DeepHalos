@@ -1,48 +1,38 @@
-from dlhalos_code import CNN
-import dlhalos_code.data_processing as tn
+from dlhalos_code_tf2 import CNN
+import dlhalos_code_tf2.data_processing as tn
 import numpy as np
+import importlib
+import sys
+import pandas as pd
 
 if __name__ == "__main__":
-    import params_avg as params
+    try:
+        params = importlib.import_module(sys.argv[1])
+    except IndexError:
+        import params_avg as params
+    print(params.log_alpha)
 
-    ########### CREATE GENERATORS FOR TRAINING AND VALIDATION #########
-
-    s = tn.SimulationPreparation(params.all_sims, path=params.path_sims)
     # Create the generators for training
 
-    generator_training = tn.DataGenerator(params.training_particle_IDs, params.training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=True, path=params.path_data, **params.params_tr, **params.params_box)
-    generator_validation = tn.DataGenerator(params.val_particle_IDs, params.val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, path=params.path_data, **params.params_val, **params.params_box)
+    s = tn.SimulationPreparation(params.test_sim, path=params.path_sims)
     generator_test = tn.DataGenerator(params.test_particle_IDs, params.test_labels_particle_IDS, s.sims_dic,
+                                      cache_path=params.path_data + "testset",
                                       shuffle=False, path=params.path_data, **params.params_val, **params.params_box)
+    testset = generator_test.get_dataset()
 
-    ######### Load THE MODEL ################
-
-    tr = np.loadtxt(params.saving_path + "training.log", delimiter=",", skiprows=1)
-    num_epoch_testing = str(int(np.where(tr[:, 2] == tr[:, 2].min())[0] + 1))
-    weights = params.saving_path + "model/weights." + num_epoch_testing + ".h5"
+    # Load the model
+    tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
+    num_epoch_testing = np.argmin(tr['val_loss']) + 1
     Model = CNN.CNNGaussian(params.param_conv, params.param_fcc,
-                            training_generator=generator_training, steps_per_epoch=len(generator_training),
-                            validation_generator=generator_validation, num_epochs=20, dim=generator_training.dim,
-                            initialiser="Xavier_uniform", max_queue_size=8, use_multiprocessing=False, workers=1,
-                            verbose=1, num_gpu=1, lr=params.lr, save_summary=True, path_summary=params.saving_path,
-                            train=False, compile=True, initial_epoch=0, lr_scheduler=False, seed=params.seed)
-    Model.model.load_weights(weights)
+                            initial_epoch=0, training_generator={}, validation_generator={}, num_epochs=20,
+                            dim=generator_test.dim, initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr,
+                            save_summary=True, path_summary=params.saving_path, train=False, compile=True, seed=params.seed)
+    Model.model.load_weights(params.saving_path + "model/weights.%02d.h5" % num_epoch_testing)
 
     # Predict
-    pred = Model.model.predict_generator(generator_validation, use_multiprocessing=False, workers=0, verbose=1)
-    truth_rescaled = np.array([params.val_labels_particle_IDS[ID] for ID in params.val_particle_IDs])
-    h_m_pred = params.scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
-    true = params.scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    np.save(params.saving_path + "predicted_sim_valset_epoch_" + num_epoch_testing + ".npy", h_m_pred)
-    np.save(params.saving_path + "true_sim_valset_epoch_" + num_epoch_testing + ".npy", true)
-
-    pred = Model.model.predict_generator(generator_test, use_multiprocessing=False, workers=0, verbose=1)
-    truth_rescaled = np.array([params.test_labels_particle_IDS[ID] for ID in params.test_particle_IDs])
-    h_m_pred = params.scaler.inverse_transform(pred.reshape(-1, 1)).flatten()
-    true = params.scaler.inverse_transform(truth_rescaled.reshape(-1, 1)).flatten()
-    np.save(params.saving_path + "predicted_sim_testset_epoch_" + num_epoch_testing + ".npy", h_m_pred)
-    np.save(params.saving_path + "true_sim_testset_epoch_" + num_epoch_testing + ".npy", true)
+    pred = params.scaler.inverse_transform(Model.model.predict(testset, verbose=1).reshape(-1, 1)).flatten()
+    true = params.scaler.inverse_transform(np.concatenate([y for x, y in testset], axis=0).reshape(-1, 1)).flatten()
+    np.save(params.saving_path + "predicted_sim_testset_epoch_%02d.npy" % num_epoch_testing, pred)
+    np.save(params.saving_path + "true_sim_testset_epoch_%02d.npy" % num_epoch_testing, true)
 
 
