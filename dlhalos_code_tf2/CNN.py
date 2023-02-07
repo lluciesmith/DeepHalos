@@ -665,7 +665,7 @@ class CNNGaussian(CNN):
                  weights=None, initial_epoch=None, global_average=None):
 
         loss_c = lf.GaussianSelectionLoss(sigma=0.3, y_max=1, y_min=-1).loss
-        metrics = gauss_likelihood_metric
+        metrics = [gauss_likelihood_metric]
         super(CNNGaussian, self).__init__(conv_params, fcc_params, model_type="regression",
                                           training_dataset=training_generator, validation_dataset=validation_generator,
                                           shuffle=True, callbacks=get_callbacks(path_summary), metrics=metrics, num_epochs=num_epochs,
