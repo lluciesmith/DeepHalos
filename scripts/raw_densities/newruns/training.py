@@ -8,7 +8,9 @@ import pandas as pd
 if __name__ == "__main__":
     try:
         params = importlib.import_module(sys.argv[1])
+        print("Importin selected param file")
     except IndexError:
+        print("Importing default param file")
         import params_raw as params
     print(params.log_alpha)
 
