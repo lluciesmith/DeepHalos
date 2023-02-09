@@ -342,9 +342,9 @@ class DataGenerator:
             self.num_shells = num_shells
             self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
         if input_type == "averaged_hybrid":
-            self.function = self.get_hybrid_box
+            self.function_input = self.get_hybrid_box
         else:
-            self.function = self.load_input
+            self.function_input = self.load_input
 
     def __len__(self):
         """ Number of batches per epoch """
@@ -377,7 +377,7 @@ class DataGenerator:
     def get_input(self, ID):
         sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
         particle_ID = int(ID[ID.find('-id-') + len('-id-'):])
-        inputs_file = self.function(sim_index, particle_ID)
+        inputs_file = self.function_input(sim_index, particle_ID)
         return inputs_file.reshape((*self.dim, self.n_channels))
 
     def generate_input(self, simulation_index, particle_id):
