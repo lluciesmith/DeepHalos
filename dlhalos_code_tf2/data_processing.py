@@ -465,10 +465,9 @@ def _get_spherically_averaged_box_w_numba(input_matrix, shell_matrix):
 
 def hybrid_box(inputA_matrix, inputB_matrix, shell_matrix, shell_idx=2):
     # here you basically have inputA for shells < shell_idx and inputB for shells >= shell_idx
-    final_matrix = np.copy(inputB_matrix)
     mask = np.where(shell_matrix < shell_idx)
-    final_matrix[mask] = inputA_matrix[mask]
-    return final_matrix
+    inputB_matrix[mask] = inputA_matrix[mask]
+    return inputB_matrix
 
 
 def get_spherically_averaged_box(input_matrix, shell_matrix):
