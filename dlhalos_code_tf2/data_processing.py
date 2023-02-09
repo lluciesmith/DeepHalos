@@ -342,7 +342,7 @@ class DataGenerator:
             self.num_shells = num_shells
             self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
         if input_type == "averaged_hybrid":
-            self.functiom = self.get_hybrid_box
+            self.function = self.get_hybrid_box
         else:
             self.function = self.load_input
 
