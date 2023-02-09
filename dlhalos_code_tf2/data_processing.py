@@ -323,7 +323,8 @@ class DataGenerator:
         self.cache = cache
         self.prefetch = True
         self.drop_remainder = drop_remainder
-        self.path = path + "inputs_avg/inp_avg" if input_type == "averaged" else path + "inputs_raw/inp_raw"
+        self.path = path + "inputs_avg/inp_avg" if input_type == "averaged" else \
+            path if input_type == "averaged_hybrid" else path + "inputs_raw/inp_raw"
         if cache_path is None:
             cache_path = path
         self.cache_path = cache_path
@@ -337,9 +338,13 @@ class DataGenerator:
         self.dtype = dtype
         warn_float_casting(self.sims_rescaled_density[sim_id0], self.dtype)
 
-        if input_type == "averaged":
+        if input_type == "averaged" or input_type == "averaged_hybrid":
             self.num_shells = num_shells
             self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
+        if input_type == "averaged_hybrid":
+            self.functiom = self.get_hybrid_box
+        else:
+            self.function = self.load_input
 
     def __len__(self):
         """ Number of batches per epoch """
@@ -372,7 +377,7 @@ class DataGenerator:
     def get_input(self, ID):
         sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
         particle_ID = int(ID[ID.find('-id-') + len('-id-'):])
-        inputs_file = self.load_input(sim_index, particle_ID)
+        inputs_file = self.function(sim_index, particle_ID)
         return inputs_file.reshape((*self.dim, self.n_channels))
 
     def generate_input(self, simulation_index, particle_id):
@@ -387,6 +392,11 @@ class DataGenerator:
 
     def load_input(self, simulation_index, particle_id):
         return np.load(self.path + "_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")
+
+    def get_hybrid_box(self, simulation_index, particle_id):
+        inp_raw = np.load(self.path + "inputs_raw/inp_raw_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")
+        inp_avg = np.load(self.path + "inputs_avg/inp_avg_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")
+        return hybrid_box(inp_raw, inp_avg, self.shell_labels, shell_idx=2)
 
     def preprocess_density_contrasts(self):
         for i, simulation in self.sims.items():
@@ -451,6 +461,14 @@ def _get_spherically_averaged_box_w_numba(input_matrix, shell_matrix):
         counts[shell_index] += 1
     mean_per_shell = cumsum / counts
     return mean_per_shell
+
+
+def hybrid_box(inputA_matrix, inputB_matrix, shell_matrix, shell_idx=2):
+    # here you basically have inputA for shells < shell_idx and inputB for shells >= shell_idx
+    final_matrix = np.copy(inputB_matrix)
+    mask = np.where(shell_matrix < shell_idx)
+    final_matrix[mask] = inputA_matrix[mask]
+    return final_matrix
 
 
 def get_spherically_averaged_box(input_matrix, shell_matrix):
