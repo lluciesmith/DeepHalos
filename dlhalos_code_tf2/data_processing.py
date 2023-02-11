@@ -89,7 +89,7 @@ class SimulationPreparation:
 class InputsPreparation:
     def __init__(self, sim_IDs,
                  load_ids=True, ids_filename="random_training_set.txt",
-                 random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None,
+                 random_subset_each_sim=None, random_subset_all=None, log_high_mass_limit=None, log_low_mass_limit=None,
                  path="", scaler_output=None, scaler_type="standard",
                  return_rescaled_outputs=True, random_style="random", num_per_mass_bin=1000, num_bins=50,
                  shuffle=True, output_range=(-1, 1), ds_sd=1, verbose=0):
@@ -107,6 +107,7 @@ class InputsPreparation:
         self.ids_filename = ids_filename
         self.path = path
         self.log_high_mass_limit = log_high_mass_limit
+        self.log_low_mass_limit = log_low_mass_limit
         self.shuffle = shuffle
 
         self.random_style = random_style
@@ -234,7 +235,11 @@ class InputsPreparation:
         ids_in_halo = np.where(halo_mass > 0)[0]
 
         if self.log_high_mass_limit is not None:
-            ind = np.log10(halo_mass[ids_in_halo]) <= self.log_high_mass_limit
+            hm = np.log10(halo_mass[ids_in_halo])
+            if self.log_low_mass_limit is not None:
+                ind = (hm <= self.log_high_mass_limit) & (hm >= self.log_low_mass_limit)
+            else:
+                ind = hm <= self.log_high_mass_limit
             ids_in_halo = ids_in_halo[ind]
 
         if self.random_subset is not None:
@@ -260,7 +265,11 @@ class InputsPreparation:
             ids_bc = np.array([line.rstrip("\n") for line in f]).astype("int")
 
         if self.log_high_mass_limit is not None:
-            ind = np.log10(halo_mass[ids_bc]) <= self.log_high_mass_limit
+            hm = np.log10(halo_mass[ids_bc])
+            if self.log_low_mass_limit is not None:
+                ind = (hm <= self.log_high_mass_limit) & (hm >= self.log_low_mass_limit)
+            else:
+                ind = hm <= self.log_high_mass_limit
             ids_bc = ids_bc[ind]
 
         if self.random_subset is not None:

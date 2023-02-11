@@ -15,7 +15,7 @@ if __name__ == "__main__":
     saving_path = "/share/hypatia/lls/newdlhalos/training_data/"
 
     training_set = tn.InputsPreparation(train_sims, shuffle=True, scaler_type="minmax", return_rescaled_outputs=True,
-                                        output_range=(-1, 1), log_high_mass_limit=13.4,
+                                        output_range=(-1, 1), log_high_mass_limit=13.4, log_low_mass_limit=11,
                                         load_ids=False, random_subset_each_sim=None,
                                         random_style="random", random_subset_all=n_samples,
                                         path=path_sims)
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     # validation set
     v_set = tn.InputsPreparation(val_sim, scaler_type="minmax", load_ids=False, shuffle=True,
-                                 random_style="random", log_high_mass_limit=13.4,
+                                 random_style="random", log_high_mass_limit=13.4, log_low_mass_limit=11,
                                  random_subset_all=5000, random_subset_each_sim=None,
                                  scaler_output=training_set.scaler_output, path=path_sims)
     dump(v_set.particle_IDs, open(saving_path + 'validation_set.pkl', 'wb'))
@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
     # test set
     test_set = tn.InputsPreparation(test_sim, scaler_type="minmax", load_ids=False, log_high_mass_limit=13.4,
+                                    log_low_mass_limit=11,
                                     random_style="random", random_subset_all=50000, random_subset_each_sim=None,
                                     scaler_output=training_set.scaler_output, path=path_sims)
     # see if there are test set particles from sim 6 that are also in the validation set
