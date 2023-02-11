@@ -6,7 +6,10 @@ import sys
 import pandas as pd
 
 if __name__ == "__main__":
-    params = importlib.import_module(sys.argv[1])
+    try:
+        params = importlib.import_module(sys.argv[1])
+    except IndexError:
+        import params_avg_outershell as params
     print(params.log_alpha)
 
     cache_path = '/share/data2/lls/'
