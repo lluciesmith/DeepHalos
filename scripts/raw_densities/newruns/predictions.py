@@ -18,8 +18,8 @@ if __name__ == "__main__":
 
     s = tn.SimulationPreparation(params.test_sim, path=params.path_sims)
     generator_test = tn.DataGenerator(params.test_particle_IDs, params.test_labels_particle_IDS, s.sims_dic,
-                                      cache_path=params.path_data + "testset",
-                                      shuffle=False, path=params.path_data, **params.params_val, **params.params_box)
+                                      shuffle=False, path=params.path_data, cache_path=params.path_data + "raw_testset",
+                                      **params.params_val)
     testset = generator_test.get_dataset()
 
     # Load the model
