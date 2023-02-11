@@ -428,16 +428,20 @@ def compute_subbox(i0, j0, k0, width, input_matrix, output_matrix, shape_input):
     return output_matrix
 
 
-def assign_shell_to_pixels(width, number_shells, r_shells=None):
-    if r_shells is None:
-        r_shells = np.linspace(2, width / 2, number_shells, endpoint=True)
-
+def get_r_coords(width):
     x_coord, y_coord, z_coord = np.unravel_index(np.arange(width**3), (width, width, width))
     x_coord -= width // 2
     y_coord -= width // 2
     z_coord -= width // 2
     r_coords = np.sqrt(x_coord ** 2 + y_coord ** 2 + z_coord ** 2)
+    return r_coords
 
+
+def assign_shell_to_pixels(width, number_shells, r_shells=None):
+    if r_shells is None:
+        r_shells = np.linspace(2, width / 2, number_shells, endpoint=True)
+
+    r_coords = get_r_coords(width)
     shell_labels = np.ones((width**3)) * -1
     for i in range(width**3):
         shell_beloning = np.where(r_coords[i] <= r_shells)[0]
