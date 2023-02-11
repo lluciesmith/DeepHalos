@@ -17,7 +17,7 @@ if __name__ == "__main__":
     # Create the generators for training
     s = tn.SimulationPreparation(params.all_sims, path=params.path_sims)
     generator_training = tn.DataGenerator(params.training_particle_IDs, params.training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=False, path=params.path_data,
+                                          shuffle=True, path=params.path_data,
                                           cache_path=params.path_data + "raw_tset", **params.params_tr)
     generator_validation = tn.DataGenerator(params.val_particle_IDs, params.val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, path=params.path_data,
