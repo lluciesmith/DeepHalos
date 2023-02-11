@@ -332,8 +332,15 @@ class DataGenerator:
         self.cache = cache
         self.prefetch = True
         self.drop_remainder = drop_remainder
-        self.path = path + "inputs_avg/inp_avg" if input_type == "averaged" else \
-            path if input_type == "averaged_hybrid" else path + "inputs_raw/inp_raw"
+        if input_type == "averaged":
+            self.path = path + "inputs_avg/inp_avg"
+        elif input_type == "averaged_hybrid":
+            self.path = path
+        elif input_type == "averaged_wouter":
+            self.path = path + "inputs_avg_wouter/inp_avg"
+        else:
+            self.path = path + "inputs_raw/inp_raw"
+
         if cache_path is None:
             cache_path = path
         self.cache_path = cache_path
@@ -347,9 +354,10 @@ class DataGenerator:
         self.dtype = dtype
         warn_float_casting(self.sims_rescaled_density[sim_id0], self.dtype)
 
-        if input_type == "averaged" or input_type == "averaged_hybrid":
+        if "averaged" in input_type:
             self.num_shells = num_shells
             self.shell_labels = assign_shell_to_pixels(self.res, self.num_shells)
+
         if input_type == "averaged_hybrid":
             self.function_input = self.get_hybrid_box
         else:
