@@ -12,6 +12,13 @@ if __name__ == "__main__":
         import params_avg as params
     print(params.log_alpha)
 
+    try:
+        num_epoch_testing = int(sys.argv[2])
+    except IndexError:
+        # Load the model
+        tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
+        num_epoch_testing = np.argmin(tr['val_loss']) + 1
+
     # Create the generators for training
 
     s = tn.SimulationPreparation(params.test_sim, path=params.path_sims)
@@ -20,9 +27,6 @@ if __name__ == "__main__":
                                       shuffle=False, path=params.path_data, **params.params_val, **params.params_box)
     testset = generator_test.get_dataset()
 
-    # Load the model
-    tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
-    num_epoch_testing = np.argmin(tr['val_loss']) + 1
     Model = CNN.CNNGaussian(params.param_conv, params.param_fcc,
                             initial_epoch=0, training_generator={}, validation_generator={}, num_epochs=20,
                             dim=generator_test.dim, initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr,
