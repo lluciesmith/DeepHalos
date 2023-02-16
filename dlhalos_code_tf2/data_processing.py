@@ -408,7 +408,7 @@ class DataGenerator:
         return s
 
     def load_input(self, simulation_index, particle_id):
-        return np.load(self.path + "_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")
+        return np.load(self.path + "_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")/0.12
 
     def get_hybrid_box(self, simulation_index, particle_id):
         inp_raw = np.load(self.path + "inputs_raw/inp_raw_sim_" + simulation_index + "_particle_" + str(particle_id) + ".npy")
