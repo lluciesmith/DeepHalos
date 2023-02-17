@@ -113,27 +113,20 @@ class ConditionalCauchySelectionLoss:
     # Class for loss Cauchy + selection loss function with fixed boundary
     def __init__(self, gamma=0.2, y_max=1, y_min=-1, dtype="float32"):
         
-        if local_machine:
+        self.dtype = dtype
+        if self.dtype == "float64":
+            self.g = tf.cast(gamma, "float64")
+            self.y_maximum = tf.cast(y_max, "float64")
+            self.y_minimum = tf.cast(y_min, "float64")
+            self.e = K.constant(np.e, dtype="float64")
+        else:
             self.g = gamma
             self.y_maximum = y_max
             self.y_minimum = y_min
-            self.e = np.e
-        else:
-            self.dtype = dtype
-            
-            if self.dtype == "float64":
-                self.g = tf.cast(gamma, "float64")
-                self.y_maximum = tf.cast(y_max, "float64")
-                self.y_minimum = tf.cast(y_min, "float64")
-                self.e = K.constant(np.e, dtype="float64")
-            else:
-                self.g = gamma
-                self.y_maximum = y_max
-                self.y_minimum = y_min
-                self.e =  K.constant(np.e, dtype="float32")
+            self.e =  K.constant(np.e, dtype="float32")
 
     def loss(self, y_true, y_pred):
-        return self._loss(y_true, y_pred)
+        return K.mean(self._loss(y_true, y_pred), axis=-1)
 
     def _loss(self, y_true, y_pred):
         zeros = K.zeros_like(y_pred)
@@ -148,7 +141,7 @@ class ConditionalCauchySelectionLoss:
         positive_term = tf.where(mask_pos, self.loss_pos(y_true, y_pred), zeros)
 
         loss = negative_term + range_term + positive_term
-        return K.mean(loss, axis=-1)
+        return loss
 
     def dloss(self, y_true, y_pred):
         zeros = K.zeros_like(y_pred)
@@ -234,6 +227,8 @@ class GaussianSelectionLoss:
         self.e = K.constant(np.e, dtype="float32")
         self.pi = K.constant(np.pi, dtype="float32")
 
+        self.const_lik = tf.math.log(tf.math.sqrt(2. * np.pi)) + tf.math.log(self.sigma)
+
     def loss(self, y_true, y_pred):
         return K.mean(self._loss(y_true, y_pred), axis=-1)
 
@@ -250,10 +245,10 @@ class GaussianSelectionLoss:
         positive_term = tf.where(mask_pos, self.loss_pos(y_true, y_pred), zeros)
 
         loss = negative_term + range_term + positive_term
-        return loss
+        return self.const_lik + loss
 
     def likelihood_term(self, y_true, y_pred):
-        return np.log(self.sigma) + 0.5 * ((y_true - y_pred) / self.sigma) ** 2
+        return 0.5 * ((y_true - y_pred) / self.sigma) ** 2
 
     def selection_term(self, y_pred):
         t1 = tf.math.erf((1. - y_pred) / (tf.math.sqrt(2.) * self.sigma))
@@ -300,10 +295,10 @@ class GaussianSelectionLoss:
 
     def alpha_minus(self, y_true, sigma):
         E = self.e
-        term1 = (1. + y_true - tf.math.exp(1. + E) * sigma ** 2 -
-                 (2. * tf.math.sqrt(2./self.pi) * sigma * tf.math.sinh(sigma**(-2)))/
-                 tf.math.exp(1./sigma**2) * tf.math.erf(tf.math.sqrt(2.)/sigma))
-        return term1/(2. * sigma**2)
+        term1 = (1. + y_true - tf.math.exp(1. + E) * sigma ** 2. -
+                 (2. * tf.math.sqrt(2./self.pi) * sigma * tf.math.sinh(sigma**(-2.)))/
+                 (tf.math.exp(1./sigma**2.) * tf.math.erf(tf.math.sqrt(2.)/sigma)))
+        return term1/(2. * sigma**2.)
 
     def beta_minus(self, y_true, sigma):
         E = self.e
