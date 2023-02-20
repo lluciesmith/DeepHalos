@@ -29,10 +29,7 @@ if __name__ == "__main__":
                           validation_steps=len(generator_validation),
                           validation_dataset=vset, num_epochs=20, dim=generator_training.dim, metrics=[CNN.likelihood_metric],
                           initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, seed=params.seed,
-                          save_summary=True, path_summary=params.saving_path, train=False, compile=True)
-
-    Model.model.fit(tset, validation_data=vset, initial_epoch=Model.initial_epoch, epochs=Model.num_epochs,
-                    callbacks=Model.callbacks, verbose=1)
+                          save_summary=True, path_summary=params.saving_path, train=True, compile=True)
 
     # Test the model
     tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
