@@ -25,8 +25,7 @@ if __name__ == "__main__":
 
     # Train the model
     Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, train_gamma=False, init_gamma=0.2,
-                          initial_epoch=0, training_dataset=tset, steps_per_epoch=len(generator_training),
-                          validation_steps=len(generator_validation),
+                          initial_epoch=1, training_dataset=tset, load_weights=params.saving_path + "model/weights.01.h5",
                           validation_dataset=vset, num_epochs=20, dim=generator_training.dim, metrics=[CNN.likelihood_metric],
                           initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, seed=params.seed,
                           save_summary=True, path_summary=params.saving_path, train=True, compile=True)
