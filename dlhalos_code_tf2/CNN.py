@@ -385,7 +385,7 @@ class CNNCauchy(CNN):
 
     def assemble_cauchy_model(self, mse_model, tanh=False):
         if self.optimizer is None:
-            optimiser = keras.optimizers.Adam(learning_rate=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
+            optimiser = keras.optimizers.Adam(learning_rate=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08,
                                               amsgrad=True)
         else:
             print("Use loaded optimizer")
@@ -559,7 +559,7 @@ class CNNCauchy(CNN):
         _predictions = _last_layer(_model.layers[-1].output)
         _tanh_model = keras.Model(inputs=_model.input, outputs=_predictions)
 
-        _optimiser = keras.optimizers.Adam(learning_rate=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0,
+        _optimiser = keras.optimizers.Adam(learning_rate=self.lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08,
                                             amsgrad=True)
         _loss_params_layer = [layer for layer in _tanh_model.layers if 'loss_trainable_params' in layer.name][0]
         _loss_c = lf.cauchy_selection_loss_fixed_boundary_trainable_gamma(_loss_params_layer, dtype=self.dtype)
