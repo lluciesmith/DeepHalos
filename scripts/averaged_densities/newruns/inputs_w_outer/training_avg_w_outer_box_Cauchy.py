@@ -32,7 +32,7 @@ if __name__ == "__main__":
                           save_summary=True, path_summary=params.saving_path, train=False, compile=True)
 
     Model.model.fit(tset, validation_data=vset, initial_epoch=Model.initial_epoch, epochs=Model.num_epochs,
-                    callbacks=Model.callbacks)
+                    callbacks=Model.callbacks, verbose=1)
 
     # Test the model
     tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
