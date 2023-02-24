@@ -26,13 +26,13 @@ if __name__ == "__main__":
     vset = generator_validation.get_dataset()
 
     # Train the model
-    Model = CNN.CNNGaussian(params.param_conv, params.param_fcc,
-                            initial_epoch=0, training_generator=tset, steps_per_epoch=len(generator_training),
-                            validation_generator=vset, num_epochs=20, dim=generator_training.dim,
-                            initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, seed=params.seed,
-                            save_summary=True, path_summary=params.saving_path, train=False, compile=True)
-    Model.model.fit(tset, validation_data=vset, initial_epoch=Model.initial_epoch, epochs=Model.num_epochs,
-                    callbacks=Model.callbacks)
+
+    # Train the model
+    Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, train_gamma=False, init_gamma=0.2,
+                          initial_epoch=0, training_dataset=tset, validation_dataset=vset, num_epochs=20,
+                          dim=generator_training.dim, metrics=[CNN.likelihood_metric],
+                          initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, seed=params.seed,
+                          save_summary=True, path_summary=params.saving_path, train=True, compile=True)
 
     # Test the model
     tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
