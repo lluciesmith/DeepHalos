@@ -25,10 +25,11 @@ if __name__ == "__main__":
     # Load the model
     tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
     num_epoch_testing = np.argmin(tr['val_loss']) + 1
-    Model = CNN.CNNGaussian(params.param_conv, params.param_fcc,
-                            initial_epoch=0, training_generator={}, validation_generator={}, num_epochs=20,
-                            dim=generator_test.dim, initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr,
-                            save_summary=True, path_summary=params.saving_path, train=False, compile=True, seed=params.seed)
+    Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, train_gamma=False, init_gamma=0.2,
+                          initial_epoch=0, training_dataset={}, validation_dataset={}, num_epochs=20,
+                          dim=generator_test.dim, metrics=[CNN.likelihood_metric],
+                          initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, seed=params.seed,
+                          save_summary=True, path_summary=params.saving_path, train=False, compile=True)
     Model.model.load_weights(params.saving_path + "model/weights.%02d.h5" % num_epoch_testing)
 
     # Predict
