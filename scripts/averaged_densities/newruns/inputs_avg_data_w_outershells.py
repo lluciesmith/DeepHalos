@@ -23,9 +23,9 @@ if __name__ == "__main__":
     shell_labels2 = tn.assign_shell_to_pixels(res, params.params_box['num_shells'], r_shells=r_shells2)
 
     saving_path = "/share/hypatia/lls/newdlhalos/training_data/"
-    training_ids = load(open(saving_path + 'training_set.pkl', 'rb'))
-    validation_ids = load(open(saving_path + 'validation_set.pkl', 'rb'))
-    testing_ids = load(open(saving_path + 'test_set.pkl', 'rb'))
+    training_ids = load(open(saving_path + 'training_set_400k.pkl', 'rb'))
+    validation_ids = load(open(saving_path + 'validation_set_400k.pkl', 'rb'))
+    testing_ids = load(open(saving_path + 'test_set_400k.pkl', 'rb'))
     for pids in [training_ids, validation_ids, testing_ids]:
         for ID in pids:
             sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
