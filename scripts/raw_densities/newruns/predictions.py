@@ -26,7 +26,7 @@ if __name__ == "__main__":
     tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
     num_epoch_testing = np.argmin(tr['val_loss']) + 1
     Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, train_gamma=False, init_gamma=0.2,
-                          initial_epoch=0, training_dataset={}, validation_dataset={}, num_epochs=20,
+                          initial_epoch=0, training_dataset=testset, validation_dataset={}, num_epochs=20,
                           dim=generator_test.dim, metrics=[CNN.likelihood_metric],
                           initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, seed=params.seed,
                           save_summary=True, path_summary=params.saving_path, train=False, compile=True)
