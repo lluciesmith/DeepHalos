@@ -18,6 +18,7 @@ if __name__ == "__main__":
         d = (simulation["den_contrast"] - params.params_tr['rescale_mean']) / params.params_tr['rescale_std']
         sims_rescaled_density[i] = d.reshape((shape_sim, shape_sim, shape_sim))
 
+    shell_labels = tn.assign_shell_to_pixels(res, params.params_box['num_shells'])
     deltaR = np.diff(np.linspace(2, res / 2, params.params_box['num_shells'], endpoint=True))[0]
     r_shells2 = np.arange(2, tn.get_r_coords(res).max() + 10, deltaR)
     shell_labels2 = tn.assign_shell_to_pixels(res, params.params_box['num_shells'], r_shells=r_shells2)
@@ -35,10 +36,17 @@ if __name__ == "__main__":
                 pass
             else:
                 print(ID)
-                box = np.load(saving_path + "/inputs_raw/inp_raw_sim_" + sim_index + "_particle_" + particle_ID + ".npy")
-                if params.params_box['input_type'] == "averaged":
-                    box = tn.get_spherically_averaged_box(box, shell_labels2)
-                    np.save(partfilename, box)
+                i0, j0, k0 = s.sims_dic[sim_index]['coords'][int(particle_ID)]
+                delta_sim = sims_rescaled_density[sim_index]
+                output_matrix = np.zeros((res, res, res))
+                box = tn.compute_subbox(i0, j0, k0, res, delta_sim, output_matrix, shape_sim)
+                np.save(saving_path + "/inputs_raw/inp_raw_sim_" + sim_index + "_particle_" + particle_ID + ".npy", box)
+
+                boxavg = tn.get_spherically_averaged_box(box, shell_labels)
+                np.save(saving_path + "/inputs_avg/inp_avg_sim_" + sim_index + "_particle_" + particle_ID + ".npy", boxavg)
+
+                boxavg2 = tn.get_spherically_averaged_box(box, shell_labels2)
+                np.save(partfilename, boxavg2)
 
 
     # saving_path = "/share/hypatia/lls/newdlhalos/training_data/"
