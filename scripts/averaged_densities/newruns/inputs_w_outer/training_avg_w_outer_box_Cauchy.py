@@ -10,25 +10,22 @@ if __name__ == "__main__":
     except IndexError: import params_avg_outershell as params
     print(params.log_alpha)
 
-    cache_path = '/share/data2/lls/'
-
     # Create the generators for training
     s = tn.SimulationPreparation(params.all_sims, path=params.path_sims)
     generator_training = tn.DataGenerator(params.training_particle_IDs, params.training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=True, path=params.path_data, cache_path=cache_path + "outershell_tset",
+                                          shuffle=True, path=params.path_data, cache_path=params.cache_path + "tset",
                                           **params.params_tr, **params.params_box)
     generator_validation = tn.DataGenerator(params.val_particle_IDs, params.val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, path=params.path_data, cache_path=cache_path + "outershell_vset",
+                                            shuffle=False, path=params.path_data, cache_path=params.cache_path + "vset",
                                             **params.params_val, **params.params_box)
     tset = generator_training.get_dataset()
     vset = generator_validation.get_dataset()
 
     # Train the model
-    Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, train_gamma=False, init_gamma=0.2,
-                          initial_epoch=1, training_dataset=tset, load_weights=params.saving_path + "model/weights.01.h5",
+    Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, train_gamma=False, init_gamma=0.2, training_dataset=tset,
                           validation_dataset=vset, num_epochs=20, dim=generator_training.dim, metrics=[CNN.likelihood_metric],
                           initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, seed=params.seed,
-                          save_summary=True, path_summary=params.saving_path, train=True, compile=True)
+                          save_summary=True, path_summary=params.saving_path, train=True, compile=True, lr_scheduler=False)
 
     # Test the model
     tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
