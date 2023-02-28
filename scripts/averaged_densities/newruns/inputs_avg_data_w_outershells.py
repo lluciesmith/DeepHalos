@@ -23,7 +23,7 @@ if __name__ == "__main__":
     r_shells2 = np.arange(2, tn.get_r_coords(res).max() + 10, deltaR)
     shell_labels2 = tn.assign_shell_to_pixels(res, params.params_box['num_shells'], r_shells=r_shells2)
 
-    saving_path = "/share/hypatia/lls/newdlhalos/training_data/"
+    saving_path = "/share/data2/lls/newdlhalos/training_data/"
     training_ids = load(open(saving_path + 'training_set_400k.pkl', 'rb'))
     validation_ids = load(open(saving_path + 'validation_set_400k.pkl', 'rb'))
     testing_ids = load(open(saving_path + 'test_set_400k.pkl', 'rb'))
