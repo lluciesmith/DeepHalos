@@ -36,6 +36,6 @@ if __name__ == "__main__":
         m = w.smoothing_masses
 
         ps_mass_testing = EPS_mass_prediction(traj, m, ic)
-        np.save(saving_path + "EPS_predictions.npy", ps_mass_testing)
+        np.save(saving_path + "EPS_predictions_sim" + sim + ".npy", ps_mass_testing)
         st_mass_testing = ST_mass_prediction(traj, m, ic)
-        np.save(saving_path + "ST_predictions.npy", st_mass_testing)
+        np.save(saving_path + "ST_predictions_sim" + sim + ".npy", st_mass_testing)
