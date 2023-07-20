@@ -31,7 +31,10 @@ if __name__ == "__main__":
         saving_path = "/share/data1/lls/standard_reseed" + sim + "/"
 
         traj = np.load(saving_path + "density_contrasts.npy")
-        ic = parameters.InitialConditionsParameters(path="/Users/lls/Documents/mlhalos_files/")
+        ic = parameters.InitialConditionsParameters(initial_snapshot=path_simulation5 + "IC.gadget2",
+                                                    load_final=False, min_halo_number=0, max_halo_number=400,
+                                                    min_mass_scale=3e10, max_mass_scale=1e15)
+        # Get features for each particles
         w = window.WindowParameters(initial_parameters=ic, num_filtering_scales=50, snapshot=None, volume="sphere")
         m = w.smoothing_masses
 
