@@ -22,6 +22,7 @@ val_labels_particle_IDS = load(open(path_data + 'labels_validation_set.pkl', 'rb
 scaler = load(open(path_data + 'scaler_output.pkl', 'rb'))
 test_particle_IDs = load(open(path_data + 'test_set.pkl', 'rb'))
 test_labels_particle_IDS = load(open(path_data + 'labels_test_set.pkl', 'rb'))
+cache_path = path_data
 
 # inputs parameters
 dim = (75, 75, 75)
