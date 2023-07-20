@@ -107,10 +107,10 @@ def get_spherical_collapse_barrier(ics_snapshot=None, z=99, delta_sc_0=1.686, ou
     return delta_sc
 
 
-def get_ellipsoidal_barrier_from_variance(variance, ics_snapshot=None, z=99, beta=0.485, gamma=0.6, a=0.707,
+def get_ellipsoidal_barrier_from_variance(variance, snapshot=None, z=99, beta=0.485, gamma=0.6, a=0.707,
                                           output="delta", delta_sc=None, delta_sc_0=1.686):
     if delta_sc is None:
-        delta_sc = get_spherical_collapse_barrier(ics_snapshot, z=z, output="delta", delta_sc_0=delta_sc_0)
+        delta_sc = get_spherical_collapse_barrier(snapshot, z=z, output="delta", delta_sc_0=delta_sc_0)
 
     #var_squared = variance**2
     delta_sc_squared = delta_sc**2
@@ -121,13 +121,19 @@ def get_ellipsoidal_barrier_from_variance(variance, ics_snapshot=None, z=99, bet
         B += 1
     return B
 
-def ellipsoidal_collapse_barrier(mass_smoothing_scales, ic, beta=0.485, gamma=0.615, a=0.707, z=99,
-                                 cosmology="WMAP5", output="rho/rho_bar", delta_sc_0=1.686, filter=None):
+def ellipsoidal_collapse_barrier(mass_smoothing_scales, snapshot, beta=0.485, gamma=0.615, a=0.707, z=99,
+                                 output="rho/rho_bar", delta_sc_0=1.686, filter=None):
     # beta = 0.47
     # a = 0.75 is favoured by Sheth & Tormen (2002) since in agreement
     # with Jenkins et al. (2001) halo mass function.
 
-    variance = calculate_variance(mass_smoothing_scales, ics_snapshot, z=z, cosmology=cosmology, filter=filter)
-    B = get_ellipsoidal_barrier_from_variance(variance, ics_snapshot, z=z, beta=beta, gamma=gamma, a=a, output=output,
+    variance = calculate_variance(mass_smoothing_scales, snapshot, filter=filter)
+    B = get_ellipsoidal_barrier_from_variance(variance, snapshot, z=z, beta=beta, gamma=gamma, a=a, output=output,
                                               delta_sc_0=delta_sc_0)
     return B
+
+
+if __name__ == "__main__":
+    path = "/share/hypatia/lls/simulations/standard_reseed22/"
+    ics = pynbody.load(path + 'IC.gadget2')
+    ics.physical_units()
