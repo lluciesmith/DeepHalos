@@ -3,7 +3,7 @@ import numpy as np
 from dlhalos_code import custom_regularizers as reg
 
 seed = 123
-path = "/share/hypatia/lls/newdlhalos/spherically_averaged/"
+path = "/share/hypatia/lls/newdlhalos/Cauchy_raw/"
 
 # Data parameters
 path_sims = "/share/hypatia/lls/simulations/dlhalos_sims/"
