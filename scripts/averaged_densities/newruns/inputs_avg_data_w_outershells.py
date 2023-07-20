@@ -23,10 +23,10 @@ if __name__ == "__main__":
     r_shells2 = np.arange(2, tn.get_r_coords(res).max() + 10, deltaR)
     shell_labels2 = tn.assign_shell_to_pixels(res, params.params_box['num_shells'], r_shells=r_shells2)
 
-    saving_path = "/share/data2/lls/newdlhalos/training_data/"
-    training_ids = load(open(saving_path + 'training_set_400k.pkl', 'rb'))
-    validation_ids = load(open(saving_path + 'validation_set_400k.pkl', 'rb'))
-    testing_ids = load(open(saving_path + 'test_set_400k.pkl', 'rb'))
+    saving_path = "/share/hypatia/lls/newdlhalos/training_data/"
+    training_ids = load(open(saving_path + 'training_set.pkl', 'rb'))
+    validation_ids = load(open(saving_path + 'validation_set.pkl', 'rb'))
+    testing_ids = load(open(saving_path + 'test_set.pkl', 'rb'))
     for pids in [training_ids, validation_ids, testing_ids]:
         for ID in pids:
             sim_index = ID[ID.find('sim-') + len('sim-'): ID.find('-id')]
@@ -42,8 +42,8 @@ if __name__ == "__main__":
                 box = tn.compute_subbox(i0, j0, k0, res, delta_sim, output_matrix, shape_sim)
                 np.save(saving_path + "/inputs_raw/inp_raw_sim_" + sim_index + "_particle_" + particle_ID + ".npy", box)
 
-                boxavg = tn.get_spherically_averaged_box(box, shell_labels)
-                np.save(saving_path + "/inputs_avg/inp_avg_sim_" + sim_index + "_particle_" + particle_ID + ".npy", boxavg)
+                #boxavg = tn.get_spherically_averaged_box(box, shell_labels)
+                #np.save(saving_path + "/inputs_avg/inp_avg_sim_" + sim_index + "_particle_" + particle_ID + ".npy", boxavg)
 
                 boxavg2 = tn.get_spherically_averaged_box(box, shell_labels2)
                 np.save(partfilename, boxavg2)
