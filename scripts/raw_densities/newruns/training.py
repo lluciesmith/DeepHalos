@@ -18,12 +18,12 @@ if __name__ == "__main__":
     s = tn.SimulationPreparation(params.all_sims, path=params.path_sims)
     generator_training = tn.DataGenerator(params.training_particle_IDs, params.training_labels_particle_IDS, s.sims_dic,
                                           shuffle=True, path=params.path_data,
-                                          cache_path=params.path_data + "raw_tset", **params.params_tr)
+                                          cache_path=params.cache_path + "raw_tset", **params.params_tr)
     generator_validation = tn.DataGenerator(params.val_particle_IDs, params.val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, path=params.path_data,
-                                            cache_path=params.path_data + "raw_vset", **params.params_val)
+                                            cache_path=params.cache_path + "raw_vset", **params.params_val)
     generator_test = tn.DataGenerator(params.test_particle_IDs, params.test_labels_particle_IDS, s.sims_dic,
-                                      shuffle=False, path=params.path_data, cache_path=params.path_data + "raw_testset",
+                                      shuffle=False, path=params.path_data, cache_path=params.cache_path + "raw_testset",
                                       **params.params_val)
     tset = generator_training.get_dataset()
     vset = generator_validation.get_dataset()
