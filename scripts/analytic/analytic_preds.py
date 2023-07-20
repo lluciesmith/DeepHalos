@@ -31,6 +31,7 @@ if __name__ == "__main__":
         saving_path = "/share/data1/lls/standard_reseed" + sim + "/"
 
         traj = np.load(saving_path + "density_contrasts.npy")
+        path_simulation5 = "/share/hypatia/lls/simulations/standard_reseed" + sim + "/"
         ic = parameters.InitialConditionsParameters(initial_snapshot=path_simulation5 + "IC.gadget2",
                                                     load_final=False, min_halo_number=0, max_halo_number=400,
                                                     min_mass_scale=3e10, max_mass_scale=1e15)
