@@ -22,8 +22,12 @@ if __name__ == "__main__":
     generator_validation = tn.DataGenerator(params.val_particle_IDs, params.val_labels_particle_IDS, s.sims_dic,
                                             shuffle=False, path=params.path_data,
                                             cache_path=params.path_data + "raw_vset", **params.params_val)
+    generator_test = tn.DataGenerator(params.test_particle_IDs, params.test_labels_particle_IDS, s.sims_dic,
+                                      shuffle=False, path=params.path_data, cache_path=params.path_data + "raw_testset",
+                                      **params.params_val)
     tset = generator_training.get_dataset()
     vset = generator_validation.get_dataset()
+    testset = generator_test.get_dataset()
 
     # Train the model
 
@@ -40,7 +44,7 @@ if __name__ == "__main__":
     weights = params.saving_path + "model/weights.%02d.h5" % num_epoch_testing
     Model.model.load_weights(weights)
 
-    for name, dset in [("valset", vset), ("tset", tset)]:
+    for name, dset in [("testset", testset), ("valset", vset), ("tset", tset)]:
         pred = params.scaler.inverse_transform(Model.model.predict(dset, verbose=1).reshape(-1, 1)).flatten()
         true = params.scaler.inverse_transform(np.concatenate([y for x, y in dset], axis=0).reshape(-1, 1)).flatten()
         np.save(params.saving_path + "predicted_sim_" + name + "_epoch_%02d.npy" % num_epoch_testing, pred)
