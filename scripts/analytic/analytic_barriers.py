@@ -137,3 +137,9 @@ if __name__ == "__main__":
     path = "/share/hypatia/lls/simulations/standard_reseed22/"
     ics = pynbody.load(path + 'IC.gadget2')
     ics.physical_units()
+
+    m = np.logspace(10, 15, 50)
+    m = pynbody.array.SimArray(m, 'Msol')
+
+    bsph = ab.get_spherical_collapse_barrier(ics, z=99, delta_sc_0=1.686, output="rho/rho_bar")
+    bell = ab.ellipsoidal_collapse_barrier(m, ics, z=99, delta_sc_0=1.686, output="rho/rho_bar")
