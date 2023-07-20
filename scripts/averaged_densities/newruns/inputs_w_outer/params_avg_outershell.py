@@ -3,7 +3,7 @@ import numpy as np
 from dlhalos_code import custom_regularizers as reg
 
 seed = 123
-path = "/share/hypatia/lls/newdlhalos/spherically_averaged_Mmin11/w_outer_shells/"
+path = "/share/hypatia/lls/newdlhalos/Cauchy_spherically_averaged/"
 
 # Data parameters
 path_sims = "/share/hypatia/lls/simulations/dlhalos_sims/"
@@ -31,7 +31,7 @@ params_tr = {'batch_size': 64, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'd
 params_val = {'batch_size': 50, 'rescale_mean': 1.005, 'rescale_std': 0.05050, 'dim': dim}
 
 # Model params
-lr = 0.00005
+lr = 0.0001
 log_alpha = -4.3
 alpha = 10 ** log_alpha
 saving_path = path + "/log_alpha_" + str(log_alpha) + "/"

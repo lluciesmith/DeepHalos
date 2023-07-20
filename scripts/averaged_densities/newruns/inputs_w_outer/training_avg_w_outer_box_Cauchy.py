@@ -13,13 +13,13 @@ if __name__ == "__main__":
     # Create the generators for training
     s = tn.SimulationPreparation(params.all_sims, path=params.path_sims)
     generator_training = tn.DataGenerator(params.training_particle_IDs, params.training_labels_particle_IDS, s.sims_dic,
-                                          shuffle=True, path=params.path_data, cache_path=params.cache_path + "tset",
+                                          shuffle=True, path=params.path_data, cache_path=params.cache_path + "avg_tset",
                                           **params.params_tr, **params.params_box)
     generator_validation = tn.DataGenerator(params.val_particle_IDs, params.val_labels_particle_IDS, s.sims_dic,
-                                            shuffle=False, path=params.path_data, cache_path=params.cache_path + "vset",
+                                            shuffle=False, path=params.path_data, cache_path=params.cache_path + "avg_vset",
                                             **params.params_val, **params.params_box)
     generator_test = tn.DataGenerator(params.test_particle_IDs, params.test_labels_particle_IDS, s.sims_dic,
-                                      shuffle=False, path=params.path_data, cache_path=params.cache_path + "testset",
+                                      shuffle=False, path=params.path_data, cache_path=params.cache_path + "avg_testset",
                                       **params.params_val, **params.params_box)
     tset = generator_training.get_dataset()
     vset = generator_validation.get_dataset()
