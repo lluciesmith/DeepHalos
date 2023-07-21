@@ -24,18 +24,18 @@ if __name__ == "__main__":
 
     # Load the model
     tr = pd.read_csv(params.saving_path + 'training.log', sep=",", header=0)
-    num_epoch_testing = np.argmin(tr['val_loss']) + 1
-    Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, train_gamma=False, init_gamma=0.2,
-                          initial_epoch=0, training_dataset=testset, validation_dataset={}, num_epochs=20,
-                          dim=generator_test.dim, metrics=[CNN.likelihood_metric],
-                          initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, seed=params.seed,
-                          save_summary=True, path_summary=params.saving_path, train=False, compile=True)
-    Model.model.load_weights(params.saving_path + "model/weights.%02d.h5" % num_epoch_testing)
+    for num_epoch_testing in [np.argmin(tr['val_likelihood_metric']) + 1, np.argmin(tr['val_loss']) + 1]:
+        Model = CNN.CNNCauchy(params.param_conv, params.param_fcc, train_gamma=False, init_gamma=0.2,
+                              initial_epoch=0, training_dataset=testset, validation_dataset={}, num_epochs=20,
+                              dim=generator_test.dim, metrics=[CNN.likelihood_metric],
+                              initialiser="Xavier_uniform", verbose=1, num_gpu=1, lr=params.lr, seed=params.seed,
+                              save_summary=True, path_summary=params.saving_path, train=False, compile=True)
+        Model.model.load_weights(params.saving_path + "model/weights.%02d.h5" % num_epoch_testing)
 
-    # Predict
-    pred = params.scaler.inverse_transform(Model.model.predict(testset, verbose=1).reshape(-1, 1)).flatten()
-    true = params.scaler.inverse_transform(np.concatenate([y for x, y in testset], axis=0).reshape(-1, 1)).flatten()
-    np.save(params.saving_path + "predicted_sim_testset_epoch_%02d.npy" % num_epoch_testing, pred)
-    np.save(params.saving_path + "true_sim_testset_epoch_%02d.npy" % num_epoch_testing, true)
+        # Predict
+        pred = params.scaler.inverse_transform(Model.model.predict(testset, verbose=1).reshape(-1, 1)).flatten()
+        true = params.scaler.inverse_transform(np.concatenate([y for x, y in testset], axis=0).reshape(-1, 1)).flatten()
+        np.save(params.saving_path + "predicted_sim_testset_epoch_%02d.npy" % num_epoch_testing, pred)
+        np.save(params.saving_path + "true_sim_testset_epoch_%02d.npy" % num_epoch_testing, true)
 
 
