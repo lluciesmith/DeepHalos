@@ -19,8 +19,8 @@ def find_radius_particles_centred_in_halo(particle_ids, halo_ID, f=None, h=None,
     pynbody.analysis.halo.center(f[h[halo_ID].properties['mostboundID']], vel=False)
     f.wrap()
     pynbody.analysis.halo.center(h[halo_ID], vel=False)
-    radii = np.array([f[f['iord'] == particle]['r'] for particle in particle_ids])
-    return radii
+    radii = np.array([float(f[f['iord'] == particle]['r']) for particle in particle_ids])
+    return np.concatenate(radii)
 
 
 def get_radius_of_particles(particles, particles_grp, f=None, h=None, sim_num=None, path=None):
@@ -29,12 +29,14 @@ def get_radius_of_particles(particles, particles_grp, f=None, h=None, sim_num=No
 
     assert all(particles_grp > 0)
     radii_particles = np.zeros((len(particles),))
+
     for halo_id in np.unique(particles_grp):
         print("Halo " + str(halo_id))
         index = particles_grp == halo_id
         particles_halo_id = particles[index]
         r_ = find_radius_particles_centred_in_halo(particles_halo_id, halo_id, f=f, h=h)
         radii_particles[index] = r_
+
     return radii_particles
 
 
