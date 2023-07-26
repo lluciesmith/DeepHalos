@@ -86,6 +86,7 @@ if __name__ == "__main__":
         print("Loaded snapshot")
         try:
             all_pids_grp = load(open(saving_path + 'all_particleids_simulation' + sim + '_grp.pkl', 'rb'))
+            print("Loaded grp for sim " + sim)
         except:
             all_pids_grp = get_particle_grp(f, h)
             print("Got particle group number")
