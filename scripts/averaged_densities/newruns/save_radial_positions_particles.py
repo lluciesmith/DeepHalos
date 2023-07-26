@@ -82,9 +82,12 @@ if __name__ == "__main__":
 
         f, h = load_snapshot(sim, path_sims)
         print("Loaded snapshot")
-        all_pids_grp = get_particle_grp(f, h)
-        print("Got particle group number")
-        pickle.dump(all_pids_grp, open(saving_path + 'all_particleids_simulation' + sim + '_grp.pkl', 'wb'))
+        try:
+            all_pids_grp = load(open(saving_path + 'all_particleids_simulation' + sim + '_grp.pkl', 'rb'))
+        except:
+            all_pids_grp = get_particle_grp(f, h)
+            print("Got particle group number")
+            dump(all_pids_grp, open(saving_path + 'all_particleids_simulation' + sim + '_grp.pkl', 'wb'))
 
         rparticles = get_radius_of_particles(testids_sim, np.array([all_pids_grp[pid] for pid in testids_sim]), f=f, h=h)
         radii_particle[idx] = rparticles
