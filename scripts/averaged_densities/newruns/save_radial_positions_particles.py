@@ -33,7 +33,8 @@ def get_radius_of_particles(particles, particles_grp, f=None, h=None, sim_num=No
         print("Halo " + str(halo_id))
         index = particles_grp == halo_id
         particles_halo_id = particles[index]
-        radii_particles[index] = find_radius_particles_centred_in_halo(particles_halo_id, halo_id, f=f, h=h)
+        r_ = find_radius_particles_centred_in_halo(particles_halo_id, halo_id, f=f, h=h)
+        radii_particles[index] = r_
     return radii_particles
 
 
@@ -83,6 +84,7 @@ if __name__ == "__main__":
         print("Loaded snapshot")
         all_pids_grp = get_particle_grp(f, h)
         print("Got particle group number")
+        pickle.dump(all_pids_grp, open(saving_path + 'all_particleids_simulation' + sim + '_grp.pkl', 'wb'))
 
         rparticles = get_radius_of_particles(testids_sim, np.array([all_pids_grp[pid] for pid in testids_sim]), f=f, h=h)
         radii_particle[idx] = rparticles
