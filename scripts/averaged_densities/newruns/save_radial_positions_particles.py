@@ -4,9 +4,9 @@ from multiprocessing import Pool
 import pynbody
 
 
-def load_snapshot(sim_num, path):
+def load_snapshot(sim_num, path, units="Mpc a h**-1"):
     f = pynbody.load(path + 'standard_reseed' + sim_num + '/output/snapshot_007')
-    f.physical_units()
+    f.physical_units(distance=units)
     h = f.halos()
     return f, h
 
@@ -20,7 +20,8 @@ def find_radius_particles_centred_in_halo(particle_ids, halo_ID, f=None, h=None,
     f.wrap()
     pynbody.analysis.halo.center(h[halo_ID], vel=False)
     radii = np.array([float(f[f['iord'] == particle]['r']) for particle in particle_ids])
-    return np.concatenate(radii)
+
+    return radii/float(h[halo_ID].properties['rmean_200'])
 
 
 def get_radius_of_particles(particles, particles_grp, f=None, h=None, sim_num=None, path=None):
@@ -38,6 +39,7 @@ def get_radius_of_particles(particles, particles_grp, f=None, h=None, sim_num=No
         radii_particles[index] = r_
 
     return radii_particles
+
 
 
 def init_worker(halo_cat):
@@ -80,19 +82,24 @@ if __name__ == "__main__":
     for sim in test_sim:
         print("Sim " + sim)
         idx = np.where(sim_index == sim)[0]
-        testids_sim = particle_ID[idx]
 
-        f, h = load_snapshot(sim, path_sims)
-        print("Loaded snapshot")
         try:
-            all_pids_grp = load(open(saving_path + 'all_particleids_simulation' + sim + '_grp.pkl', 'rb'))
-            print("Loaded grp for sim " + sim)
+            rparticles = np.load(saving_path + 'radii_testparticles_sim' + sim + '.npy')
         except:
-            all_pids_grp = get_particle_grp(f, h)
-            print("Got particle group number")
-            dump(all_pids_grp, open(saving_path + 'all_particleids_simulation' + sim + '_grp.pkl', 'wb'))
+            f, h = load_snapshot(sim, path_sims)
+            print("Loaded snapshot")
+            try:
+                all_pids_grp = load(open(saving_path + 'all_particleids_simulation' + sim + '_grp.pkl', 'rb'))
+                print("Loaded grp for sim " + sim)
+            except:
+                all_pids_grp = get_particle_grp(f, h)
+                print("Got particle group number")
+                dump(all_pids_grp, open(saving_path + 'all_particleids_simulation' + sim + '_grp.pkl', 'wb'))
 
-        rparticles = get_radius_of_particles(testids_sim, np.array([all_pids_grp[pid] for pid in testids_sim]), f=f, h=h)
+            testids_sim = particle_ID[idx]
+            rparticles = get_radius_of_particles(testids_sim, np.array([all_pids_grp[pid] for pid in testids_sim]), f=f, h=h)
+            np.save(saving_path + 'radii_testparticles_sim' + sim + '.npy', rparticles)
+
         radii_particle[idx] = rparticles
 
     dict_radii = dict(zip((test_set, radii_particle)))
