@@ -102,5 +102,5 @@ if __name__ == "__main__":
 
         radii_particle[idx] = rparticles
 
-    dict_radii = dict(zip((test_set, radii_particle)))
+    dict_radii = dict(zip(test_set, radii_particle))
     dump(dict_radii, open(saving_path + 'radii_test_set_particles.pkl', 'wb'))
